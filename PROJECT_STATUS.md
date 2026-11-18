@@ -3,7 +3,7 @@
 ## 当前阶段
 
 - **版本**：v5（Round 2 考试内容与评分 + Round 3 学习系统已完成；commit `f4744c71`，在 main）
-- **已完成**：ChatGPT 第一轮审查的 6 项问题修复 + GPT 复查后提出的 2 个后续问题修复（DR 导入合并、IndexedDB 保存竞争），修复分支 `review/chatgpt-v5`，待 GPT 最终验收
+- **已完成**：ChatGPT 第一轮审查的 6 项问题修复 + GPT 复查后提出的 2 个后续问题修复（DR 导入合并、IndexedDB 保存竞争），修复分支 `review/chatgpt-v5`，第 4 项补充修复已通过 GPT 第四轮独立复查；六项验收完成
 - **未开始**：Round 4（技术功能）、Round 5（精英级优化）、最终整合
 - **流程**：修复 → GPT 逐项复查验收 → Round 4 → Round 5 → 整合成一个连贯系统，完整网页版存 Muse 网站 + GitHub 仓库
 
@@ -32,5 +32,5 @@
 - 2026-11-19：GPT 已从 GitHub 成功读取并确认 commit `5bc59117`，确认 review/chatgpt-v5 分支建立成功，main 未被修改。
 - 2026-11-19：GPT 提出三项补充要求——优先级调整回 GPT 原始意见；202605A 重新核实（不得直接断言 IAL 无 2026 年 5 月考季，须以 Pearson 官方试卷代码与原题为依据）；创建本文件。已按要求修正文档。
 - 2026-11-19：6 项修复全部完成并推送至 review/chatgpt-v5 分支，待 GPT 逐项复查；GPT 未明确验收通过前，不得进入 Round 4，也不得合并 main。
-- 2026-11-19：GPT 已复查 commit e16de9e5，六项整体完成度较高，提出 2 个后续问题（DR 导入合并、IndexedDB 保存竞争），已修复完成，待 GPT 最终验收；GPT 未明确验收通过前，不得进入 Round 4，也不得合并 main。
-- 2026-11-19：GPT 已复查 commit aaae3cb6，第 6 项通过，第 4 项部分通过（合并导入漏 drafts/mock/selfeval 三字段），已按要求补齐，待 GPT 再次复查；Round 4 暂不放行。
+- 2026-11-19：GPT 已复查 commit e16de9e5，六项整体完成度较高，提出 2 个后续问题（DR 导入合并、IndexedDB 保存竞争），已修复完成，已通过 GPT 第四轮独立复查；六项验收完成，允许进入 Round 4，但不得合并 main。
+- 2026-11-19：GPT 已复查 commit aaae3cb6，第 6 项通过，第 4 项部分通过（合并导入漏 drafts/mock/selfeval 三字段），已按要求补齐，并于 2026-11-19 经 GPT 第四轮独立复查通过；六项验收完成，允许进入 Round 4。
