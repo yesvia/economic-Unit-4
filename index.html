@@ -2258,6 +2258,7 @@ VIEWS.settings=function(){
  +'<p class="sm"><b>第 4 项 · 修复：</b>① 新增字段 U.drProg（只加新字段）：每套已核实 Q7 整卷下为 (a)–(e) 每个小问加作答输入框 (textarea) 与自评分数 (Self-assessment Score) 输入，存为 U.drProg[paperId][part]={answer（答案文本）, score（自评分数，null = 未评分）, updatedTs（更新时间戳）}；状态按内容推导：未答 / 已答 / 已自评（填 0 分也是已自评，与未评分区分；超满分自动按满分计入并提示）；输入时经现有 saveUser() 保存（走第一批已修复的 flushSave 落盘路径），状态标签即时更新、不整页重渲染以免打断输入。② 提取训练进度移入 U.drProg.train={done:{},score:0}（与原内存结构同形），训练视图读写一律经持久化字段，原全局变量已删除；答错仍按原逻辑进错题本（错误类型默认应用错误 (Application Error)），该逻辑未改动。③ 材料题库页顶部新增进度汇总卡：每套已核实试卷的完成率（已答小问 / 5，含已自评数）、提取训练正确率（答对 / 已答）、Data Response 总体完成率（已答小问 + 训练已答 ÷ 小问总数 + 训练总数，卡内写明口径）；没有任何记录时显示空状态，不编造数据。④ JSON 导入导出：导出为整个 U 对象，drProg 自动包含在内；导入合并的默认对象已加入 drProg:{}，并加 drProg 类型校验与非对象兜底，备份中的 drProg 会被合并保留，旧备份（无 drProg）导入后补 {} 且收藏、笔记等原有数据不丢；导入确认信息新增材料题进度计数。⑤ 向后兼容：初始 U、读取 (loadUser)、导入合并、清空重置四处均已加 drProg 缺失默认 {}；未改动、未重置任何已有字段与结构。</p>'
  +'<p class="sm"><b>第 4 项 · 测试证据（node 抽取站内真实函数逐项验证，14/14 通过）：</b>① 老数据无 drProg → 默认 {}、小问状态为「未答」——通过。② 答一道小问 → 状态「已答」；U 经 JSON 序列化往返（模拟刷新后从本机数据库读回）→ 答案与状态完整恢复——通过（落盘路径与第 6 项实测通过的 saveUser/flushSave 为同一条）。③ 填自评分数 → 「已自评」；填 0 分 → 仍为「已自评」（与未评分区分）——通过。④ 答满一套卷 5 个小问 → 汇总卡该卷完成率 100%——通过。⑤ 提取训练答 2 组（1 对 1 错）→ 序列化往返后 done 与 score 保留，汇总卡正确率 (Accuracy) 50%——通过；答错进错题本的原逻辑代码未改动、经代码核查保留。⑥ 导出 JSON 含 drProg 字段且答案完整——通过。⑦ 导入含 drProg 的备份 → drProg 恢复且收藏与笔记同时保留；导入无 drProg 的旧备份 → drProg 补 {} 且收藏保留——通过。⑧ 无任何记录时汇总卡显示空状态——通过。另：q7PaperHTML 渲染测试通过（每套卷渲染 5 个作答框 + 5 个自评输入，已存答案正确回填、状态标签正确）；全部 10 个 script 块通过 node --check；材料题库视图渲染冒烟见构建审计。如实说明：本批的浏览器端到端点击（真实 IndexedDB 刷新、跨浏览器导入）未在本环境逐项手动执行，以上以站内真实函数的序列化往返测试 + 同一落盘路径（第 6 项已实测）互证。</p>'
  +'<p class="sm"><b>复查后补充修复（2026-11-19，针对 commit e16de9e5）· 第 4 项 · Data Response 导入改为合并：</b><b>复现（GPT 复查指出，已在代码核实属实）：</b>导入读取备份后只用备份数据 d 拼出 merged（缺失字段用默认值补齐），点确认后执行 U=pendingImport 整份替换当前用户数据；备份里没有的字段被默认值覆盖，当前已有的收藏、笔记、错题等随之丢失。原第 4 项测试只验证了「备份内的 drProg 与收藏/笔记被恢复」，未覆盖「当前独有数据在导入后是否保留」这一情形。确认区原文案「导入会覆盖当前数据」与按钮「确认导入并覆盖当前数据」是「恢复整个备份」的原有功能，本次保留不删。<b>修复：</b>① 确认区新增第二个按钮「合并导入（保留当前数据）」并列为默认推荐方式（实心按钮），原覆盖按钮保留（改为描边样式）、功能不变；确认区文案改为同时说明两种方式的区别（合并保留当前数据 / 整份恢复会覆盖当前数据）。② 新增合并函数 mergeImportBackup（当前数据， 备份数据），以当前 U 为底按字段合并：对象字段（收藏 favs、笔记 notes、掌握度 mastery 与 masteryTs、复习计划 planner、六维掌握度 dimMastery、标签 tags）逐键合并，备份有的键覆盖同名键、备份没有的键保留当前值；材料题进度（Data Response Progress，drProg）按试卷 id 逐项合并，每套试卷内再按小问 (a)–(e) 与提取训练（train）逐项合并（train 的 done 逐键合并、score 按合并后的 done 重新计数），不整份替换 drProg 对象；数组字段（错题 mistakes、MCQ 记录 mcqLog、Essay 记录 essayLog、考前清单 examList、模拟历史 mockHistory）把备份条目追加进来，内容与现有条目完全相同的条目（规范化 JSON 比对，键序不同也算相同）不重复追加；设置（settings）逐键合并，备份没有的键（如主题、字号、考试日期）保留当前值。③ 旧备份（没有 drProg 字段）合并时当前 drProg 原样保留，不补空、不清空，备份其他字段仍按上述规则合并。④ 导入前仍做原有全部校验（应用标识、版本、字段类型），校验失败不改动任何现有数据，失败提示文案不变。⑤ 合并成功后走现有 saveUser() / flushSave() 保存并重渲染，确认区显示本次合并计数：并入的材料题进度套数、当前收藏/笔记总数与未被备份同名覆盖而保留的条数、错题与 Essay 记录现有条数。未改动、未重置任何已有字段与结构，未删除模块。<b>测试证据（node 抽取站内真实合并函数 mergeImportBackup 与 canonStr 逐项验证，共 38 项断言全过）：</b>① 当前有收藏/笔记/掌握度/错题/Essay 记录/材料题进度时导入含 drProg 的备份——20/20 通过：当前独有收藏、笔记全部保留，同名键以备份为准；drProg 同卷同小问以备份为准、备份没有的小问保留当前值、备份新试卷并入；train.done 逐键合并且 score 按合并后 done 重算；错题内容相同（键序不同）不重复、新条目追加；设置只覆盖备份给出的键，主题与考试日期保留当前值；合并函数不改动入参本身（先深拷贝）。② 导入无 drProg 的旧备份——7/7 通过：当前收藏/笔记/错题不丢，drProg 与 train 原样不变，空数组字段不清空当前记录。③ 「恢复整个备份」——代码核查通过：覆盖按钮处理仍为 U=pendingImport 整份替换、按钮文案保留，确认区文案同时说明两种方式。④ 校验失败——代码路径核查通过：应用标识/版本/字段类型校验在读取阶段抛错，catch 只清空待确认数据并显示原失败文案；设置页内对 U 的赋值只出现在覆盖确认、合并确认、清空数据三处点击处理中，合并函数本身不写全局 U（grep 核查 0 处），故校验失败时现有数据原样不动。⑤ 全部 10 个 script 块通过 node --check。如实说明：本项浏览器端到端点击（真实文件选择与 IndexedDB 落盘）未在本环境手动执行，以上以站内真实函数的逐项断言 + 代码路径核查 + 构建审计的设置页渲染冒烟互证。</p>'
+ +'<p class="sm"><b>第二次补充修复（2026-11-19，针对 commit aaae3cb6）· 第 4 项 · 合并导入补上 drafts / mock / selfeval：</b><b>复现（GPT 复查指出，已在代码核实属实）：</b>合并函数 mergeImportBackup 的对象合并名单只有收藏 favs、笔记 notes、掌握度 mastery 与 masteryTs、复习计划 planner、六维掌握度 dimMastery、标签 tags，另有材料题进度 drProg、数组字段与设置 settings 各自的合并逻辑；练习室草稿（drafts，AI Practice Room 的 Essay 草稿）、整卷模拟状态（mock，进行中的作答 / 选题 / 计时状态）、结构化自评（selfeval）三个字段不在任何合并名单里。通用兜底逻辑只在当前数据完全没有该字段时才复制备份对象，当前与备份两边都有该字段时不做任何合并。旧函数实测：备份独有的草稿 202210-9、备份独有的模拟卷 mock-jun25a、备份独有的自评步骤 1 全部丢失；同一模拟卷 mock-jan24 冲突时仍保留当前剩余时间，备份值未并入。<b>修复（只改合并导入的字段名单与合并规则，未改动保存的数据结构与字段）：</b>① 草稿 drafts 按题目 / 练习 id 逐键合并，同名键以备份为准。② 整卷模拟状态 mock 按模拟卷 id 合并：备份独有的模拟卷状态整份并入，同一模拟卷冲突时整份采用备份值（含作答、选题、剩余时间与提交状态）。③ 结构化自评 selfeval 按步骤 steps 与步骤内字段（完成标记 ok / 备注 note）逐键合并：双方独有步骤与独有字段全部保留，同一字段冲突时采用备份值；steps 以外的顶层键（如有）以备份为准。④ 三个字段同时加入通用兜底的排除名单，不再走「仅当前缺失才复制」的兜底路径；老数据缺失任一字段时以空对象 {} 兜底，当前字段为非对象坏值时同样先兜底再合并；备份字段为非对象坏值时跳过该字段、当前数据原样保留，不清空、不改动当前数据。⑤ 未改动完整覆盖恢复按钮（「确认导入并覆盖当前数据」仍为整份替换，代码核查通过），未重置任何用户数据；未动保存版本号 saveSeq（第 6 项已通过），未动 drProg、favs、notes 等已有合并逻辑。<b>测试证据（node 抽取站内真实合并函数 mergeImportBackup 与 canonStr 逐项验证，共 42 项断言全过）：</b>① 当前与备份均有这三个字段——22/22 通过：当前独有草稿 / 模拟卷 / 自评步骤全部保留，备份独有草稿 202210-9、模拟卷 mock-jun25a、自评步骤 1 全部并入（三个复现点均已修复）；同名草稿以备份为准；同一模拟卷 mock-jan24 整份采用备份值（剩余时间、提交状态、选题均验证）；自评步骤 0 内 ok 保留当前值、note 冲突以备份为准，顶层同名键冲突以备份为准；同时回归验证 favs / drProg / mistakes / settings 的原有合并结果不变，且合并函数不改动入参本身。② 旧备份缺少这三个字段——4/4 通过：当前 drafts / mock / selfeval 原样不变，其他字段仍按原规则合并。③ 当前缺失字段——4/4 通过：以空对象兜底后由备份并入，不报错；双方都缺失时不凭空造字段。④ 坏值——8/8 通过：备份三字段为字符串 / 数字 / 数组坏值时跳过、当前数据不丢；当前三字段为坏值（含 selfeval.steps 与单个步骤值为坏值）时先兜底再合并，不报错。⑤ 通用兜底原行为回归——4/4 通过：标量字段仍以备份覆盖、备份新标量并入、当前缺失的未知对象字段仍由备份复制、双方都有的未知对象字段仍不合并。⑥ 全部 10 个 script 块通过 node --check。如实说明：本项浏览器端到端点击（真实文件选择与 IndexedDB 落盘）未在本环境手动执行，以上以站内真实函数的逐项断言 + 代码路径核查 + 构建审计的设置页渲染冒烟互证。</p>'
  +'<p class="sm"><b>第三批整体验证：</b>全部 10 个 script 块通过 node --check；持久化逻辑测试 14/14 与整卷渲染测试通过；未删除模块、未清空用户数据，新增字段仅 drProg，老数据均有空值兜底。</p></div>'
  +'<div class="card"><h3 style="margin-top:0">成绩与分数线</h3><p class="sm mut">本站记录你的<b>原始分</b>练习数据（见 Dashboard 与错题本）。各考试系列的官方等级分数线 (grade boundaries) 与 UMS 换算以 Pearson 官方发布为准，本轮<b>待补充</b>，不编造数字。80/80 是训练目标，不是本站或任何 AI 能保证的结果。</p></div>';
 };
@@ -2286,6 +2287,26 @@ function mergeImportBackup(cur,d){
    }
   });
  }
+ /* 第二次补充修复（2026-11-19，针对 commit aaae3cb6）· 第 4 项：草稿 drafts 与整卷模拟状态 mock 按 id 逐键合并，同名键整份以备份为准；结构化自评 selfeval 按 steps 逐步骤、步骤内字段（ok / note）逐键合并，steps 以外的顶层键以备份为准。当前字段缺失或为非对象坏值时先以空对象 {} 兜底再合并；备份字段为非对象坏值时跳过该字段，当前数据原样保留。 */
+ ["drafts","mock"].forEach(k=>{
+  if(isO(d[k])){if(!isO(out[k]))out[k]={};Object.keys(d[k]).forEach(key=>{out[k][key]=d[k][key];});}
+ });
+ if(isO(d.selfeval)){
+  if(!isO(out.selfeval))out.selfeval={};
+  Object.keys(d.selfeval).forEach(key=>{
+   if(key==="steps"&&isO(d.selfeval.steps)){
+    if(!isO(out.selfeval.steps))out.selfeval.steps={};
+    Object.keys(d.selfeval.steps).forEach(si=>{
+     const bs=d.selfeval.steps[si];
+     if(!isO(bs))return;
+     if(!isO(out.selfeval.steps[si]))out.selfeval.steps[si]={};
+     Object.keys(bs).forEach(f=>{out.selfeval.steps[si][f]=bs[f];});
+    });
+   }else if(key!=="steps"){
+    out.selfeval[key]=d.selfeval[key];
+   }
+  });
+ }
  ["mistakes","mcqLog","essayLog","examList","mockHistory"].forEach(k=>{
   if(Array.isArray(d[k])){
    if(!Array.isArray(out[k]))out[k]=[];
@@ -2295,7 +2316,7 @@ function mergeImportBackup(cur,d){
  });
  if(isO(d.settings)){if(!isO(out.settings))out.settings={};Object.keys(d.settings).forEach(key=>{out.settings[key]=d.settings[key];});}
  Object.keys(d).forEach(k=>{
-  if(["favs","notes","mastery","masteryTs","planner","dimMastery","tags","drProg","mistakes","mcqLog","essayLog","examList","mockHistory","settings"].indexOf(k)>=0)return;
+  if(["favs","notes","mastery","masteryTs","planner","dimMastery","tags","drProg","drafts","mock","selfeval","mistakes","mcqLog","essayLog","examList","mockHistory","settings"].indexOf(k)>=0)return;
   const v=d[k];
   if(v===null||typeof v!=="object")out[k]=v;
   else if(!(k in out))out[k]=v;

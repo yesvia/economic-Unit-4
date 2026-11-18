@@ -14,7 +14,7 @@
 | 1 | 整卷模拟真实性（mock-jan24 / mock-jun25a 的 Section C 与原卷对照，非原卷组合标注 Composite Practice Paper） | P0 | 已修复（官方 QP 逐字核对 + 代码核查） |
 | 2 | 成绩输入与计分（JS 边界校验，区分未评分和 0 分，总分封顶 80） | P0 | 已修复（函数 node 单测 + 代码核查） |
 | 3 | Section C 题目选择（禁止重复选择，答案与分数按题号 id 绑定，交卷后锁定） | P1 | 已修复（浏览器实测通过） |
-| 4 | Data Response 进度持久化（答题状态、答案、正确率、完成情况存 IndexedDB，纳入 JSON 导入导出） | P1 | 已修复（持久化逻辑测试 + 渲染测试通过）（复查后补充修复完成） |
+| 4 | Data Response 进度持久化（答题状态、答案、正确率、完成情况存 IndexedDB，纳入 JSON 导入导出） | P1 | 已修复（持久化逻辑测试 + 渲染测试通过）（复查后第二次补充修复完成） |
 | 5 | 202605A 考季与题号（核查 -7、-8、-9、-10 官方来源，不确定的保留待核实） | P0 | 已修复（官方来源逐条核对） |
 | 6 | IndexedDB 保存可靠性（检查 250ms debounce 是否丢失最后一次修改，保存状态准确） | P2 | 已修复（浏览器实测通过，部分情形仅代码路径核查）（复查后补充修复完成） |
 
@@ -25,6 +25,7 @@
 - `5bc59117` — 审查文件 `REVIEW/CHATGPT_REVIEW_V5.md` 首次建立（review/chatgpt-v5 分支；main 未动）
 - `672d5460` — 文档修正：优先级调整回 GPT 原始意见、202605A 表述修正、新增本文件
 - `e16de9e5` — 6 项修复代码 + 审查文件状态更新 + PROJECT_STATUS.md（review/chatgpt-v5 分支）
+- `aaae3cb6` — GPT 复查后 2 个后续问题修复（DR 导入合并、IndexedDB 保存竞争）+ 审查文件与 PROJECT_STATUS.md 更新（review/chatgpt-v5 分支）
 
 ## GPT 验收状态
 
@@ -32,3 +33,4 @@
 - 2026-11-19：GPT 提出三项补充要求——优先级调整回 GPT 原始意见；202605A 重新核实（不得直接断言 IAL 无 2026 年 5 月考季，须以 Pearson 官方试卷代码与原题为依据）；创建本文件。已按要求修正文档。
 - 2026-11-19：6 项修复全部完成并推送至 review/chatgpt-v5 分支，待 GPT 逐项复查；GPT 未明确验收通过前，不得进入 Round 4，也不得合并 main。
 - 2026-11-19：GPT 已复查 commit e16de9e5，六项整体完成度较高，提出 2 个后续问题（DR 导入合并、IndexedDB 保存竞争），已修复完成，待 GPT 最终验收；GPT 未明确验收通过前，不得进入 Round 4，也不得合并 main。
+- 2026-11-19：GPT 已复查 commit aaae3cb6，第 6 项通过，第 4 项部分通过（合并导入漏 drafts/mock/selfeval 三字段），已按要求补齐，待 GPT 再次复查；Round 4 暂不放行。
