@@ -5,7 +5,9 @@ Pearson Edexcel International A Level Economics Unit 4（WEC14/01）学习系统
 ## 文件
 
 - `index.html` — 完整网站（单文件版）。包含 15 个模块：Dashboard、Knowledge Base、Essay Library、Data Response Library、MCQ Bank、Exam Frequency、AI Practice Room、Quantitative Skills、Elite Economist Training、Advanced Extension、My Collection、Mistake Book、Revision Planner、Exam Toolkit、Settings。
-- 当前版本：Round 1 已修复版（深色主题为默认）。
+- 当前版本：v5（第二轮考试内容与评分 + 第三轮学习系统已完成；深色主题为默认）。
+- 第二轮：5 套已核实 Q7 整卷（含 Source Booklet 摘要与逐字原题）、36 道官方 Section A 选择题、两套计时整卷模拟、十步批改标准与 AO1–AO4 追踪。
+- 第三轮：个人考试策略分析、无情纠错模式、6 维度掌握度、9 类错题统计、收藏标签与考前清单。
 
 ## 说明
 
