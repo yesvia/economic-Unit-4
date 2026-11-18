@@ -169,31 +169,39 @@ function fallbackCopy(txt,done){const ta=document.createElement("textarea");ta.v
 
 /* ================= 用户数据（IndexedDB，与内容数据分离） ================= */
 const DBNAME="elite-economist-u4", STORE="userdata";
-let U={favs:{},notes:{},mastery:{},masteryTs:{},mistakes:[],mcqLog:[],essayLog:[],settings:{theme:"dark",examDate:"",fontSize:100},planner:{},strategySeen:false,dimMastery:{},tags:{},examList:[]};
+let U={favs:{},notes:{},mastery:{},masteryTs:{},mistakes:[],mcqLog:[],essayLog:[],settings:{theme:"dark",examDate:"",fontSize:100},planner:{},strategySeen:false,dimMastery:{},tags:{},examList:[],mockHistory:[],drProg:{}};
 let dbOK=false;
 function idbOpen(){return new Promise((res,rej)=>{const r=indexedDB.open(DBNAME,1);r.onupgradeneeded=()=>{r.result.createObjectStore(STORE);};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
-let db=null, saveTimer=null;
+let db=null, saveTimer=null, savePending=false;
 async function loadUser(){
   try{db=await idbOpen();dbOK=true;
     const rec=await new Promise((res,rej)=>{const tx=db.transaction(STORE,"readonly").objectStore(STORE).get("state");tx.onsuccess=()=>res(tx.result);tx.onerror=()=>rej(tx.error);});
-    if(rec&&typeof rec==="object"){U=Object.assign(U,rec);U.masteryTs=U.masteryTs||{};U.dimMastery=U.dimMastery||{};U.tags=U.tags||{};U.examList=Array.isArray(U.examList)?U.examList:[];U.settings=Object.assign({theme:"dark",examDate:"",fontSize:100},rec.settings||{});
+    if(rec&&typeof rec==="object"){U=Object.assign(U,rec);U.masteryTs=U.masteryTs||{};U.dimMastery=U.dimMastery||{};U.tags=U.tags||{};U.examList=Array.isArray(U.examList)?U.examList:[];U.mockHistory=Array.isArray(U.mockHistory)?U.mockHistory:[];U.drProg=(U.drProg&&typeof U.drProg==="object"&&!Array.isArray(U.drProg))?U.drProg:{};U.settings=Object.assign({theme:"dark",examDate:"",fontSize:100},rec.settings||{});
       if(U.settings.theme==="auto"){U.settings.theme="dark";saveUser();}}
     setSave("已连接本机数据库（IndexedDB）");
   }catch(e){dbOK=false;setSave("数据库不可用，数据仅保存在本次打开期间");}
   applyTheme();
 }
 function setSave(txt){const el=$("#savestate");if(el)el.textContent=txt;}
-function saveUser(){
-  setSave("保存中…");
-  clearTimeout(saveTimer);
-  saveTimer=setTimeout(()=>{
-    if(!db){setSave("数据库不可用，未能持久保存");return;}
-    try{const tx=db.transaction(STORE,"readwrite");tx.objectStore(STORE).put(JSON.parse(JSON.stringify(U)),"state");
-      tx.oncomplete=()=>setSave("已自动保存 · "+new Date().toLocaleTimeString("zh-CN",{hour12:false}));
-      tx.onerror=()=>setSave("保存失败，请到「设置」导出 JSON 备份");
-    }catch(e){setSave("保存失败，请到「设置」导出 JSON 备份");}
-  },250);
+function doWrite(){
+  if(!db){savePending=true;setSave("保存失败，请到「设置」导出 JSON 备份");return;}
+  try{const tx=db.transaction(STORE,"readwrite");tx.objectStore(STORE).put(JSON.parse(JSON.stringify(U)),"state");
+    tx.oncomplete=()=>{savePending=false;setSave("已自动保存 · "+new Date().toLocaleTimeString("zh-CN",{hour12:false}));};
+    tx.onerror=()=>{savePending=true;setSave("保存失败，请到「设置」导出 JSON 备份");};
+  }catch(e){savePending=true;setSave("保存失败，请到「设置」导出 JSON 备份");}
 }
+function saveUser(){
+  savePending=true;
+  setSave("有未保存的修改（保存中…）");
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{saveTimer=null;doWrite();},250);
+}
+function flushSave(){
+  clearTimeout(saveTimer);saveTimer=null;
+  if(savePending)doWrite();
+}
+window.addEventListener("pagehide",()=>{flushSave();});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")flushSave();});
 function applyTheme(){
   const t=U.settings.theme||"dark";
   const dark=t==="dark"||(t==="auto"&&window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches);
@@ -698,6 +706,8 @@ function parseCode(code){const m=code.match(/^(\d{4})(\d{2})(A?)-(.+)$/);if(!m)r
  else if(q==="1"){section="Section A";marks=1;qLabel="Q1（选择题）";}
  else{section="待核实";marks=null;qLabel="Q"+q;unverified=true;}
  return{year:+m[1],month:+m[2],ver:m[3]==="A"?"WEC14/01A（中国地区卷）":"WEC14/01",china:m[3]==="A",q:qLabel,section,marks,unverified};}
+/* 试卷来源待核实题号（v5 审查修复第二批）：无法从现有官方资料确认来源，保持标记、不合并、不改号 */
+const SRC_PENDING={"202605A-7":1,"202605A-8":1,"202605A-9":1,"202605A-10":1};
 /* ============ 18 道已核对题：官方英文原文 + Mark Scheme 要点（来源：Pearson 官方 MS 核对报告 2026-11-14） ============ */
 const VER={
 "202101-8":{en:"Between 2000 and 2018 Cambodia's terms of trade fell by 31.3%. Evaluate the macroeconomic effects of a fall in a country's terms of trade on a government's macroeconomic objectives. Refer to a country of your choice in your answer.",core:true,
@@ -1239,6 +1249,26 @@ const MCQ_OFF=[
 const ALLMCQ=MCQ_OFF.concat(MCQS);
 function mcqById(id){return ALLMCQ.find(q=>q.id===id);}
 /* ---------- Q7 整卷渲染 ---------- */
+/* v5 审查修复第三批（第 4 项 · P1）：Data Response 进度持久化。U.drProg[paperId][part]={answer,score,updatedTs}；U.drProg.train={done,score}。老数据缺失时一律 {} 兜底。 */
+function drProgRoot(){if(!U.drProg||typeof U.drProg!=="object"||Array.isArray(U.drProg))U.drProg={};return U.drProg;}
+function drRec(paperId,part){const dp=drProgRoot();const pp=dp[paperId];if(!pp||typeof pp!=="object")return null;const r=pp[part];if(!r||typeof r!=="object")return null;return r;}
+function drPartState(rec){if(!rec||rec.answer==null||String(rec.answer).trim()==="")return"未答";if(rec.score!=null)return"已自评";return"已答";}
+function drTrainProg(){const dp=drProgRoot();if(!dp.train||typeof dp.train!=="object"||Array.isArray(dp.train))dp.train={done:{},score:0};if(!dp.train.done||typeof dp.train.done!=="object"||Array.isArray(dp.train.done))dp.train.done={};if(typeof dp.train.score!=="number"||isNaN(dp.train.score))dp.train.score=Object.keys(dp.train.done).filter(k=>dp.train.done[k]&&dp.train.done[k].ok).length;return dp.train;}
+function drSummaryHTML(){
+ const dp=drProgRoot();const train=drTrainProg();
+ const trainDone=Object.keys(train.done).length;const trainOk=Object.keys(train.done).filter(k=>train.done[k]&&train.done[k].ok).length;
+ let totAns=0;const totParts=Q7P.length*5;
+ const perPaper=Q7P.map(p=>{let ans=0,scored=0;p.parts.forEach(pt=>{const r=drRec(p.id,pt[0]);const st=drPartState(r);if(st!=="未答")ans++;if(st==="已自评")scored++;});totAns+=ans;return{p:p,ans:ans,scored:scored,rate:Math.round(ans/5*100)};});
+ const overallDen=totParts+DRTRAIN.length;const overallNum=totAns+trainDone;const overall=overallDen?Math.round(overallNum/overallDen*100):0;
+ const hasAny=totAns>0||trainDone>0;
+ let h='<div class="card mint"><h3 style="margin-top:0">Data Response 进度汇总 (Progress Summary)</h3>';
+ if(!hasAny)h+='<div class="empty"><b>还没有 Data Response 作答记录。</b>在下方任意一套已核实 Q7 整卷的 (a)–(e) 小问里写下答案，或完成一组材料提取训练，这里会自动汇总你的真实进度；没有记录时不显示任何虚构数据。</div>';
+ h+='<p class="sm" style="margin:.3rem 0"><b>总体完成率 (Overall Completion)：</b>'+overall+'%（已答小问 '+totAns+' / '+totParts+' + 提取训练已答 '+trainDone+' / '+DRTRAIN.length+'）</p><div class="bar mint"><i style="width:'+overall+'%"></i></div>'
+ +perPaper.map(x=>'<p class="sm" style="margin:.3rem 0"><b>'+esc(x.p.ds)+' · '+esc(x.p.paper)+' · '+esc(x.p.theme)+'</b>：已答 '+x.ans+' / 5 · 已自评 '+x.scored+' / 5 · 完成率 '+x.rate+'%</p><div class="bar"><i style="width:'+x.rate+'%"></i></div>').join("")
+ +'<p class="sm" style="margin:.3rem 0"><b>材料信息提取与运用训练 (Extraction Training)：</b>'+(trainDone?'已答 '+trainDone+' / '+DRTRAIN.length+' 组 · 答对 '+trainOk+' 组 · 正确率 (Accuracy) '+Math.round(trainOk/trainDone*100)+'%':'尚未作答，暂无正确率。')+'</p>'
+ +'<p class="sm mut">状态按内容推导：未答 / 已答 / 已自评（填了自评分数 (Self-assessment Score) 即为已自评；留空 = 未评分，填 0 = 0 分）。进度保存在本机并随 JSON 备份导出。</p></div>';
+ return h;
+}
 function q7PaperHTML(p){
  let h='<div class="card"><div class="secthead"><b>'+esc(p.date)+' · '+esc(p.paper)+'</b><span class="tag mint">已核实 Q7 整卷</span><span class="tag grey">Log Number '+esc(p.log)+'</span><span class="tag">'+esc(p.theme)+'</span></div>'
  +'<p class="sm"><b>Source Booklet：</b>'+esc(p.title)+'</p>'
@@ -1248,8 +1278,48 @@ function q7PaperHTML(p){
  +'<p class="sm"><span class="tag gold">摘要非逐字原文</span> <span class="mut">完整材料见官方链接：</span><a href="'+p.qp+'" target="_blank" rel="noopener">Question Paper (QP)</a> · <a href="'+p.msu+'" target="_blank" rel="noopener">Mark Scheme ('+esc(p.ms)+')</a></p>'
  +'<table><tr><th style="width:52px">小问</th><th style="width:88px">指令词</th><th style="width:46px">分值</th><th>英文原题（逐字）与评分要点状态</th></tr>'
  +p.parts.map(pt=>'<tr><td><b>7('+pt[0]+')</b></td><td>'+esc(pt[1])+'</td><td>'+pt[2]+'</td><td><span class="en">'+esc(pt[3])+'</span>'+(pt[4]?'<br><span class="tag mint">MS 答案</span> <b>'+esc(pt[4])+'</b>':'<br><span class="sm mut">'+(pt[1]==="Calculate"?'计算答案见官方 MS 链接（待补充）':'评分要点待补充（见官方 MS 链接）')+'</span>')+'</td></tr>').join("")
- +'</table></div>';
+ +'</table>'
+ +'<h3>按小问作答 (Answer by Part) · '+esc(p.ds)+'</h3><p class="sm mut">每个小问单独作答并自评：答案输入即自动保存到本机（刷新不丢）；自评分数 (Self-assessment Score) 留空 = 未评分，填 0 = 0 分，超过该小问满分会自动按满分计入。状态按内容推导：未答 / 已答 / 已自评。</p>'
+ +p.parts.map(pt=>{
+   const rec=drRec(p.id,pt[0]);const st=drPartState(rec);const key=p.id+":"+pt[0];
+   const tagCls=st==="已自评"?"mint":(st==="已答"?"gold":"grey");
+   return '<div style="border-top:1px solid var(--line);padding:10px 0 4px"><div class="secthead"><b>7('+pt[0]+') · '+esc(pt[1])+' · '+pt[2]+' 分</b><span class="tag '+tagCls+'" data-drstatus="'+key+'">'+st+(st==="已自评"?" · "+rec.score+" / "+pt[2]+" 分":"")+'</span>'+(rec&&rec.updatedTs?'<span class="sm mut">上次保存 '+new Date(rec.updatedTs).toLocaleString("zh-CN",{hour12:false})+'</span>':"")+'</div>'
+   +'<p class="sm en mut" style="margin:.25rem 0">'+esc(pt[3])+'</p>'
+   +'<textarea rows="4" data-drpaper="'+p.id+'" data-drpart="'+pt[0]+'" placeholder="在这里写 7('+pt[0]+') 的英文答案…">'+esc(rec&&rec.answer!=null?rec.answer:"")+'</textarea>'
+   +'<div class="btnrow" style="align-items:center"><span class="sm">自评分数 (Self-assessment Score)：</span><input type="number" data-drscore-paper="'+p.id+'" data-drscore-part="'+pt[0]+'" data-drmax="'+pt[2]+'" min="0" max="'+pt[2]+'" step="0.5" value="'+(rec&&rec.score!=null?rec.score:"")+'" placeholder="未评分" style="width:110px"><span class="sm mut">/ '+pt[2]+' 分（留空 = 未评分）</span></div></div>';
+ }).join("")
+ +'</div>';
  return h;
+}
+function bindDrProg(){
+ const root=$("#view");if(!root)return;
+ function updStatus(paperId,part){
+   const el=root.querySelector('[data-drstatus="'+paperId+":"+part+'"]');if(!el)return;
+   const rec=drRec(paperId,part);const st=drPartState(rec);
+   const paper=Q7P.find(x=>x.id===paperId);const pt=paper?paper.parts.find(x=>x[0]===part):null;const max=pt?pt[2]:"";
+   el.textContent=st+(st==="已自评"?" · "+rec.score+" / "+max+" 分":"");
+   el.className="tag "+(st==="已自评"?"mint":(st==="已答"?"gold":"grey"));
+ }
+ root.querySelectorAll("[data-drpaper]").forEach(ta=>{
+   ta.addEventListener("input",()=>{
+     const dp=drProgRoot();const pid=ta.dataset.drpaper,part=ta.dataset.drpart;
+     if(!dp[pid]||typeof dp[pid]!=="object")dp[pid]={};
+     const prev=dp[pid][part]&&typeof dp[pid][part]==="object"?dp[pid][part]:{answer:"",score:null,updatedTs:0};
+     dp[pid][part]={answer:ta.value,score:(prev.score!=null?prev.score:null),updatedTs:Date.now()};
+     saveUser();updStatus(pid,part);
+   });
+ });
+ root.querySelectorAll("[data-drscore-paper]").forEach(inp=>{
+   inp.addEventListener("change",()=>{
+     const dp=drProgRoot();const pid=inp.dataset.drscorePaper,part=inp.dataset.drscorePart;const max=+inp.dataset.drmax||0;
+     if(!dp[pid]||typeof dp[pid]!=="object")dp[pid]={};
+     const prev=dp[pid][part]&&typeof dp[pid][part]==="object"?dp[pid][part]:{answer:"",score:null,updatedTs:0};
+     let sc=null;
+     if(inp.value!=null&&String(inp.value).trim()!==""){sc=+inp.value;if(isNaN(sc))sc=null;else if(sc<0){sc=0;toast("自评分数不能小于 0，已按 0 分计入");}else if(sc>max){sc=max;inp.value=max;toast("已按满分 "+max+" 分计入");}}
+     dp[pid][part]={answer:(prev.answer!=null?prev.answer:""),score:sc,updatedTs:Date.now()};
+     saveUser();updStatus(pid,part);toast(sc==null?"已清除自评分数（未评分）":"自评分数已保存");
+   });
+ });
 }
 function q7SummaryHTML(p){
  return '<p><b>'+esc(p.date)+' · '+esc(p.paper)+' · '+esc(p.theme)+'</b> <span class="tag grey">Log Number '+esc(p.log)+'</span></p>'
@@ -1279,9 +1349,10 @@ const DRTRAIN=[
  options:["评价/反方：削减公共支出的短期成本——转移支付与公共服务收缩、AD 下降推高贫困与失业，是判断时必须权衡的代价","KAA 主链：证明削减支出只有收益","7(a) 的计算过程","与本题无关，应删去不用"],ans:0,
  why:"53% 的绝对贫困率是成本一侧最有力的材料证据：支出削减 → 福利与公共就业收缩 + AD↓ → 贫困与失业上升。用它做评价（短期成本 vs 长期稳定收益）并据此下判断，才是 Discuss 题拿评价分的方式。"}
 ];
-let DRT={done:{},score:0};
+/* v5 审查修复第三批：训练进度已移入持久化字段 U.drProg.train（与原内存 DRT 同形 {done,score}），读写一律经 drTrainProg()，刷新不丢。 */
 function drTrainHTML(){
- return '<p class="sm mut">用已核实 Q7 的真实材料练「应用 (Application)」：判断每条材料能支撑哪个得分点。阅卷报告口径：<b>照抄材料不解释 = Level 1</b>——引用材料必须说明它证明什么、接通哪一环因果链。答对/答错都给出依据；答错会自动记入错题本（错误类型默认「应用错误 Application Error」）。</p>'
+ const DRT=drTrainProg();
+ return '<p class="sm mut">用已核实 Q7 的真实材料练「应用 (Application)」：判断每条材料能支撑哪个得分点。阅卷报告口径：<b>照抄材料不解释 = Level 1</b>——引用材料必须说明它证明什么、接通哪一环因果链。答对/答错都给出依据；答错会自动记入错题本（错误类型默认「应用错误 Application Error」）。训练进度保存在本机，刷新后保留。</p>'
  +DRTRAIN.map(t=>{const d=DRT.done[t.id];return '<div class="card" style="padding:12px 16px"><div class="secthead"><b>'+esc(t.paper)+' · '+esc(t.qref)+'</b>'+(d?'<span class="tag '+(d.ok?"mint":"red")+'">'+(d.ok?"✓ 答对":"✗ 答错（已记入错题本）")+'</span>':"")+'</div><p class="sm"><b>材料：</b>'+esc(t.point)+'</p><p class="sm"><b>判断：</b>'+esc(t.prompt)+'</p>'
  +t.options.map((o,oi)=>'<button class="opt'+(d?(oi===t.ans?" right":(d.pick===oi?" wrong":"")):"")+'" data-drt="'+t.id+'" data-doi="'+oi+'"'+(d?" disabled":"")+'><b>'+"ABCD"[oi]+'.</b> '+esc(o)+'</button>').join("")
  +(d?'<p class="sm"><b>依据：</b>'+esc(t.why)+'</p>':"")+'</div>';}).join("")
@@ -1290,6 +1361,7 @@ function drTrainHTML(){
 function bindDrTrain(){
  const box=$("#drtrain");if(!box)return;box.innerHTML=drTrainHTML();
  box.querySelectorAll("[data-drt]").forEach(b=>b.addEventListener("click",()=>{
+  const DRT=drTrainProg();
   const t=DRTRAIN.find(x=>x.id===b.dataset.drt);if(!t||DRT.done[t.id])return;
   const pick=+b.dataset.doi;const ok=pick===t.ans;DRT.done[t.id]={ok,pick};if(ok)DRT.score++;
   else if(!U.mistakes.some(m=>m.kind==="drtrain"&&m.ref===t.id&&!m.resolved)){
@@ -1331,7 +1403,7 @@ function aoTrackHTML(){
  +avgs.map((a,i)=>'<p style="margin:.2rem 0"><b>'+names[i]+'</b> 平均 '+a.toFixed(1)+(i===weak?' <span class="tag red">最弱 AO</span>':"")+'</p><div class="bar'+(i===weak?"":" mint")+'"><i style="width:'+Math.round(a/mx*100)+'%"></i></div>').join("");
  const byCode={};L.slice().sort((a,b)=>a.ts-b.ts).forEach(r=>{(byCode[r.code]=byCode[r.code]||[]).push(r);});
  const trends=Object.keys(byCode).filter(c=>byCode[c].length>1);
- if(trends.length)h+='<p class="sm" style="margin-top:8px"><b>同一道题多次练习的分数趋势（总分）：</b></p>'+trends.map(c=>'<p class="sm">'+esc(c)+'：'+byCode[c].map(r=>r.total).join(" → ")+'</p>').join("");
+ if(trends.length)h+='<p class="sm" style="margin-top:8px"><b>同一道题多次练习的分数趋势（总分）：</b></p>'+trends.map(c=>'<p class="sm">'+esc(c)+'：'+byCode[c].map(r=>logDispTotal(r)).join(" → ")+'</p>').join("");
  return h;
 }
 /* ---------- 综合考查频率（18 道口径）与已核实试卷清单 ---------- */
@@ -1339,33 +1411,65 @@ const INT_FREQ=[["Ch.21 全球化的成因",1],["Ch.22 全球化的影响（收�
 const VERIFIED_PAPERS=["Jan 2024 · WEC14/01","Jun 2024 · WEC14/01","Jun 2023 · WEC14/01","Oct 2023 · WEC14/01","Jun 2025 · WEC14/01","Jun 2025 · WEC14/01A","Oct 2025 · WEC14/01A","Jan 2026 · WEC14/01A","Jun 2026 · WEC14/01A"];
 /* ---------- 整卷模拟 ---------- */
 const MOCKDEFS=[
- {id:"mock-jan24",name:"模拟卷一 · Jan 2024 WEC14/01",paper:"jan24",secA:["off-2401-1","off-2401-2","off-2401-3","off-2401-4","off-2401-5","off-2401-6"],secCDef:["202401-9","202310-8"]},
- {id:"mock-jun25a",name:"模拟卷二 · Jun 2025 WEC14/01A",paper:"jun25a",secA:["off-2506a-1","off-2506a-2","off-2506a-3","off-2506a-4","off-2506a-5","off-2506a-6"],secCDef:["202506A-8","202210-9"]}
+ {id:"mock-jan24",name:"模拟卷一 · Jan 2024 WEC14/01",paper:"jan24",secA:["off-2401-1","off-2401-2","off-2401-3","off-2401-4","off-2401-5","off-2401-6"],secCDef:["202401-9","202401-8"],
+  origC:[{code:"202401-8",en:"Between 2007 and 2022 income inequality increased in both Sweden and the USA. Evaluate possible causes of an increase in income inequality within a developed country of your choice."},{code:"202401-9",en:"According to the World Trade Organization (WTO), between 1995 and 2022, the share of developing economies' exports in world trade increased and the share of developed economies' exports decreased. Evaluate factors influencing patterns of trade between countries."},{code:"202401-10",en:"In South Sudan HDI was 0.43 in 2010 and 0.39 in 2022. Evaluate market-orientated strategies that a government in a developing country of your choice might use to increase economic development."}]},
+ {id:"mock-jun25a",name:"模拟卷二 · Jun 2025 WEC14/01A",paper:"jun25a",secA:["off-2506a-1","off-2506a-2","off-2506a-3","off-2506a-4","off-2506a-5","off-2506a-6"],secCDef:["202506A-8","202506A-9"],
+  origC:[{code:"202506A-8",en:"In 2024, the value of China's exports was $3.6 trillion and the value of its imports was $2.6 trillion. In 2024, China's rate of economic growth was 5%. This was the lowest rate since 2022. Evaluate the likely effects of a reduction in China's rate of economic growth on the global economy."},{code:"202506A-9",en:"In 2021, 2.4 million migrants moved into the European Union (EU) from non-EU countries. In 2022, this number rose to 5.1 million. Evaluate the likely benefits of a significant increase in migration into the EU."},{code:"202506A-10",en:"Between 2013 and 2023, Iraq's national debt increased from 32% of GDP to 49.2% of GDP. Evaluate the disadvantages of an increase in a country's national debt. Refer to a country of your choice in your answer.",notin:true}]}
 ];
+/* ---- v5 审查修复第二批新增：组合练习卷 (Composite Practice Paper) 标注、来源清单与分数钳制 ---- */
+const COMPOSITE_TAG='<span class="tag red">Composite Practice Paper · 组合练习卷（非原卷）</span>';
+const MONTHS={1:"Jan",5:"May",6:"Jun",10:"Oct"};
+function codePaperLabel(code){const p=parseCode(code);if(!p||!p.year)return code;return (MONTHS[p.month]||(""+p.month+" 月"))+" "+p.year+" · "+(p.china?"WEC14/01A":"WEC14/01")+" · "+p.q;}
+function mockSrcHTML(d,st){
+ const p=Q7P.find(x=>x.id===d.paper);
+ const selInfo=function(code){return d.origC.some(function(o){return o.code===code;})?"原卷题："+codePaperLabel(code):"他卷题，来源试卷："+codePaperLabel(code);};
+ let h='<div class="card" style="padding:12px 16px"><h3 style="margin-top:0">各部分来源（Sources）</h3>'
+ +'<p class="sm" style="margin:.25rem 0"><b>Section A：</b>该卷官方 Q1–Q6（已逐题录入，答案以官方评分标准 (Mark Scheme, MS) 为准）。</p>'
+ +'<p class="sm" style="margin:.25rem 0"><b>Section B：</b>该卷 Q7 全套（'+esc(p.ds)+' · '+esc(p.paper)+' · '+esc(p.theme)+'）；本站材料为摘要，完整材料册 (Source Booklet) 见<a href="'+esc(p.qp)+'" target="_blank" rel="noopener">官方试卷 (Question Paper, QP)</a>，评分细则见<a href="'+esc(p.msu)+'" target="_blank" rel="noopener">官方 MS</a>。</p>'
+ +'<p class="sm" style="margin:.25rem 0 .1rem"><b>Section C：</b>自题库选取（可自选任意两道）。该卷原 Section C 三道题（已对照官方 QP 逐题核对题号与题干）：</p><ul class="tight sm">'
+ +d.origC.map(function(o){const e=essayByCode(o.code);return '<li><b>'+o.code+'</b>'+(e?" · "+esc(e.zh):" · <b>不在站内题库中</b>")+'<br><span class="en mut">'+esc(o.en)+'</span>'+(o.notin?'<br><span class="mut">题干已凭官方 QP 核实存在；范文与官方评分要点待补充，站内不编造。</span>':"")+'</li>';}).join("")
+ +'</ul><p class="sm" style="margin:.25rem 0"><b>本卷当前所选：</b>第一题 '+esc(st.c1)+'（'+selInfo(st.c1)+'）；第二题 '+esc(st.c2)+'（'+selInfo(st.c2)+'）。</p></div>';
+ return h;
+}
+function clampScore(raw,max){
+ if(raw===""||raw==null)return{blank:true,val:"",over:false};
+ const v=+raw;if(isNaN(v))return{blank:true,val:"",over:false};
+ let over=false,out=v;if(out>max){out=max;over=true;}if(out<0){out=0;over=true;}
+ return{blank:false,val:out,over:over};
+}
+function scoreDisp(raw,max){
+ const c=clampScore(raw,max);
+ if(c.blank)return "—（未评分）";
+ return c.val+" 分"+(c.over?' <span class="tag red">待订正</span>':"");
+}
+function logDispTotal(r){const t=+r.total||0;return r.mock?Math.min(80,t):Math.min(20,t);}
+function logOver(r){if(r.mock)return (+r.total||0)>80;return (+r.total||0)>20||(r.ao||[]).some(function(v){return +v>20||+v<0;});}
 let MOCKCUR="mock-jan24", mockInt=null, mockRunning=false;
 function fmtHMS(s){s=Math.max(0,s);const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return h+":"+String(m).padStart(2,"0")+":"+String(x).padStart(2,"0");}
 function stopMockTimer(){if(mockInt){clearInterval(mockInt);mockInt=null;}mockRunning=false;}
 function mockState(id){U.mock=U.mock||{};if(!U.mock[id]){const d=MOCKDEFS.find(m=>m.id===id);U.mock[id]={a:{},b:{},c1:d.secCDef[0],c2:d.secCDef[1],c:{},left:7200,sub:null,logged:false};}return U.mock[id];}
 function mockCardHTML(){
  return '<h3 style="margin-top:0">Full Paper Simulation · 整卷模拟（2 小时 / 80 分）</h3>'
- +'<p class="sm mut">真实结构：Section A 6 分 + Section B 34 分 + Section C 选二 40 分。题目全部取自已核实试卷：Section A 用该卷官方 Q1–Q6，Section B 用该卷 Q7 全套；<b>Section B 材料为摘要，完整 Source Booklet 见官方 QP 链接</b>；Section C 取自已核对题库、非该卷原 Section C（可自选两道，默认已填）。草稿自动保存到本机，按模拟卷分别保存；交卷后按自评清单自查，成绩只记你的真实自评记录。</p>'
+ +'<p style="margin:.2rem 0">'+COMPOSITE_TAG+'</p>'
+ +'<p class="sm mut">真实结构：Section A 6 分 + Section B 34 分 + Section C 选二 40 分。Section A 用该卷官方 Q1–Q6，Section B 用该卷 Q7 全套；<b>Section B 材料为摘要，完整 Source Booklet 见官方 QP 链接</b>；Section C 自已核对题库选取（默认已填该卷原 Section C 的两道，也可自选任意两道，逐题来源见点开后的来源清单）——因此整卷为组合练习卷，不是该卷原卷的完整再现。草稿自动保存到本机，按模拟卷分别保存；交卷后按自评清单自查，成绩只记你的真实自评记录。</p>'
  +'<div class="btnrow">'+MOCKDEFS.map(m=>'<button class="btn sm '+(MOCKCUR===m.id?"":"ghost")+'" data-mocktab="'+m.id+'">'+esc(m.name)+'</button>').join("")+'</div><div id="mockbody"></div>';
 }
 function mockBodyHTML(){
  const d=MOCKDEFS.find(m=>m.id===MOCKCUR);const st=mockState(d.id);const p=Q7P.find(x=>x.id===d.paper);
  let h='<div class="secthead"><b>'+esc(d.name)+'</b><span class="timer" id="mocktimer">'+fmtHMS(st.left)+'</span></div>'
+ +'<p style="margin:.4rem 0">'+COMPOSITE_TAG+' <span class="sm mut">本卷为组合练习卷：Section A、Section B 取自该卷官方试卷，Section C 自题库选取，并非该卷原卷。</span></p>'+mockSrcHTML(d,st)
  +'<div class="btnrow"><button class="btn sm" id="mockplay">'+(mockRunning?"暂停":"开始 / 继续")+'</button><button class="btn sm ghost" id="mockreset">重置计时（2:00:00）</button>'+(st.sub?'<span class="tag mint">已交卷 · 自评见下方</span>':"")+'</div>';
  h+='<h3>Section A · 选择题（6 分）</h3>'+d.secA.map((qid,i)=>{const q=mcqById(qid);const sel=st.a[qid];const show=!!st.sub;
   return '<div class="card" style="padding:10px 14px"><p class="sm" style="margin:.2rem 0"><b>Q'+(i+1)+'.</b> <span class="en">'+esc(q.q)+'</span></p>'+(q.tbl?tblHTML(q.tbl):"")+(q.fig?trendSVG(q.fig):"")+(q.figNote?'<p class="sm mut">'+esc(q.figNote)+'</p>':"")+(q.optHead?'<p class="sm mut">'+esc(q.optHead)+'</p>':"")
   +q.opts.map((o,oi)=>'<button class="opt'+(show?(oi===q.ans?" right":(sel===oi?" wrong":"")):(sel===oi?" right":""))+'" data-ma="'+qid+'" data-moi="'+oi+'"'+(show?" disabled":"")+'><b>'+"ABCD"[oi]+'.</b> '+esc(o)+'</button>').join("")
   +(show?'<p class="sm"><b>'+(sel===q.ans?"✓ 答对":"✗ 答错，正确答案 "+"ABCD"[q.ans])+'</b> '+esc(q.why)+'</p>':"")+'</div>';}).join("");
  h+='<h3>Section B · 材料题 Q7（34 分）</h3>'+q7SummaryHTML(p)
- +p.parts.map(pt=>'<div style="margin:8px 0"><p class="sm" style="margin:.2rem 0"><b>7('+pt[0]+') '+esc(pt[1])+' · '+pt[2]+' 分</b> <span class="en">'+esc(pt[3])+'</span></p><textarea rows="4" data-mb="'+pt[0]+'" placeholder="在此作答 7('+pt[0]+')…">'+esc(st.b[pt[0]]||"")+'</textarea></div>').join("");
+ +p.parts.map(pt=>'<div style="margin:8px 0"><p class="sm" style="margin:.2rem 0"><b>7('+pt[0]+') '+esc(pt[1])+' · '+pt[2]+' 分</b> <span class="en">'+esc(pt[3])+'</span></p><textarea rows="4" data-mb="'+pt[0]+'" placeholder="在此作答 7('+pt[0]+')…"'+(st.sub?" disabled":"")+'>'+esc(st.b[pt[0]]||"")+'</textarea></div>').join("");
  const cOpts=Object.keys(VER).filter(c=>parseCode(c).marks===20);
- const cSel=(key,cur)=>'<select data-mcsel="'+key+'">'+cOpts.map(c=>'<option value="'+c+'"'+(c===cur?" selected":"")+'>'+c+" · "+esc(essayByCode(c).zh)+'</option>').join("")+'</select>';
- h+='<h3>Section C · Essay 选二（每题 20 分）</h3><p class="sm mut">Section C 取自已核对题库、非该卷原 Section C。</p>'
- +'<p class="sm">第一题 '+cSel("c1",st.c1)+'</p><textarea rows="8" data-mc="'+esc(st.c1)+'" placeholder="在此写第一篇 Essay…">'+esc(st.c[st.c1]||"")+'</textarea>'
- +'<p class="sm">第二题 '+cSel("c2",st.c2)+'</p><textarea rows="8" data-mc="'+esc(st.c2)+'" placeholder="在此写第二篇 Essay…">'+esc(st.c[st.c2]||"")+'</textarea>';
+ const cSel=(key,cur)=>{const other=key==="c1"?st.c2:st.c1;return '<select data-mcsel="'+key+'"'+(st.sub?" disabled":"")+'>'+cOpts.map(c=>'<option value="'+c+'"'+(c===cur?" selected":"")+(c===other&&c!==cur?" disabled":"")+'>'+c+" · "+esc(essayByCode(c).zh)+(c===other&&c!==cur?"（另一题已选）":"")+'</option>').join("")+'</select>';};
+ h+='<h3>Section C · Essay 选二（每题 20 分）</h3><p class="sm mut">Section C 自已核对题库选取，默认已填该卷原 Section C 的两道，可改选任意两道（逐题来源见上方来源清单）。两题不能选同一道；交卷后选题与答案锁定。</p>'
+ +'<p class="sm">第一题 '+cSel("c1",st.c1)+'</p><textarea rows="8" data-mc="'+esc(st.c1)+'" placeholder="在此写第一篇 Essay…"'+(st.sub?" disabled":"")+'>'+esc(st.c[st.c1]||"")+'</textarea>'
+ +'<p class="sm">第二题 '+cSel("c2",st.c2)+'</p><textarea rows="8" data-mc="'+esc(st.c2)+'" placeholder="在此写第二篇 Essay…"'+(st.sub?" disabled":"")+'>'+esc(st.c[st.c2]||"")+'</textarea>';
  if(!st.sub)h+='<div class="btnrow"><button class="btn mint" id="mocksubmit">交卷并进入自评</button></div>';
  else h+=mockSelfHTML(d,st);
  return h;
@@ -1373,19 +1477,29 @@ function mockBodyHTML(){
 function mockSecAScore(d,st){return d.secA.reduce((s,qid)=>s+(st.a[qid]===mcqById(qid).ans?1:0),0);}
 function mockSelfHTML(d,st){
  const p=Q7P.find(x=>x.id===d.paper);const sub=st.sub;const aS=mockSecAScore(d,st);
- const bT=p.parts.reduce((s,pt)=>s+(+sub.b[pt[0]]||0),0);
- const cT=(+sub.c1k||0)+(+sub.c1e||0)+(+sub.c2k||0)+(+sub.c2e||0);
- let h='<div class="card mint"><h3 style="margin-top:0">交卷自评清单</h3>'
+ const bRawT=p.parts.reduce((s,pt)=>s+(+sub.b[pt[0]]||0),0);
+ const cRawT=(+sub.c1k||0)+(+sub.c1e||0)+(+sub.c2k||0)+(+sub.c2e||0);
+ const cCl={c1k:clampScore(sub.c1k,12),c1e:clampScore(sub.c1e,8),c2k:clampScore(sub.c2k,12),c2e:clampScore(sub.c2e,8)};
+ const bT=p.parts.reduce((s,pt)=>{const c=clampScore(sub.b[pt[0]],pt[2]);return s+(c.blank?0:c.val);},0);
+ const cT=["c1k","c1e","c2k","c2e"].reduce((s,k)=>s+(cCl[k].blank?0:cCl[k].val),0);
+ const rawTotal=aS+bRawT+cRawT;
+ const over=rawTotal>80||p.parts.some(pt=>clampScore(sub.b[pt[0]],pt[2]).over)||["c1k","c1e","c2k","c2e"].some(k=>cCl[k].over);
+ const dispVal=function(raw,max){const c=clampScore(raw,max);return c.blank?"":c.val;};
+ let h='<div class="card mint"><h3 style="margin-top:0">交卷自评清单</h3><p style="margin:.2rem 0">'+COMPOSITE_TAG+(over?' <span class="tag red">待订正</span>':"")+'</p>'
  +'<p class="sm"><b>Section A（对答案自判）：'+aS+' / 6</b>（上方每题已显示对错与 MS 理由；答错的题在保存记录时自动进入错题本）</p>'
  +'<p class="sm" style="margin-bottom:2px"><b>Section B（按小问分值自评，对照官方 MS）：</b></p>'
- +p.parts.map(pt=>'<p class="sm" style="margin:.15rem 0">7('+pt[0]+') '+esc(pt[1])+'：<input type="number" min="0" max="'+pt[2]+'" data-mss-b="'+pt[0]+'" value="'+(sub.b[pt[0]]!=null?sub.b[pt[0]]:"")+'" style="width:80px"> / '+pt[2]+' 分</p>').join("")
- +'<p class="sm" style="margin-bottom:2px"><b>Section C（按 KAA / 评价自评）：</b></p>'
- +'<p class="sm" style="margin:.15rem 0">'+esc(st.c1)+'：KAA <input type="number" min="0" max="12" data-mss="c1k" value="'+(sub.c1k!=null?sub.c1k:"")+'" style="width:70px"> / 12 · 评价 <input type="number" min="0" max="8" data-mss="c1e" value="'+(sub.c1e!=null?sub.c1e:"")+'" style="width:70px"> / 8</p>'
- +'<p class="sm" style="margin:.15rem 0">'+esc(st.c2)+'：KAA <input type="number" min="0" max="12" data-mss="c2k" value="'+(sub.c2k!=null?sub.c2k:"")+'" style="width:70px"> / 12 · 评价 <input type="number" min="0" max="8" data-mss="c2e" value="'+(sub.c2e!=null?sub.c2e:"")+'" style="width:70px"> / 8</p>'
- +'<p><b>自评总分：<span id="mocktotal">'+(aS+bT+cT)+'</span> / 80</b> <span class="sm mut">（自评，非官方分数；真实批改请把答案发到聊天）</span></p>'
+ +p.parts.map(pt=>'<p class="sm" style="margin:.15rem 0">7('+pt[0]+') '+esc(pt[1])+'：<input type="number" min="0" max="'+pt[2]+'" data-mss-b="'+pt[0]+'" value="'+dispVal(sub.b[pt[0]],pt[2])+'" style="width:80px"> / '+pt[2]+' 分</p>').join("")
+ +'<p class="sm" style="margin-bottom:2px"><b>Section C（按知识与分析 (KAA) / 评价 (Evaluation) 自评）：</b></p>'
+ +'<p class="sm" style="margin:.15rem 0">'+esc(st.c1)+'：KAA <input type="number" min="0" max="12" data-mss="c1k" value="'+dispVal(sub.c1k,12)+'" style="width:70px"> / 12 · 评价 <input type="number" min="0" max="8" data-mss="c1e" value="'+dispVal(sub.c1e,8)+'" style="width:70px"> / 8</p>'
+ +'<p class="sm" style="margin:.15rem 0">'+esc(st.c2)+'：KAA <input type="number" min="0" max="12" data-mss="c2k" value="'+dispVal(sub.c2k,12)+'" style="width:70px"> / 12 · 评价 <input type="number" min="0" max="8" data-mss="c2e" value="'+dispVal(sub.c2e,8)+'" style="width:70px"> / 8</p>'
+ +'<p class="sm" style="margin:.5rem 0 .15rem"><b>分数明细：</b>Section B '+p.parts.map(pt=>'7('+pt[0]+') '+scoreDisp(sub.b[pt[0]],pt[2])).join(" · ")+'<br>Section C '+esc(st.c1)+' KAA '+scoreDisp(sub.c1k,12)+' · 评价 '+scoreDisp(sub.c1e,8)+'；'+esc(st.c2)+' KAA '+scoreDisp(sub.c2k,12)+' · 评价 '+scoreDisp(sub.c2e,8)+'<br><span class="mut">留空 = 未评分（计总分时按 0 计）；填 0 = 0 分，两者在明细中分开显示。输入超过该项满分时会被钳制到满分并弹出提示。</span></p>'
+ +(over?'<p class="sm" style="color:var(--red)"><b>待订正：</b>有自评分数超过该项满分（或原总分超过 80）。上方输入框与明细已按满分钳制显示，但本机保存的原值<b>没有</b>被改写；请把超限项改回满分以内——总分仍超过 80 时将拒绝保存交卷记录。</p>':"")
+ +'<p><b>自评总分：<span id="mocktotal">'+Math.min(80,aS+bT+cT)+'</span> / 80</b> <span class="sm mut">（各部分满分 6 + 34 + 40 = 80，总分封顶 80；自评，非官方分数；真实批改请把答案发到聊天）</span></p>'
  +'<div class="btnrow"><select id="mockmode"><option value="strict">Strict Exam Mode 严格考试模式</option><option value="detailed">Detailed Learning Mode 详细学习模式</option><option value="quick">Quick Feedback Mode 快速反馈模式</option></select>'
  +'<button class="btn mint" id="mockcopy">复制全部答案去聊天批改</button>'
- +(st.logged?'<span class="tag mint">交卷记录已保存（Essay Log + 错题本）</span>':'<button class="btn" id="mocklog">保存交卷记录</button>')+'</div></div>';
+ +(st.logged?'<span class="tag mint">交卷记录已保存（Essay Log + 错题本）</span>':'<button class="btn" id="mocklog">保存交卷记录</button>')
+ +'<button class="btn ghost" id="mockagain">再做一次（新建记录）</button></div>'
+ +'<p class="sm mut" style="margin:.4rem 0 0">「再做一次」会先把本次 attempt（选题、答案、自评分数、总分、用时）归档到本机历史记录（mockHistory），再把本卷重置为全新状态；已归档的旧记录不会被覆盖。'+((U.mockHistory||[]).filter(x=>x.mockId===d.id).length?'本卷已有 '+((U.mockHistory||[]).filter(x=>x.mockId===d.id).length)+' 条归档记录。':'')+'</p></div>';
  return h;
 }
 function mockCopyText(d,st){
@@ -1402,26 +1516,55 @@ function paintMock(){const box=$("#mockbody");if(!box)return;box.innerHTML=mockB
 function wireMock(){
  const d=MOCKDEFS.find(m=>m.id===MOCKCUR);const st=mockState(d.id);const box=$("#mockbody");if(!box)return;
  box.querySelectorAll("[data-ma]").forEach(b=>b.addEventListener("click",()=>{if(st.sub)return;st.a[b.dataset.ma]=+b.dataset.moi;saveUser();paintMock();}));
- box.querySelectorAll("[data-mb]").forEach(t=>t.addEventListener("input",()=>{st.b[t.dataset.mb]=t.value;saveUser();}));
- box.querySelectorAll("[data-mc]").forEach(t=>t.addEventListener("input",()=>{st.c[t.dataset.mc]=t.value;saveUser();}));
- box.querySelectorAll("[data-mcsel]").forEach(s=>s.addEventListener("change",()=>{st[s.dataset.mcsel]=s.value;saveUser();paintMock();}));
+ box.querySelectorAll("[data-mb]").forEach(t=>t.addEventListener("input",()=>{if(st.sub)return;st.b[t.dataset.mb]=t.value;saveUser();}));
+ box.querySelectorAll("[data-mc]").forEach(t=>t.addEventListener("input",()=>{if(st.sub)return;st.c[t.dataset.mc]=t.value;saveUser();}));
+ box.querySelectorAll("[data-mcsel]").forEach(s=>s.addEventListener("change",()=>{
+  if(st.sub){paintMock();return;}
+  const key=s.dataset.mcsel,other=key==="c1"?"c2":"c1";
+  if(s.value===st[other]){toast("两题不能选同一道");s.value=st[key];return;}
+  st[key]=s.value;saveUser();paintMock();
+ }));
  const play=$("#mockplay");if(play)play.addEventListener("click",()=>{
   if(mockRunning){stopMockTimer();play.textContent="开始 / 继续";saveUser();return;}
   mockRunning=true;play.textContent="暂停";let n=0;
   mockInt=setInterval(()=>{st.left--;const t=$("#mocktimer");if(t)t.textContent=fmtHMS(st.left);if(++n%10===0)saveUser();
    if(st.left<=0){stopMockTimer();saveUser();toast("时间到——请交卷并自评");const pl=$("#mockplay");if(pl)pl.textContent="开始 / 继续";}},1000);});
  const rst=$("#mockreset");if(rst)rst.addEventListener("click",()=>{stopMockTimer();st.left=7200;saveUser();paintMock();});
- const sub=$("#mocksubmit");if(sub)sub.addEventListener("click",()=>{stopMockTimer();st.sub={b:{}};saveUser();paintMock();toast("已交卷：对照答案与官方 MS 完成自评");window.scrollTo(0,document.body.scrollHeight);});
- box.querySelectorAll("[data-mss-b]").forEach(inp=>inp.addEventListener("change",()=>{st.sub.b[inp.dataset.mssB]=inp.value===""?"":Math.max(0,+inp.value||0);saveUser();paintMock();}));
- box.querySelectorAll("[data-mss]").forEach(inp=>inp.addEventListener("change",()=>{st.sub[inp.dataset.mss]=inp.value===""?"":Math.max(0,+inp.value||0);saveUser();paintMock();}));
+ const sub=$("#mocksubmit");if(sub)sub.addEventListener("click",()=>{stopMockTimer();st.sub={b:{}};saveUser();flushSave();paintMock();toast("已交卷：对照答案与官方 MS 完成自评");window.scrollTo(0,document.body.scrollHeight);});
+ box.querySelectorAll("[data-mss-b]").forEach(inp=>inp.addEventListener("change",()=>{
+  const pt=Q7P.find(x=>x.id===d.paper).parts.find(x=>x[0]===inp.dataset.mssB);const max=pt?pt[2]:0;
+  if(inp.value===""){st.sub.b[inp.dataset.mssB]="";saveUser();paintMock();return;}
+  let v=+inp.value||0;if(v<0)v=0;if(v>max){v=max;toast("已按满分 "+max+" 分计入");}
+  st.sub.b[inp.dataset.mssB]=v;saveUser();paintMock();}));
+ box.querySelectorAll("[data-mss]").forEach(inp=>inp.addEventListener("change",()=>{
+  const max=inp.dataset.mss.slice(-1)==="k"?12:8;
+  if(inp.value===""){st.sub[inp.dataset.mss]="";saveUser();paintMock();return;}
+  let v=+inp.value||0;if(v<0)v=0;if(v>max){v=max;toast("已按满分 "+max+" 分计入");}
+  st.sub[inp.dataset.mss]=v;saveUser();paintMock();}));
  const cp=$("#mockcopy");if(cp)cp.addEventListener("click",()=>copyText(mockCopyText(d,st),"已复制整卷答案 + 自评，去聊天粘贴给 Viaana 批改"));
  const lg=$("#mocklog");if(lg)lg.addEventListener("click",()=>{
   const p=Q7P.find(x=>x.id===d.paper);const aS=mockSecAScore(d,st);
   const bT=p.parts.reduce((s,pt)=>s+(+st.sub.b[pt[0]]||0),0);const cT=(+st.sub.c1k||0)+(+st.sub.c1e||0)+(+st.sub.c2k||0)+(+st.sub.c2e||0);
+  if(aS+bT+cT>80){toast("自评总分 "+(aS+bT+cT)+" 超过 80 分：请先订正超限项再保存");return;}
+  const bTc=p.parts.reduce((s,pt)=>{const c=clampScore(st.sub.b[pt[0]],pt[2]);return s+(c.blank?0:c.val);},0);
+  const cTc=[["c1k",12],["c1e",8],["c2k",12],["c2e",8]].reduce((s,pr)=>{const c=clampScore(st.sub[pr[0]],pr[1]);return s+(c.blank?0:c.val);},0);
   d.secA.forEach(qid=>{const q=mcqById(qid);if(st.a[qid]!=null&&st.a[qid]!==q.ans&&!U.mistakes.some(m=>m.kind==="mcq"&&m.ref===qid&&!m.resolved)){U.mistakes.push({id:"mk"+Date.now()+qid,ts:Date.now(),kind:"mcq",ref:qid,q:q.q,myAnswer:q.opts[st.a[qid]],correctAnswer:q.opts[q.ans],basis:q.why,errType:"",kp:q.kp||"",reviews:0,resolved:false,note:""});}});
   U.essayLog=U.essayLog||[];
-  U.essayLog.push({id:"el"+Date.now(),ts:Date.now(),code:d.name,ao:[0,0,0,0],total:aS+bT+cT,mins:String(Math.round((7200-st.left)/60)),loss:"",feed:"整卷模拟自评（非官方分数）：Section A "+aS+"/6 · Section B "+bT+"/34 · Section C "+cT+"/40。",mock:true});
-  st.logged=true;saveUser();paintMock();toast("交卷记录已保存：Essay Log 已记入，Section A 错题已进错题本");
+  U.essayLog.push({id:"el"+Date.now(),ts:Date.now(),code:d.name,ao:[0,0,0,0],total:Math.min(80,aS+bTc+cTc),mins:String(Math.round((7200-st.left)/60)),loss:"",feed:"整卷模拟自评（非官方分数）：Section A "+aS+"/6 · Section B "+bTc+"/34 · Section C "+cTc+"/40。",mock:true});
+  st.logged=true;saveUser();flushSave();paintMock();toast("交卷记录已保存：Essay Log 已记入，Section A 错题已进错题本");
+ });
+ const ag=$("#mockagain");if(ag)ag.addEventListener("click",()=>{
+  if(!st.sub)return;
+  const p=Q7P.find(x=>x.id===d.paper);const aS=mockSecAScore(d,st);
+  const bT=p.parts.reduce((s,pt)=>s+(+st.sub.b[pt[0]]||0),0);const cT=(+st.sub.c1k||0)+(+st.sub.c1e||0)+(+st.sub.c2k||0)+(+st.sub.c2e||0);
+  U.mockHistory=Array.isArray(U.mockHistory)?U.mockHistory:[];
+  U.mockHistory.push({mockId:d.id,ts:Date.now(),date:new Date().toLocaleString("zh-CN",{hour12:false}),c1:st.c1,c2:st.c2,
+   answers:{a:Object.assign({},st.a),b:Object.assign({},st.b),c:Object.assign({},st.c)},
+   self:{b:Object.assign({},st.sub.b),c1k:st.sub.c1k!=null?st.sub.c1k:"",c1e:st.sub.c1e!=null?st.sub.c1e:"",c2k:st.sub.c2k!=null?st.sub.c2k:"",c2e:st.sub.c2e!=null?st.sub.c2e:""},
+   secA:aS,total:Math.min(80,aS+bT+cT),needsFix:(aS+bT+cT)>80,mins:Math.round((7200-st.left)/60),left:st.left,logged:!!st.logged});
+  stopMockTimer();
+  U.mock[d.id]={a:{},b:{},c1:d.secCDef[0],c2:d.secCDef[1],c:{},left:7200,sub:null,logged:false};
+  saveUser();flushSave();paintMock();toast("已归档本次记录，本卷已重置为全新状态");
  });
 }
 </script>
@@ -1568,7 +1711,7 @@ function kbDetail(id){
 let essayFilter={sec:"all",cat:"all",q:""};
 VIEWS.essays=function(param){
  if(param&&essayByCode(param))return essayDetail(param);
- let h='<h1>Essay Library · 范文库</h1><p class="mut">84 道题完整目录（2020.10–2026.05，21 个考试季），按真实 Section 分开：题号 7(e) 属 Section B（14 分），8/9/10 属 Section C（20 分，三选二）。代码含 A 的是 WEC14/01A 中国地区卷，与 WEC14/01 分开标注、不混用。目录原书把两者混标为「Section B 论述题」，此处已按真实结构纠正。<b>第一轮修复说明：</b>202506A-1 经指出为 June 2025 WEC14/01A 的 Section A 选择题（Lewis 双部门模型与工业化），已移出 Essay 分类；第二轮已核实：202506A-7、202510A-7、202601A-7 为整道 Q7（34 分），整卷已录入材料题库；202605A-7 按字面不存在（IAL 只有 1 月、6 月、10 月考季，没有 2026 年 5 月考季），仍标「待核实」——在目录方确认之前不改成 7(e)、不并入其他试卷。</p>';
+ let h='<h1>Essay Library · 范文库</h1><p class="mut">84 道题完整目录（2020.10–2026.05，21 个考试季），按真实 Section 分开：题号 7(e) 属 Section B（14 分），8/9/10 属 Section C（20 分，三选二）。代码含 A 的是 WEC14/01A 中国地区卷，与 WEC14/01 分开标注、不混用。目录原书把两者混标为「Section B 论述题」，此处已按真实结构纠正。<b>第一轮修复说明：</b>202506A-1 经指出为 June 2025 WEC14/01A 的 Section A 选择题（Lewis 双部门模型与工业化），已移出 Essay 分类；第二轮已核实：202506A-7、202510A-7、202601A-7 为整道 Q7（34 分），整卷已录入材料题库；202605A-7 无法从现有官方资料确认来源；两种误记假设（202506A 或 202606A）待核实，仍标「待核实」——须目录方确认后才能入库，在确认之前不改成 7(e)、不并入其他试卷。</p>';
  h+='<div class="btnrow"><input type="search" id="eq" placeholder="搜索题号 / 中文题意 / 英文原文…" style="flex:1;min-width:200px" value="'+esc(essayFilter.q)+'">'
  +'<select id="esec"><option value="all">全部 Section</option><option value="Section B">Section B · 7(e)</option><option value="Section C">Section C · 8/9/10</option></select>'
  +'<select id="ecat"><option value="all">全部分类</option>'+CATS.map(c=>'<option'+(essayFilter.cat===c?" selected":"")+'>'+c+'</option>').join("")+'</select></div><div id="elist"></div>';
@@ -1587,6 +1730,7 @@ function essayListHTML(){
   +'<span class="tag">'+p.section+(p.marks?" · "+p.marks+" 分":"")+'</span>'
   +(p.marks===34?'<span class="tag mint">Q7 整道 · 已核实</span>':"")
   +(p.unverified?'<span class="tag red">题号待核实</span>':"")
+  +(SRC_PENDING[e.code]?'<span class="tag red">来源待核实</span>':"")
   +(p.china?'<span class="tag gold">01A 中国地区卷</span>':"")
   +'<span class="tag grey">'+esc(e.cat)+'</span><span class="tag grey">'+esc(e.ch)+'</span>'
   +(MODELS[e.code]?'<span class="tag mint">有范文</span>':v?'<span class="tag mint">原文+评分要点已核对</span>':'<span class="tag gold">范文待补充</span>')
@@ -1612,10 +1756,15 @@ function essayDetail(code){
  +'<tr><th>分值</th><td>'+(p.marks?p.marks+" 分"+(p.marks===20?"（KAA 12 + Evaluation 8）":p.marks===14?"（KAA 8 + Evaluation 6）":p.marks===34?"（整道 Q7：(a)–(e) 五小问合计）":""):"待核实（目录只写到 Q7，小问未核对官方试卷，不推断为 7(e)）")+'</td></tr>'
  +'<tr><th>分类 / 章节</th><td>'+esc(e.cat)+" · "+esc(e.ch)+" · 主题"+e.theme+'</td></tr>'
  +'<tr><th>中文题意</th><td>'+esc(e.zh)+'</td></tr>'
- +'<tr><th>核实状态</th><td>'+(v?"英文原文与官方 Mark Scheme 要点已核对（2026-11-14 核对报告）":"目录已录入；英文原文与官方评分要点待补充")+'</td></tr></table>';
+ +'<tr><th>核实状态</th><td>'+(v?"英文原文与官方 Mark Scheme 要点已核对（2026-11-14 核对报告）":"目录已录入；英文原文与官方评分要点待补充")+(SRC_PENDING[code]?"；<b>试卷来源待核实</b>（无法从现有官方资料确认来源，见下方说明）":"")+'</td></tr></table>';
  if(p.section==="Section A"){h+='<div class="card"><h3 style="margin-top:0">分类说明（第一轮修复）</h3><p class="sm">本题是 June 2025 WEC14/01A 的 <b>Section A 选择题 Q1</b>（关于 Lewis 双部门模型 (Lewis dual-sector model) 与工业化），不是 Section B 材料题、也不是 Section C Essay。原目录曾误归为「国债增加的弊端」，现已改正分类；题目原文与选项已于第二轮录入 MCQ Bank 的 Pearson 官方原题集。它不计入 Essay 练习，请勿用 Essay 模板作答。</p><div class="btnrow"><button class="btn sm" data-go="mcq">去 MCQ Bank 做这道官方原题</button></div></div>';}
  if(Q7BYCODE[code]){h+='<div class="card mint"><h3 style="margin-top:0">核实结论（第二轮）</h3><p class="sm">本题号已核实为<b>整道 Q7（34 分）</b>，不是单独的 7(e)：(a)–(e) 五个小问的官方原题、Source Booklet 材料摘要与官方 QP/MS 链接已录入「Data Response 材料题库」的已核实 Q7 整卷区。</p><div class="btnrow"><button class="btn sm" data-go="dataresponse">打开材料题库看整卷</button></div></div>';}
- if(code==="202605A-7"){h+='<div class="card"><h3 style="margin-top:0">待核实说明（第二轮核查）</h3><p class="sm">按字面，「202605A」= 2026 年 5 月的 WEC14/01A 卷，但 IAL 只有 1 月、6 月、10 月三个考季，<b>没有 2026 年 5 月考季，该试卷不存在</b>，无法核实。两种可能的误记方向：① 把 202506A（2025 年 6 月，阿根廷卷）误写成 202605A——若如此则与 202506A-7 重复；② 把 202606A（2026 年 6 月，土耳其卷）误写成 202605A。在目录方确认之前，本条保持「待核实」：不改成 7(e)，也不并入 202606A-7。土耳其卷 Q7 已作为独立的已核实试卷录入材料题库（不在本目录内）。</p></div>';}
+ if(code==="202605A-7"){h+='<div class="card"><h3 style="margin-top:0">待核实说明（第二轮核查）</h3><p class="sm">「202605A-7」这一编号<b>无法从现有官方资料确认来源</b>：在 Pearson 官方已发布的试卷代码与原题中未查到与之对应的 Q7。两种误记假设：① 把 202506A（2025 年 6 月，阿根廷卷）误写成 202605A——若如此则与 202506A-7 重复；② 把 202606A（2026 年 6 月，土耳其卷）误写成 202605A。在目录方确认之前，本条保持「待核实」：不改成 7(e)，也不并入 202606A-7。土耳其卷 Q7 已作为独立的已核实试卷录入材料题库（不在本目录内）。</p></div>';}
+ if(code==="202605A-8"){h+='<div class="card"><h3 style="margin-top:0">来源待核实说明（本批核查）</h3><p class="sm">本题的英文题干与官方评分要点已在第二轮录入（见下方），但<b>试卷归属无法从现有官方资料确认</b>：本批用英文原题全文检索 Pearson 官方试卷 (QP) 与评分标准 (MS)，未找到与该题干对应的官方来源；题干所述事件发生在 2025 年 7 月，其所属考季亦无法据此确定。按核查口径保持「来源待核实」：不改写题号、不并入其他试卷，待目录方或官方资料确认后再补来源链接。</p></div>';}
+ if(code==="202605A-9"){h+='<div class="card"><h3 style="margin-top:0">来源待核实说明（本批核查）</h3><p class="sm">本条与 202605A-8 共用「202605A」前缀，<b>无法从现有官方资料确认来源</b>，保持待核实。本批已凭官方 QP 核对 Jun 2025 WEC14/01A 的 Q9：原题为移民流入欧盟 (EU) 的收益题，与本条目录题意（不平等加剧成因）不同，因此不能把本条改写或合并为 202506A-9。</p></div>';}
+ if(code==="202605A-10"){h+='<div class="card"><h3 style="margin-top:0">来源待核实说明（本批核查）</h3><p class="sm">本条与 202605A-8/-9 共用「202605A」前缀，<b>无法从现有官方资料确认来源</b>，保持待核实。本批已凭官方 QP 确认 Jun 2025 WEC14/01A 的 Q10 真实存在（伊拉克国家债务题），但它不在本站题库中，且与本条目录题意（提升国际竞争力）不同，不合并、不改号。</p></div>';}
+ if(code==="202506A-9"){h+='<div class="card mint"><h3 style="margin-top:0">官方 QP 核对（本批）</h3><p class="sm">已对照 Pearson 官方 QP（wec14-01a-que-20250604.pdf）逐题核对：Jun 2025 WEC14/01A · Section C · Q9 原题为「Evaluate the likely benefits of a significant increase in migration into the EU.」，与目录题意一致，题号无误。官方 MS 评分要点尚未录入，范文待补充，不编造。</p></div>';}
+ if(code==="202401-8"||code==="202401-10"){h+='<div class="card mint"><h3 style="margin-top:0">官方 QP 核对（本批）</h3><p class="sm">已对照 Pearson 官方 QP（wec14-01-que-20240113.pdf）逐题核对：本题为 Jan 2024 WEC14/01 · Section C · '+p.q+'，题号与题意与原卷一致。官方 MS 评分要点尚未逐字录入（见上方核实状态），不编造。</p></div>';}
  h+=userCtl("essay:"+code,"请按官方 AO 和 Mark Scheme 讲解这道题："+code+" "+e.zh+(v?"\n英文原文："+v.en:"")+(mo?"\n（站内有 AI 范文，请同时指出范文可改进之处）":""));
  if(v){
   h+='<div class="card"><h3 style="margin-top:0">官方英文原文（已核对）</h3><p class="en">'+esc(v.en)+'</p>'
@@ -1656,17 +1805,18 @@ BINDS.essayDetail=null;
 VIEWS.dataresponse=function(){
  const sevens=ESSAYS.filter(e=>parseCode(e.code).section==="Section B");
  let h='<h1>Data Response Library · 材料题库</h1><p class="mut">WEC14/01 Section B 为一整套材料题（Q7(a)–(e)，共 34 分），但<b>每个小问的分值与指令词逐卷不同，不存在通用的固定结构</b>——不能再用「(b) 6 分、(c) 4 分、(d) 8 分」这类固定表套所有试卷。批改必须按该卷官方原题逐小问进行，不能仅凭题号推断分值或指令词，也不能套用 Essay 评分逻辑。本页只录入已核对的试卷数据；未核对的一律标「待核实」。</p>';
+ h+=drSummaryHTML();
  h+='<div class="card"><h3 style="margin-top:0">逐卷核对：Q7 各小问的真实分值与指令词（5 卷已核实）</h3><table><tr><th>试卷</th><th>(a)</th><th>(b)</th><th>(c)</th><th>(d)</th><th>(e)</th><th>合计</th><th>指令词 (a)–(e)</th></tr>'
  +Q7P.map(p=>'<tr><td>'+esc(p.ds)+' · '+esc(p.paper)+'</td>'+p.parts.map(pt=>'<td>'+pt[2]+'</td>').join("")+'<td>34</td><td>'+p.parts.map(pt=>pt[1]).join(" / ")+'</td></tr>').join("")+'</table>'
  +'<p class="sm mut">说明：01A 卷自 2025 年 6 月起每个考季都有（2025 年 6 月之前只有 01 卷）。五卷的 (e) 都是 14 分，但 (b)(c)(d) 的分值与指令词逐卷不同——这正是不能用固定结构的原因。其余试卷的小问分值与指令词尚未逐套核对，标「待核实」，不推断。一般规律仅供参考（不是规则）：(a) 多为低分计算/解释小问，(e) 为 14 分 Discuss 类讨论题，须引用材料、KAA 8 + Evaluation 6。</p></div>';
  h+='<h2>已核实 Q7 整卷（5 套）</h2>'+Q7P.map(q7PaperHTML).join("");
  h+='<h2>材料信息提取与运用训练</h2><div id="drtrain"></div>';
  h+='<h2>Section B 相关题目（目录）</h2>'
- +sevens.map(e=>{const v=VER[e.code];const p=parseCode(e.code);const qp=Q7BYCODE[e.code];return '<div class="card" style="padding:12px 16px"><b>'+e.code+'</b> <span class="tag">Section B · '+esc(p.q)+(p.marks?" · "+p.marks+" 分":"")+'</span>'+(p.marks===34?' <span class="tag mint">Q7 整道（34 分）· 已核实</span>':"")+(p.unverified?' <span class="tag red">题号待核实</span>':"")+' <b>'+esc(e.zh)+'</b>'+(qp?'<p class="sm mut">已核实为整道 Q7：材料摘要与 (a)–(e) 官方原题见上方「已核实 Q7 整卷」。</p>':v?'<p class="sm en mut">'+esc(v.en)+'</p><button class="btn sm" data-go="essays" data-param="'+e.code+'">看官方评分要点</button>':e.code==="202605A-7"?'<p class="sm mut">按字面不存在：IAL 没有 2026 年 5 月考季。可能为 202506A（阿根廷卷）或 202606A（土耳其卷）的误记，目录方确认前保持待核实，详见范文库该题页。</p>':'<p class="sm mut">原文与材料待补充；该题的 Source Booklet 材料与 (a)–(d) 小问尚未录入，不编造。</p>')+'</div>';}).join("");
+ +sevens.map(e=>{const v=VER[e.code];const p=parseCode(e.code);const qp=Q7BYCODE[e.code];return '<div class="card" style="padding:12px 16px"><b>'+e.code+'</b> <span class="tag">Section B · '+esc(p.q)+(p.marks?" · "+p.marks+" 分":"")+'</span>'+(p.marks===34?' <span class="tag mint">Q7 整道（34 分）· 已核实</span>':"")+(p.unverified?' <span class="tag red">题号待核实</span>':"")+' <b>'+esc(e.zh)+'</b>'+(qp?'<p class="sm mut">已核实为整道 Q7：材料摘要与 (a)–(e) 官方原题见上方「已核实 Q7 整卷」。</p>':v?'<p class="sm en mut">'+esc(v.en)+'</p><button class="btn sm" data-go="essays" data-param="'+e.code+'">看官方评分要点</button>':e.code==="202605A-7"?'<p class="sm mut">无法从现有官方资料确认来源；两种误记假设（202506A 阿根廷卷或 202606A 土耳其卷）待核实，须目录方确认后才能入库，确认前保持待核实，详见范文库该题页。</p>':'<p class="sm mut">原文与材料待补充；该题的 Source Booklet 材料与 (a)–(d) 小问尚未录入，不编造。</p>')+'</div>';}).join("");
  h+='<div class="empty"><b>其余试卷的 Q7 尚未逐套核对</b>：录入前不编造其材料与小问；已核实的 5 套见上方。Jun 2026 01A 土耳其卷 Q7 已作为独立已核实试卷列入上方整卷数据（用户书本目录里没有这一条，故不写入目录）。</div>';
  return h;
 };
-BINDS.dataresponse=function(){bindUserCtl($("#view"));bindDrTrain();};
+BINDS.dataresponse=function(){bindUserCtl($("#view"));bindDrTrain();bindDrProg();};
 /* ---------- MCQ Bank ---------- */
 let MCQSES=null, mcqTimerInt=null, MCQF="all";
 function stopMcqTimer(){if(mcqTimerInt){clearInterval(mcqTimerInt);mcqTimerInt=null;}}
@@ -1775,7 +1925,7 @@ VIEWS.practice=function(){
  +'<div class="btnrow"><select id="lq" style="flex:1;min-width:200px">'+codes.map(c=>{const e=essayByCode(c);return '<option value="'+c+'">'+c+" · "+esc(e.zh)+'</option>';}).join("")+'</select>'
  +'<input type="number" id="lmins" placeholder="用时（分钟）" style="width:120px"></div>'
  +'<div class="btnrow"><span class="sm" style="align-self:center">批改得分（按聊天批改结果填）：</span>'
- +'<input type="number" id="lao1" placeholder="AO1 知识" style="width:110px"><input type="number" id="lao2" placeholder="AO2 应用" style="width:110px"><input type="number" id="lao3" placeholder="AO3 分析" style="width:110px"><input type="number" id="lao4" placeholder="AO4 评价" style="width:110px"></div>'
+ +'<input type="number" id="lao1" min="0" max="20" placeholder="AO1 知识" style="width:110px"><input type="number" id="lao2" min="0" max="20" placeholder="AO2 应用" style="width:110px"><input type="number" id="lao3" min="0" max="20" placeholder="AO3 分析" style="width:110px"><input type="number" id="lao4" min="0" max="20" placeholder="AO4 评价" style="width:110px"><span class="sm mut" style="align-self:center">每项 0–20 分，单篇记录总分封顶 20 分；超限输入会被钳制并提示</span></div>'
  +'<div class="btnrow"><select id="lloss"><option value="">主要失分原因（错误类型）</option>'+ERR_TYPES.map(t=>'<option>'+esc(t)+'</option>').join("")+'</select></div>'
  +'<textarea id="lfeed" rows="2" placeholder="批改结论摘要 / 答案要点（可粘贴聊天批改的结论；答案全文可存在上方草稿里）"></textarea>'
  +'<p class="sm" style="color:var(--red)"><b>防估分提醒（Brutal Honesty）：</b>分数只能填聊天批改给出的分数，不许按努力程度、篇幅、花哨语言自己估高分；正确结论不能掩盖推理错误。</p>'
@@ -1806,10 +1956,11 @@ BINDS.practice=function(){
   if(!L.length){box.innerHTML='<p class="sm mut">还没有练习记录。在上方写完一篇并拿到聊天批改结果后，把分数记到这里。</p>';return;}
   const byCode={};L.forEach(r=>{(byCode[r.code]=byCode[r.code]||[]).push(r);});
   box.innerHTML='<h3>历史记录（'+L.length+' 条）</h3>'+L.map(r=>{
-   const tries=byCode[r.code];const best=Math.max.apply(null,tries.map(x=>x.total||0));
+   const tries=byCode[r.code];const best=Math.max.apply(null,tries.map(x=>logDispTotal(x)));
    const cmp=tries.length>1?'<span class="tag grey">本题第 '+tries.length+' 次练习 · 历史最佳总分 '+best+'</span>':'<span class="tag grey">本题首次练习</span>';
-   return '<div class="card" style="padding:10px 16px"><div class="secthead"><b>'+esc(r.code)+'</b><span class="tag">'+new Date(r.ts).toLocaleString("zh-CN",{hour12:false})+'</span>'+(r.mins?'<span class="tag grey">用时 '+esc(r.mins)+' 分钟</span>':"")+'<span class="tag mint">总分 '+r.total+'</span>'+cmp+'</div>'
-   +'<p class="sm">AO1 知识 '+r.ao[0]+' · AO2 应用 '+r.ao[1]+' · AO3 分析 '+r.ao[2]+' · AO4 评价 '+r.ao[3]+(r.loss?'<br><b>主要失分原因：</b>'+esc(r.loss):"")+(r.feed?'<br><b>批改结论：</b>'+esc(r.feed):"")+'</p>'
+   const over=logOver(r);const aoD=[0,1,2,3].map(i=>{const c=clampScore(r.ao?r.ao[i]:"",20);return c.blank?0:c.val;});
+   return '<div class="card" style="padding:10px 16px"><div class="secthead"><b>'+esc(r.code)+'</b><span class="tag">'+new Date(r.ts).toLocaleString("zh-CN",{hour12:false})+'</span>'+(r.mins?'<span class="tag grey">用时 '+esc(r.mins)+' 分钟</span>':"")+'<span class="tag mint">总分 '+logDispTotal(r)+'</span>'+(over?'<span class="tag red">待订正</span>':"")+cmp+'</div>'
+   +'<p class="sm">AO1 知识 '+aoD[0]+' · AO2 应用 '+aoD[1]+' · AO3 分析 '+aoD[2]+' · AO4 评价 '+aoD[3]+(over?'<br><span style="color:var(--red)"><b>待订正：</b>原记录含超限分数，已按上限钳制显示（封顶 '+(r.mock?80:20)+' 分），原值未被改写；请删除这条后按批改结果重新录入订正。</span>':"")+(r.loss?'<br><b>主要失分原因：</b>'+esc(r.loss):"")+(r.feed?'<br><b>批改结论：</b>'+esc(r.feed):"")+'</p>'
    +bhSectionHTML(r)
    +'<div class="btnrow"><button class="btn sm ghost" data-go="essays" data-param="'+esc(r.code)+'">打开题目</button><button class="btn sm ghost" data-ldel="'+r.id+'">删除这条</button></div></div>';}).join("");
   box.querySelectorAll("[data-ldel]").forEach(b=>b.addEventListener("click",()=>{U.essayLog=U.essayLog.filter(x=>String(x.id)!==b.dataset.ldel);saveUser();paintLog();}));
@@ -1820,8 +1971,10 @@ BINDS.practice=function(){
  };
  const ladd=$("#ladd");
  if(ladd)ladd.addEventListener("click",()=>{
-  const ao=[1,2,3,4].map(i=>{const v=parseFloat($("#lao"+i).value);return isNaN(v)?0:v;});
-  const total=ao.reduce((a,b)=>a+b,0);
+  let aoClamped=false;
+  const ao=[1,2,3,4].map(i=>{const v=parseFloat($("#lao"+i).value);if(isNaN(v))return 0;if(v<0){aoClamped=true;return 0;}if(v>20){aoClamped=true;return 20;}return v;});
+  if(aoClamped)toast("已按满分 20 分计入");
+  const total=Math.min(20,ao.reduce((a,b)=>a+b,0));
   if(!total){toast("先填批改得分（至少一项大于 0）");return;}
   U.essayLog=U.essayLog||[];
   const newLogId="el"+Date.now();
@@ -2066,15 +2219,42 @@ VIEWS.settings=function(){
  +'<div class="card"><h3 style="margin-top:0">第一轮修复报告（Round 1 Fix Report）</h3>'
  +'<p class="sm"><b>已修复：</b>① 贸易条件与马歇尔-勒纳条件的混淆（kp25d、MCQ05、kp25a/kp25b、工具箱公式卡已统一口径：贬值只是 ToT 恶化的可能成因之一，M-L 只适用于贬值对贸易差额的判断）；② 指令词拆分（Examine 与 Analyse 不再合并，Assess/Discuss/Evaluate 按官方口径区分，并注明分值影响要求）；③ 删除 Section B 固定分值表，改为逐卷核对（Jan 2024：2/4/8/6/14；Jun 2025 01A：2/8/6/4/14）；④ 202506A-1 改归 Section A 选择题（Lewis 模型），parseCode() 已能识别 Section A、Q7 待核实与 01A 版本；⑤ kp22a/kp22b 由主题 2 改归主题 1；⑥ 新增 10 张完整知识卡（主题 2 的贸易集团、一体化类型、贸易创造/转移、关税、配额、补贴、非关税壁垒、保护主义理由、WTO，及主题 1 的跨国公司与 FDI）；⑦ 去全球化/慢全球化已标为拓展内容、非独立官方条目；⑧ 「不点名国家封顶」已改为逐题条件规则（工具箱与相关范文/知识卡）；⑨ 定量技能升级为 11 类逐项训练（公式+步骤+常见错误+可判分练习）；⑩ 搜索已真正检索收藏；⑪ Essay Log 已可保存、查看并对比同题多次记录（分数为聊天批改后手动录入，站内无自动评分）；⑫ 复习计划已按真实表现做间隔重复排程；⑬ 导入已加应用标识/版本/结构/类型验证与二次确认，失败不覆盖原数据；⑭ 设置页已写明本地存储、无云同步；⑮ MCQ 已逐题标注来源（自编练习题）；⑯ 整卷模拟已明确标「尚未完成」。</p>'
  +'<p class="sm"><b>未修复（后续轮次）：</b>主题 3–6 的完整知识卡仍待逐条按官方 Specification 填充（现为条目已列、内容待补充）；Data Response 的完整 Source Booklet 与 (a)–(d) 小问尚未逐套录入；Pearson 官方 MCQ 原题为 0 道；完整 80 分整卷模拟未接入。（以上为第一轮时点状态；第二轮进展见下方第二轮建设报告。）</p>'
- +'<p class="sm"><b>待核实（不编造）：</b>Jan 2024 与 Jun 2025 01A 两卷 Q7 各小问的原题指令词——<b>已解决</b>（第二轮已逐字录入，见材料题库）；目录中 4 条只写到 Q7 的题号究竟属于哪个小问——<b>已解决 3 条</b>（202506A-7、202510A-7、202601A-7 已核实为整道 Q7），202605A-7 仍待核实（按字面无此试卷）；202405-9 目录中文题意与官方原文的对应关系——<b>已解决</b>（官方原文为加入经济与货币联盟的成本，目录原题意「货轮贸易成本」为误读，第二轮已改正）。本轮只处理第一轮已发现的问题，不代表全站审查完成。</p></div>'
+ +'<p class="sm"><b>待核实（不编造）：</b>Jan 2024 与 Jun 2025 01A 两卷 Q7 各小问的原题指令词——<b>已解决</b>（第二轮已逐字录入，见材料题库）；目录中 4 条只写到 Q7 的题号究竟属于哪个小问——<b>已解决 3 条</b>（202506A-7、202510A-7、202601A-7 已核实为整道 Q7），202605A-7 仍待核实（无法从现有官方资料确认来源；两种误记假设——202506A 或 202606A——待核实）；202405-9 目录中文题意与官方原文的对应关系——<b>已解决</b>（官方原文为加入经济与货币联盟的成本，目录原题意「货轮贸易成本」为误读，第二轮已改正）。本轮只处理第一轮已发现的问题，不代表全站审查完成。</p></div>'
  +'<div class="card"><h3 style="margin-top:0">第二轮建设报告（Round 2 Report · 考试内容与评分）</h3>'
  +'<p class="sm"><b>已完成：</b>① 5 套 Q7 整卷核对与录入（Jan 2024 希腊、Jun 2025 01A 阿根廷、Oct 2025 01A 印度、Jan 2026 01A 全球收入不平等、Jun 2026 01A 土耳其）：每套含考试日期、试卷代码、Log Number、Source Booklet 摘要（标注非逐字原文）与官方 QP/MS 链接、(a)–(e) 逐字原题、指令词与分值；两道 Calculate 附 MS 答案（Jan 2024 7(a) $379.31 billion；Jun 2025 01A 7(a) −86.27%，以 MS 为准）；② 36 道 Pearson 官方 MCQ 原题录入（答案与排除理由以 MS 为准，中文题意标注为翻译），练习模式可按来源筛选；③ 整卷模拟两套（Jan 2024 / Jun 2025 01A，2 小时 / 80 分，含计时、草稿本机保存、交卷自评与复制批改）；④ 综合考查频率表（仅基于 18 道已核对题目的口径，表头已写清范围）与已核实试卷清单（9 卷）；⑤ 十步批改标准（教学用、非官方标准，已标注）、结构化自评表与 AO1–AO4 追踪；⑥ 202405-9 中文题意纠正（加入经济与货币联盟的成本，罗马尼亚/欧元区）；⑦ 3 条「-7」确认为整道 Q7（34 分）；⑧ 材料信息提取与运用训练上线（希腊卷与阿根廷卷，答错记入错题本）。</p>'
  +'<p class="sm"><b>未完成：</b>其余试卷的 Q7 尚未逐套核对；新录入 Q7 的 (b)–(e) 逐点评分要点待补充（各卷已附官方 MS 链接）；主题 3–6 的完整知识卡仍待逐条按官方 Specification 填充（承接第一轮报告）。</p>'
- +'<p class="sm"><b>仍待核实：</b>202605A-7（按字面无此试卷——IAL 无 2026 年 5 月考季，需目录方确认是 202506A 还是 202606A 的误记）；Jun 2025 01A Q6 的 MS 疑似印误（B 项排除理由国名疑似印反，已按表中数据纠正，答案 C 不受影响）；两道图题（Jun 2025 01 Q4 的 AD/SRAS 图、Oct 2023 Q6 的大米缓冲库存图）需对照原卷图示作答。</p></div>'
+ +'<p class="sm"><b>仍待核实：</b>202605A-7（无法从现有官方资料确认来源；两种误记假设——202506A 或 202606A——待核实，须目录方确认）；Jun 2025 01A Q6 的 MS 疑似印误（B 项排除理由国名疑似印反，已按表中数据纠正，答案 C 不受影响）；两道图题（Jun 2025 01 Q4 的 AD/SRAS 图、Oct 2023 Q6 的大米缓冲库存图）需对照原卷图示作答。</p></div>'
  +'<div class="card"><h3 style="margin-top:0">第三轮建设报告（Round 3 Report · 学习系统）</h3>'
  +'<p class="sm"><b>已完成：</b>① Personal Exam Strategy 四项深化（Dashboard）：最弱题型（按 Essay Log 题型平均得分率排序，列最弱 2 种及题目编号）、分析 (Analysis, AO3) vs 评价 (Evaluation, AO4) 对比条形图与差值建议、用时与失分分析（用时少但失分多 / 用时多但得分低，建议用时按 1.5 分钟/分估算）、下周 Top 5（综合未解决错题、最低掌握度、Essay Log 最低分章节、MCQ 最低正确率章节、已逾期知识点五路真实数据，不足不凑数）；无记录时显示空状态或标注「示意数据」的示例，真实记录出现后自动替换。② Brutal Honesty 真实流程：Essay Log 保存后在该条记录下方立即展开练后三问填写框（三问存入该条记录的新增字段，可事后编辑；空着时提示补上）；保存区加防估分提醒与「这是聊天批改给出的分数」勾选框，未勾选的记录显示「分数来源未确认」标签；Elite Economist Training 新增「复盘记录」区，按时间倒序汇总所有填过三问的记录并可回到练习室原记录；「复制三问去聊天复盘」按钮保留。③ 掌握度 6 个维度：每张完整知识卡新增知识理解 (Knowledge)、应用 (Application)、分析 (Analysis)、评价 (Evaluation)、图表与定量 (Diagram & Quantitative)、迁移 (Transfer) 六维 0–4 级，初次按总掌握度默认、之后逐个手动调整，总掌握度不由维度自动平均；维度存入新增字段 dimMastery，老数据按总掌握度默认显示；错题类型与维度对应时给出标注「按规则给出的建议，不是 AI 评分」的调低建议，采纳才改数据；Dashboard 新增「最弱维度」汇总；Revision Planner 已把最低维度 ≤1 级的知识卡优先排入今日到期并注明原因。④ 错题本顶部新增「按错误类型统计」：9 类各显示未解决/已解决条数与条形图，并列出每类未解决错题最多的知识点与一句话提示，只用真实错题记录。⑤ My Collection：每条收藏/笔记可加 1–3 个自由标签（新增字段 tags），可按标签筛选；顶部搜索框可搜标题、笔记内容与标签；新增「考前清单」（新增字段 examList）：条目只来自用户自己的收藏与笔记，可勾选完成、上下调整顺序、一键清空已完成项，无内容时显示空状态；每条仍保留「打开原文」。⑥ 左侧导航 TRACK A 下新增「Mock Examination 整卷模拟」，点开进入练习室整卷模拟区（第二轮两套模拟）。本轮新增数据全部使用新增字段（dimMastery / tags / examList，以及 Essay Log 记录内的 bh 与 scoreConfirmed），未改动或覆盖已有字段。</p>'
  +'<p class="sm"><b>未完成：</b>主题 3–6 的完整知识卡仍待逐条按官方 Specification 填充（现为条目已列、内容待补充）；新录入 Q7 的 (b)–(e) 逐点评分要点待补充；各考试系列官方等级分数线 (grade boundaries) 待补充（承接第一、二轮报告）。</p>'
- +'<p class="sm"><b>仍待核实：</b>其余试卷的 Q7 尚未逐套核对；202605A-7 仍待目录方确认（按字面无此试卷——IAL 无 2026 年 5 月考季，需确认是 202506A 还是 202606A 的误记，承接第二轮报告，不在本轮解决）；Jun 2025 01A Q6 的 MS 疑似印误与两道图题仍需对照原卷（见第二轮报告）。</p></div>'
+ +'<p class="sm"><b>仍待核实：</b>其余试卷的 Q7 尚未逐套核对；202605A-7 仍待目录方确认（无法从现有官方资料确认来源；两种误记假设——202506A 或 202606A——待核实，承接第二轮报告，不在本轮解决）；Jun 2025 01A Q6 的 MS 疑似印误与两道图题仍需对照原卷（见第二轮报告）。</p></div>'
+ +'<div class="card"><h3 style="margin-top:0">v5 审查修复报告</h3>'
+ +'<p class="sm">依据 REVIEW/CHATGPT_REVIEW_V5.md。第一批修第 3、6 项，第二批修第 1、2、5 项，第三批修第 4 项（均追加在文末）；未做 Round 4、未动其他模块。优先级按 GPT 最新意见标注：第 1、2、5 项为 P0，第 3 项（Section C 题目选择）为 P1，第 6 项（IndexedDB 保存可靠性）为 P2，下文已按此更正；新增字段只有 mockHistory（模拟历史记录），老数据均有空值兜底（读取与导入时非数组一律补空数组）。技术名词按「中文 +（英文）」书写。</p>'
+ +'<p class="sm"><b>第 3 项（P1）· Section C 题目选择——复现（已在 v5 代码核实）：</b>① 两个选题下拉框（data-mcsel="c1"/"c2"）的 change 处理只有赋值、无重复检查；两槽选同一题时，两个 Essay 输入框以同一题号读写同一份答案（st.c[题号]），两篇答案互相覆盖。② 交卷后（st.sub 存在）下拉框、两篇 Essay 与 Section B 输入框均未禁用、input 处理无 st.sub 守卫，交卷后仍可改选题与答案，自评读到的选题会与交卷状态错位。③ 答案按题号 id 存这一点本身正确，已保留。</p>'
+ +'<p class="sm"><b>第 3 项（P1）· 修复：</b>① 下拉框 change 时若新值等于另一槽的值，拒绝并弹出提示（toast）「两题不能选同一道」、恢复原值；同时另一槽已选中的选项在下拉框中渲染为禁用（disabled）并标注「（另一题已选）」。② 交卷后锁定：两个下拉框、两篇 Essay 输入框、Section B 全部输入框渲染为禁用，input / change 处理加 st.sub 守卫；计时器与交卷按钮行为不变。③ 自评区新增「再做一次（新建记录）」按钮：点击后把当前 attempt（模拟卷 id、日期、c1、c2、三部分答案、自评分数、Section A 得分、总分、用时）追加（push）进新字段 U.mockHistory（只追加、绝不覆盖旧记录），再把该卷重置为全新默认状态；保存交卷记录（mocklog）仍每次新增一条 Essay Log，原行为保留。</p>'
+ +'<p class="sm"><b>第 3 项（P1）· 测试证据（审计浏览器真机模拟逐项操作）：</b>① 重复选题拦截——通过：无障碍树（accessibility tree）显示两个下拉框中对方已选的选项均为 [disabled] 且带「（另一题已选）」后缀，尝试改选未生效（第二题仍为 202310-8）；JS 层 change 守卫为第二层防线（禁用选项本身不会触发 change 事件，此层经代码核查确认）。② 交卷后锁定——通过：交卷后探针节点列表显示两个下拉框与两篇 Essay 输入框均为 DISABLED，自评区正常出现，计时与交卷按钮未受影响。③ 答案/分数与题号绑定——通过：第一题改选 202201-8 后其输入框为空（未串题），选回 202401-9 后原答案自动回到该题号下；给 202401-9 的知识与分析（KAA）自评填 10 分后总分变为 10/80；整页刷新后答案仍在正确题号下。④ 再做一次——通过：点击后提示「已归档本次记录，本卷已重置为全新状态」，表单回到默认选题与空白；再次交卷后自评区显示「本卷已有 1 条归档记录」，且整页刷新后该计数仍在，旧记录未被覆盖。</p>'
+ +'<p class="sm"><b>第 6 项（P2）· IndexedDB 保存可靠性——复现（已在 v5 代码核实）：</b>saveUser() 用 250ms 防抖（debounce）合并写入，全站无 pagehide / visibilitychange 时的保存刷新（flush）；最后一次修改后 250ms 内关闭或刷新页面，待写入的 put 永不执行、修改丢失；状态栏只有「保存中…/已自动保存」，无法反映「还有未写入的修改」。</p>'
+ +'<p class="sm"><b>第 6 项（P2）· 修复：</b>真正的写入已抽成 flushSave()：清掉定时器后立即执行 IndexedDB put；在 pagehide 与 visibilitychange（页面变为 hidden 时）调用 flushSave；交卷、保存交卷记录、再做一次归档、确认导入、清空数据等关键操作后也直接 flushSave（不走 debounce）。状态文案诚实化：有待写入修改时显示「有未保存的修改（保存中…）」；只在事务完成（tx.oncomplete）后显示「已自动保存 · 时间」；事务出错（tx.onerror）或异常时显示「保存失败，请到「设置」导出 JSON 备份」并保留待写入标记以便重试。数据结构与字段未改（仅新增 mockHistory），250ms 合并写入保留，未改成每次输入同步写。</p>'
+ +'<p class="sm"><b>第 6 项（P2）· 测试证据：</b>① 交卷后立即刷新——通过：交卷（经 flushSave 立即写入）后立刻整页刷新，交卷状态、Section A 作答、Essay 答案与归档计数全部保留。② 连续快速修改——通过：短时间内连续填 Section B、两篇 Essay 并两次改选 Section C，刷新后最终状态与最后一次修改一致，中间状态未丢失、未串题。③ 普通输入后刷新——通过：输入后刷新页面，最后一次修改仍在（与 ① 互证 flush 与 debounce 两条路径都落盘）。④ 断开数据库时的状态指示——未在浏览器实测（如实说明：审计探针无法断开 IndexedDB）；代码路径已核查：无数据库或事务出错时状态栏显示「保存失败，请到「设置」导出 JSON 备份」，且待写入标记保留、pagehide 时会重试。另注：审计捕获浏览器的时钟冻结在 17:27:29，故「已自动保存」的时间戳在多次保存间不变，属捕获环境现象；写入是否落盘已由多次整页刷新后数据仍在独立证实。移动端视口下交卷按钮位于页面最底部、探针点击曾超时，改在桌面视口完成全部交卷流程测试，页面本身无报错（console 零错误）。</p>'
+ +'<p class="sm"><b>整体验证：</b>全部 10 个 script 块通过 node --check；整卷模拟、练习室与设置页渲染冒烟测试通过；15 个模块、深色默认主题（保留浅色切换）与既有用户数据兼容性未动。</p>'
+ +'<hr class="hr"><p class="sm"><b>—— 第二批（第 1、2、5 项 · 均为 P0）——</b></p>'
+ +'<p class="sm"><b>第 1 项（P0）· 整卷模拟真实性——复现（已在 v5 代码核实）：</b>mock-jan24 的 Section C 默认选题为 ["202401-9","202310-8"]、mock-jun25a 为 ["202506A-8","202210-9"]，均含他卷题；站内文字自述「Section C 取自已核对题库、非该卷原 Section C」；v5 全站无 "Composite" 字样。</p>'
+ +'<p class="sm"><b>第 1 项 · 官方核实（本批实际打开 Pearson 官方 QP 逐题对照）：</b>Jan 2024 WEC14/01（wec14-01-que-20240113.pdf）Section C：Q8 = 202401-8（瑞典与美国收入不平等加剧成因）、Q9 = 202401-9（WTO 与贸易格局因素）、Q10 = 202401-10（南苏丹 HDI 与市场化发展策略），三题均已在站内题库中，题号题干一致。Jun 2025 WEC14/01A（wec14-01a-que-20250604.pdf）Section C：Q8 = 202506A-8（中国增长放缓，与站内已核对原文一致）、Q9 = 202506A-9（移民流入欧盟的收益，题干已逐字核对、与目录题意一致）、Q10 = 202506A-10（伊拉克国家债务 32%→49.2% 的不利影响）——官方确实存在，题干已记录在模拟卷来源清单；该题不在站内题库中，未入库，范文与评分要点标待补充、不编造。</p>'
+ +'<p class="sm"><b>第 1 项 · 修复：</b>① 默认选题改为该卷自己的题目：mock-jan24 = 202401-9 + 202401-8，mock-jun25a = 202506A-8 + 202506A-9（已有存档的旧选题不强制改写，新开卷与「再做一次」用新默认）。② Composite Practice Paper（组合练习卷，非原卷）标注三处可见：模拟卷卡片顶部、模拟卷正文顶部、自评/成绩区顶部。③ 模拟卷正文顶部新增「各部分来源」清单：Section A = 该卷官方 Q1–Q6；Section B = 该卷 Q7 全套（材料为摘要，附官方 QP 与 MS 链接）；Section C = 题库选取，列出该卷原 Section C 三道题（题号 + 题干，202506A-10 标「不在站内题库中 · 待补充」），并逐题注明当前所选题的来源（原卷题注卷名题号，他卷题注来源试卷）。</p>'
+ +'<p class="sm"><b>第 1 项 · 测试证据：</b>① 三处标注——代码核查通过：同一标注组件分别在模拟卡片、模拟正文、自评区三处渲染（审计截图复核见构建审计）。② 来源清单与官方 QP 逐项对得上——通过：本批逐字对照两份官方 QP 的 Section A/B/C 与 Q7 分值结构（6 + 34 + 40 = 80）。③ 默认选题——通过：代码核查 MOCKDEFS 两卷 secCDef 已改为本卷题目。④ 原卷 Section C 清单——通过：与官方 QP 一致，202506A-10 按核实结果标「不在站内题库中 · 题干已凭官方 QP 核实 · 待补充」。</p>'
+ +'<p class="sm"><b>第 2 项（P0）· 成绩输入与计分——复现（已在 v5 代码核实）：</b>自评输入框（data-mss-b / data-mss）的 change 处理只有 Math.max(0, +value||0)，无上钳制；总分 aS+bT+cT 无封顶：KAA 框填 99、2 分小问填 99 都会被原样存入并计入总分；Essay Log 的 AO 输入框（lao1–lao4）连 min/max 属性都没有。</p>'
+ +'<p class="sm"><b>第 2 项 · 修复：</b>① 新增统一钳制函数 clampScore / scoreDisp：Section B 各小问按该卷该小问满分钳制、Section C 每题知识与分析 (KAA) ≤ 12、评价 (Evaluation) ≤ 8，超限时钳制并弹出提示（toast）「已按满分 X 分计入」；Essay Log 四个 AO 输入框补 min=0 / max=20 属性并加 JS 钳制 0–20、单篇记录总分封顶 20。② 区分未评分与 0 分：留空保持空值，自评区新增「分数明细」行，留空显示「—（未评分）」、填 0 显示「0 分」，总分计算时空白按 0 计。③ 总分封顶 80：自评总分用 Math.min(80, …) 防御（各部分满分 6 + 34 + 40 = 80，逐项钳制后结构上亦不可能超限）；保存交卷记录时按原值复算总分，仍超 80 则拒绝保存并提示先订正。④ 已有超限记录不静默改写：自评区与 Essay Log 列表渲染时钳制显示值并标「待订正」标签、注明原值未改写；整卷归档（mockHistory）新增 needsFix 字段标记超限 attempt（仅新增字段，老数据空值兜底）。</p>'
+ +'<p class="sm"><b>第 2 项 · 测试证据（node 抽取站内同一钳制函数逐项复算，12/12 通过）：</b>① clampScore(99, 12) = 12 且标记超限（KAA 填 99 钳制到 12，处理层同时弹出满分提示）；② clampScore(99, 2) = 2（2 分小问填 99 钳制到 2）；③ 留空 → 明细「—（未评分）」，填 0 → 「0 分」，两者显示不同；④ 各部分满分相加 6 + 34 + 40 = 80，总分公式 Math.min(80, sum) 永不超过 80；⑤ 持久化路径未改（仍走 saveUser / flushSave），刷新后数据不变（与第 6 项测试互证）；⑥ 人工构造超限旧记录（Essay Log 总分 99 / AO 25 / 整卷总分 99）→ logOver 判定为真、显示值钳制为 20 / 80 并标「待订正」，正常记录（总分 15、整卷 75）不误标。</p>'
+ +'<p class="sm"><b>第 5 项（P0）· 202605A 考季与题号——复现/现状（已在 v5 代码核实）：</b>202605A-7 已标待核实，但站内另有 6 处断言式措辞（范文库页头、202605A-7 详情卡、材料题库列表、第一/二/三轮报告的待核实段），写作「IAL 没有 2026 年 5 月考季 / 按字面不存在 / 无此试卷」；-8/-9 编号未逐条凭官方来源核对。</p>'
+ +'<p class="sm"><b>第 5 项 · 修复：</b>① 6 处断言式措辞已全部改为统一口径：「无法从现有官方资料确认来源；两种误记假设（202506A 或 202606A）待核实，须目录方确认后才能入库」。② 202605A-7/-8/-9/-10 在范文库列表与详情页统一加「来源待核实」标签；-8/-9/-10 各补说明卡写清存疑原因。③ 没有任何题号被合并或改写（修复前后 84 条题号逐一比对完全一致）；202605A-7 保持待核实。</p>'
+ +'<p class="sm"><b>第 5 项 · 逐题号核对清单（-7 / -7e / -8 / -9 / -10，共 84 条中的 62 条）：</b>【-7 · 4 条】202506A-7 ✓ 已核实为整道 Q7（34 分），来源为官方 QP/MS（材料题库整卷区附链接）；202510A-7 ✓ 已核实（同上）；202601A-7 ✓ 已核实（同上）；202605A-7 ✗ 待核实（无法从现有官方资料确认来源，两种误记假设待核实，须目录方确认后才能入库）。【-7e · 17 条】已核对英文原文与官方 MS（VER，2026-11-14 核对报告）：202106-7e、202305-7e、202506-7e、202601-7e（4 条）；其余 13 条（202010-7e、202101-7e、202110-7e、202201-7e、202206-7e、202210-7e、202301-7e、202310-7e、202401-7e、202405-7e、202410-7e、202501-7e、202605-7e）本批未凭官方 QP/MS 逐条确认，保持「目录已录入、原文待补充」原标注，不取消、不改号；注：202605-7e（无 A）与 202605A-7 是两条不同记录，未合并。【-8 · 21 条】已核对（VER）：202101-8、202110-8、202201-8、202301-8、202310-8、202410-8、202506A-8（7 条）；本批凭官方 QP 新核对题号与题干：202401-8 ✓（Jan 2024 QP Section C Q8，MS 要点待补充）；待核实：202605A-8（用英文原题全文检索官方来源，未找到对应 QP/MS，原因见其详情页）；其余 12 条（202010-8、202106-8、202206-8、202210-8、202305-8、202405-8、202501-8、202506-8、202510A-8、202601-8、202601A-8、202605-8）保持待补充，其中被点名的 202510A-8、202601A-8 未能凭官方 QP/MS 确认，不补来源链接、不取消标注。【-9 · 21 条】已核对（VER）：202110-9、202201-9、202210-9、202401-9、202405-9（5 条）；本批凭官方 QP 新核对：202506A-9 ✓（Jun 2025 01A QP Section C Q9，MS 要点待补充）；待核实：202605A-9（与 -8 共用存疑前缀，且与 202506A-9 题意不同，不合并）；其余 14 条（202010-9、202101-9、202106-9、202206-9、202301-9、202305-9、202310-9、202410-9、202501-9、202506-9、202510A-9、202601-9、202601A-9、202605-9）保持待补充，点名的 202510A-9、202601A-9 未能确认。【-10 · 20 条】已核对（VER）：202210-10（1 条）；本批凭官方 QP 新核对：202401-10 ✓（Jan 2024 QP Section C Q10，MS 要点待补充）；202506A-10 ✓ 官方存在（Jun 2025 01A QP Section C Q10），不在站内题库、未入库；待核实：202605A-10（存疑前缀，不与 202506A-10 合并）；其余 16 条（202010-10、202101-10、202106-10、202110-10、202201-10、202206-10、202301-10、202305-10、202310-10、202405-10、202410-10、202501-10、202506-10、202601-10、202601A-10、202510A-10）保持待补充。</p>'
+ +'<p class="sm"><b>第 5 项 · 测试证据：</b>① 逐题号核对清单如上，来源分别为官方 QP（本批逐字对照两份 PDF）、官方 MS 核对报告（VER）与材料题库整卷区官方链接；② 修复后全站检索「没有 2026 年 5 月考季」「按字面不存在」「按字面无此试卷」「该试卷不存在」「IAL 无 2026」「IAL 只有」均为 0 处；③ 站内每条记录均有明确状态（已核对 / 待补充 / 待核实三类之一），202605A 四条均带「来源待核实」标签；④ 202605A-7 仍为待核实；⑤ 修复前后 ESSAYS 84 条题号集合逐一比对完全一致，无合并、无改写。</p>'
+ +'<p class="sm"><b>第二批整体验证：</b>全部 10 个 script 块通过 node --check；钳制函数逻辑单测 12/12 通过；整卷模拟、练习室、范文库与设置页渲染冒烟测试通过（见构建审计）；未删除模块、未清空用户数据，新增字段仅 mockHistory.needsFix，老数据均有空值兜底。</p>'
+ +'<hr class="hr"><p class="sm"><b>—— 第三批（第 4 项 · P1）——</b></p>'
+ +'<p class="sm"><b>第 4 项（P1）· Data Response 进度持久化——复现（已在 v5 代码核实）：</b>① 材料题库页没有任何按小问作答的输入框：只有已核实 Q7 整卷展示、材料信息提取与运用训练 (Extraction Training)、Section B 相关题目目录。② 提取训练进度是普通全局变量（let DRT={done:{},score:0}），不在用户数据对象 U 里，刷新即丢；只有答错的题经 U.mistakes 进了错题本，答对记录与总分不持久化。③ U.drafts 只用于练习室 (AI Practice Room) 的 Essay 草稿，与 Data Response 无关。④ JSON 导出是整个 U 对象，导入有应用标识/版本/结构校验；新增字段须核查导入合并逻辑是否覆盖。</p>'
+ +'<p class="sm"><b>第 4 项 · 修复：</b>① 新增字段 U.drProg（只加新字段）：每套已核实 Q7 整卷下为 (a)–(e) 每个小问加作答输入框 (textarea) 与自评分数 (Self-assessment Score) 输入，存为 U.drProg[paperId][part]={answer（答案文本）, score（自评分数，null = 未评分）, updatedTs（更新时间戳）}；状态按内容推导：未答 / 已答 / 已自评（填 0 分也是已自评，与未评分区分；超满分自动按满分计入并提示）；输入时经现有 saveUser() 保存（走第一批已修复的 flushSave 落盘路径），状态标签即时更新、不整页重渲染以免打断输入。② 提取训练进度移入 U.drProg.train={done:{},score:0}（与原内存结构同形），训练视图读写一律经持久化字段，原全局变量已删除；答错仍按原逻辑进错题本（错误类型默认应用错误 (Application Error)），该逻辑未改动。③ 材料题库页顶部新增进度汇总卡：每套已核实试卷的完成率（已答小问 / 5，含已自评数）、提取训练正确率（答对 / 已答）、Data Response 总体完成率（已答小问 + 训练已答 ÷ 小问总数 + 训练总数，卡内写明口径）；没有任何记录时显示空状态，不编造数据。④ JSON 导入导出：导出为整个 U 对象，drProg 自动包含在内；导入合并的默认对象已加入 drProg:{}，并加 drProg 类型校验与非对象兜底，备份中的 drProg 会被合并保留，旧备份（无 drProg）导入后补 {} 且收藏、笔记等原有数据不丢；导入确认信息新增材料题进度计数。⑤ 向后兼容：初始 U、读取 (loadUser)、导入合并、清空重置四处均已加 drProg 缺失默认 {}；未改动、未重置任何已有字段与结构。</p>'
+ +'<p class="sm"><b>第 4 项 · 测试证据（node 抽取站内真实函数逐项验证，14/14 通过）：</b>① 老数据无 drProg → 默认 {}、小问状态为「未答」——通过。② 答一道小问 → 状态「已答」；U 经 JSON 序列化往返（模拟刷新后从本机数据库读回）→ 答案与状态完整恢复——通过（落盘路径与第 6 项实测通过的 saveUser/flushSave 为同一条）。③ 填自评分数 → 「已自评」；填 0 分 → 仍为「已自评」（与未评分区分）——通过。④ 答满一套卷 5 个小问 → 汇总卡该卷完成率 100%——通过。⑤ 提取训练答 2 组（1 对 1 错）→ 序列化往返后 done 与 score 保留，汇总卡正确率 (Accuracy) 50%——通过；答错进错题本的原逻辑代码未改动、经代码核查保留。⑥ 导出 JSON 含 drProg 字段且答案完整——通过。⑦ 导入含 drProg 的备份 → drProg 恢复且收藏与笔记同时保留；导入无 drProg 的旧备份 → drProg 补 {} 且收藏保留——通过。⑧ 无任何记录时汇总卡显示空状态——通过。另：q7PaperHTML 渲染测试通过（每套卷渲染 5 个作答框 + 5 个自评输入，已存答案正确回填、状态标签正确）；全部 10 个 script 块通过 node --check；材料题库视图渲染冒烟见构建审计。如实说明：本批的浏览器端到端点击（真实 IndexedDB 刷新、跨浏览器导入）未在本环境逐项手动执行，以上以站内真实函数的序列化往返测试 + 同一落盘路径（第 6 项已实测）互证。</p>'
+ +'<p class="sm"><b>第三批整体验证：</b>全部 10 个 script 块通过 node --check；持久化逻辑测试 14/14 与整卷渲染测试通过；未删除模块、未清空用户数据，新增字段仅 drProg，老数据均有空值兜底。</p></div>'
  +'<div class="card"><h3 style="margin-top:0">成绩与分数线</h3><p class="sm mut">本站记录你的<b>原始分</b>练习数据（见 Dashboard 与错题本）。各考试系列的官方等级分数线 (grade boundaries) 与 UMS 换算以 Pearson 官方发布为准，本轮<b>待补充</b>，不编造数字。80/80 是训练目标，不是本站或任何 AI 能保证的结果。</p></div>';
 };
 BINDS.settings=function(){
@@ -2105,18 +2285,21 @@ BINDS.settings=function(){
    if(d.mcqLog!=null&&!Array.isArray(d.mcqLog))throw new Error("mcqLog 字段类型错误（应为数组）");
    if(d.essayLog!=null&&!Array.isArray(d.essayLog))throw new Error("essayLog 字段类型错误（应为数组）");
    if(d.settings!=null&&!isObj(d.settings))throw new Error("settings 字段类型错误（应为对象）");
-   const merged=Object.assign({favs:{},notes:{},mastery:{},masteryTs:{},mistakes:[],mcqLog:[],essayLog:[],settings:{theme:"dark",examDate:"",fontSize:100},planner:{},dimMastery:{},tags:{},examList:[]},d);
+   if(d.drProg!=null&&!isObj(d.drProg))throw new Error("drProg 字段类型错误（应为对象）");
+   const merged=Object.assign({favs:{},notes:{},mastery:{},masteryTs:{},mistakes:[],mcqLog:[],essayLog:[],settings:{theme:"dark",examDate:"",fontSize:100},planner:{},dimMastery:{},tags:{},examList:[],mockHistory:[],drProg:{}},d);
+   merged.mockHistory=Array.isArray(merged.mockHistory)?merged.mockHistory:[];
+   merged.drProg=(merged.drProg&&typeof merged.drProg==="object"&&!Array.isArray(merged.drProg))?merged.drProg:{};
    merged.settings=Object.assign({theme:"dark",examDate:"",fontSize:100},d.settings||{});
    pendingImport=merged;
    const cnt=o=>Object.keys(o||{}).length, arr=a=>(a||[]).length;
-   $("#simmsg").innerHTML="已读取并验证备份：收藏 "+cnt(merged.favs)+" · 笔记 "+cnt(merged.notes)+" · 掌握度 "+cnt(merged.mastery)+" · 错题 "+arr(merged.mistakes)+" · MCQ 记录 "+arr(merged.mcqLog)+" · Essay 记录 "+arr(merged.essayLog)+"。缺失字段已用默认值补齐。<b>导入会覆盖当前数据</b>，确认无误后再点下方按钮。<br><button class='btn sm' id='sconfirm' style='margin-top:6px'>确认导入并覆盖当前数据</button>";
-   $("#sconfirm").addEventListener("click",()=>{U=pendingImport;pendingImport=null;saveUser();applyTheme();$("#simmsg").textContent="导入成功，数据已恢复。";toast("导入成功");render();});
+   $("#simmsg").innerHTML="已读取并验证备份：收藏 "+cnt(merged.favs)+" · 笔记 "+cnt(merged.notes)+" · 掌握度 "+cnt(merged.mastery)+" · 错题 "+arr(merged.mistakes)+" · MCQ 记录 "+arr(merged.mcqLog)+" · Essay 记录 "+arr(merged.essayLog)+" · 材料题进度 (Data Response) "+Object.keys(merged.drProg||{}).filter(k=>k!=="train").length+" 套试卷"+((merged.drProg&&merged.drProg.train)?" + 提取训练记录":"")+"。缺失字段已用默认值补齐。<b>导入会覆盖当前数据</b>，确认无误后再点下方按钮。<br><button class='btn sm' id='sconfirm' style='margin-top:6px'>确认导入并覆盖当前数据</button>";
+   $("#sconfirm").addEventListener("click",()=>{U=pendingImport;pendingImport=null;saveUser();flushSave();applyTheme();$("#simmsg").textContent="导入成功，数据已恢复。";toast("导入成功");render();});
   }catch(e){pendingImport=null;$("#simmsg").textContent="导入失败："+e.message+"。你的现有数据没有被改动。";}};
   r.onerror=()=>{$("#simmsg").textContent="导入失败：文件读取出错，请重试。你的现有数据没有被改动。";};
   r.readAsText(f);ev.target.value="";});
  let armed=false;const cl=$("#sclear");
  cl.addEventListener("click",()=>{if(!armed){armed=true;cl.textContent="再点一次确认清空（不可恢复）";setTimeout(()=>{armed=false;cl.textContent="清空全部个人数据";},4000);return;}
-  U={favs:{},notes:{},mastery:{},masteryTs:{},mistakes:[],mcqLog:[],essayLog:[],settings:{theme:"dark",examDate:"",fontSize:100},planner:{},dimMastery:{},tags:{},examList:[]};saveUser();applyTheme();render();toast("个人数据已清空");});
+  U={favs:{},notes:{},mastery:{},masteryTs:{},mistakes:[],mcqLog:[],essayLog:[],settings:{theme:"dark",examDate:"",fontSize:100},planner:{},dimMastery:{},tags:{},examList:[],mockHistory:[],drProg:{}};saveUser();flushSave();applyTheme();render();toast("个人数据已清空");});
 };
 /* ================= 第三轮（Round 3 · 学习系统） ================= */
 let BHOPEN=null, collQ="", collTag="";
