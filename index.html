@@ -1669,13 +1669,13 @@ VIEWS.dashboard=function(){
  +'<div class="stat"><b>'+unres+'</b><span>错题本未解决条目</span></div>'
  +'<div class="stat"><b>'+Object.keys(U.favs).length+'</b><span>我的收藏</span></div>'
  +'<div class="stat"><b>'+(dte==null?"未设置":dte+" 天")+'</b><span>距离考试（<button class="btn sm ghost" data-go="settings">在「设置」填写你的真实考试日期</button>）</span></div></div>';
- if(!ms&&!started&&!U.mistakes.length){
+ if(!hasAnyRecord()){
   h+='<div class="empty"><b>还没有学习记录。</b>建议的起步顺序：① 先看「知识库」顶部的官方考纲核对清单，确认六大主题全貌；② 学 Ch.21 第一个知识点并标记掌握程度；③ 到 MCQ Bank 做一组练习——你的正确率、错题和薄弱点会自动从真实记录生成，不会用假数据填充。 <button class="btn sm ghost" data-go="kb">打开知识库</button> <button class="btn sm ghost" data-go="kb" data-param="kp21a">学 Ch.21 第一个知识点</button> <button class="btn sm ghost" data-go="mcq">打开 MCQ Bank</button></div>';
  }
  h+='<div class="card pink"><h3 style="margin-top:0">双轨架构 · Elite Economist System</h3><div class="grid2"><div><span class="tag">TRACK A</span><b>考试卓越</b><p class="sm mut"><button class="btn sm ghost" data-go="kb">Knowledge Base 知识库</button> <button class="btn sm ghost" data-go="essays">Essay Library 范文库</button> <button class="btn sm ghost" data-go="frequency">Exam Frequency 考试频率</button> <button class="btn sm ghost" data-go="practice">AI Practice Room 练习室</button> <button class="btn sm ghost" data-go="mocknav">Mock Examination 整卷模拟</button><br>练习室已接入两套已核实整卷。</p></div><div><span class="tag mint">TRACK B</span><b>思维卓越</b><p class="sm mut"><button class="btn sm ghost" data-go="elite">Elite Economist Training 精英训练</button>（First Principles · Logic Challenge · Advanced Evaluation · Unseen Scenarios 在内） <button class="btn sm ghost" data-go="researchlab">Research Lab 读报告方法</button> <button class="btn sm ghost" data-go="extension">Advanced Extension 本科拓展</button></p></div></div><p class="sm">底层共享：个人记忆、错题、收藏、训练记录、复习计划、IndexedDB 持久化数据库——全部模块读写同一份你的数据。</p><p class="sm mut">初始时间分配建议（后续按真实表现调整，临近考试提高 Track A 比重）：官方知识与考试能力 45% · Essay 写作与批改 25% · 经济学思维与逻辑训练 20% · 大学级拓展 10%。</p><p class="sm"><i>不要成为一个能够背出所有经济学答案的人，要成为一个即使遇到从未见过的经济学问题，也能够自己推导出答案的人。</i></p></div>';
  /* Personal Exam Strategy */
  h+='<h2>Personal Exam Strategy · 个人考试策略分析</h2>';
- if(!ms&&!U.mistakes.length&&!started){
+ if(!hasAnyRecord()){
   h+='<div class="card"><p><span class="tag gold">示意数据</span><small>以下为界面示意数据，并非你的真实成绩。等你有了练习记录，这里会自动换成基于真实数据的分析。</small></p>'
   +[["Knowledge",88,"较强",""],["Application",58,"需要加强",""],["Analysis",52,"需要加强",""],["Evaluation",34,"重点薄弱项",""]].map(r=>'<p style="margin:.2rem 0"><b>'+r[0]+'</b> <span class="tag '+(r[1]>70?"mint":r[1]>45?"gold":"red")+'">'+r[2]+'</span></p><div class="bar'+(r[1]>70?" mint":"")+'"><i style="width:'+r[1]+'%"></i></div>').join("")
   +'<p class="sm"><b>系统建议（示意）：</b>下一阶段优先训练 Evaluation 和 Analysis，而不是继续重复已经掌握的定义。</p></div>';
@@ -1831,8 +1831,8 @@ function linkifyRefs(html){
  var out=html;
  out=out.replace(/\b(20\d{4}A?-\d+[a-z]?)\b/g,function(m,code){var t=essayLinkTarget(code);return t?'<button class="btn sm ghost" data-go="essays" data-param="'+t+'">'+code+'</button>':m;});
  var changed=false;
- out=out.replace(/(见|详见)\s*(kp[0-9]+[a-z])/g,function(m,w,id){changed=true;return w+' <button class="btn sm ghost" data-go="kb" data-param="'+id+'">'+id+'</button>';});
- if(changed)out=out.replace(/(、|与)\s*(kp[0-9]+[a-z])/g,function(m,sep,id){return sep+' <button class="btn sm ghost" data-go="kb" data-param="'+id+'">'+id+'</button>';});
+ out=out.replace(/(见|详见)\s*(kp[0-9]+[a-z])/g,function(m,w,id){if(!kpById(id))return m;changed=true;return w+' <button class="btn sm ghost" data-go="kb" data-param="'+id+'">'+id+'</button>';});
+ if(changed)out=out.replace(/(、|与)\s*(kp[0-9]+[a-z])/g,function(m,sep,id){if(!kpById(id))return m;return sep+' <button class="btn sm ghost" data-go="kb" data-param="'+id+'">'+id+'</button>';});
  out=out.replace(/（见范文库）/g,'（<button class="btn sm ghost" data-go="essays" data-param="202310-8">见范文库 202310-8</button>）');
  out=out.replace(/结构见范文解析/g,'结构见 <button class="btn sm ghost" data-go="essays" data-param="202310-8">范文解析 202310-8</button>');
  out=out.replace(/（见范文库对应 VER 条目）/g,'（<button class="btn sm ghost" data-go="essays" data-param="202405-9">见范文库 202405-9 · 官方评分要点</button>）');
@@ -1959,7 +1959,6 @@ function modelHTML(code,mo){
  +'<div class="btnrow"><button class="btn mint sm" data-copyessay="'+code+'">复制范文去聊天讨论</button></div></div>';
  return h;
 }
-BINDS.essayDetail=null;
 /* ---------- Data Response Library ---------- */
 VIEWS.dataresponse=function(){
  const sevens=ESSAYS.filter(e=>parseCode(e.code).section==="Section B");
@@ -2782,14 +2781,14 @@ VIEWS.settings=function(){
  +'<p class="sm"><b>待核实（不编造）：</b>Jan 2024 与 Jun 2025 01A 两卷 Q7 各小问的原题指令词——<b>已解决</b>（第二轮已逐字录入，见材料题库）；目录中 4 条只写到 Q7 的题号究竟属于哪个小问——<b>已解决 3 条</b>（202506A-7、202510A-7、202601A-7 已核实为整道 Q7），202605A-7 仍待核实（无法从现有官方资料确认来源；两种误记假设——202506A 或 202606A——待核实）；202405-9 目录中文题意与官方原文的对应关系——<b>已解决</b>（官方原文为加入经济与货币联盟的成本，目录原题意「货轮贸易成本」为误读，第二轮已改正）。本轮只处理第一轮已发现的问题，不代表全站审查完成。</p></div>'
  +'<div class="card"><h3 style="margin-top:0">第二轮建设报告（Round 2 Report · 考试内容与评分）</h3>'
  +'<p class="sm"><b>已完成：</b>① 5 套 Q7 整卷核对与录入（Jan 2024 希腊、Jun 2025 01A 阿根廷、Oct 2025 01A 印度、Jan 2026 01A 全球收入不平等、Jun 2026 01A 土耳其）：每套含考试日期、试卷代码、Log Number、Source Booklet 摘要（标注非逐字原文）与官方 QP/MS 链接、(a)–(e) 逐字原题、指令词与分值；两道 Calculate 附 MS 答案（Jan 2024 7(a) $379.31 billion；Jun 2025 01A 7(a) −86.27%，以 MS 为准）；② 36 道 Pearson 官方 MCQ 原题录入（答案与排除理由以 MS 为准，中文题意标注为翻译），练习模式可按来源筛选；③ 整卷模拟两套（Jan 2024 / Jun 2025 01A，2 小时 / 80 分，含计时、草稿本机保存、交卷自评与复制批改）；④ 综合考查频率表（仅基于 18 道已核对题目的口径，表头已写清范围）与已核实试卷清单（9 卷）；⑤ 十步批改标准（教学用、非官方标准，已标注）、结构化自评表与 AO1–AO4 追踪；⑥ 202405-9 中文题意纠正（加入经济与货币联盟的成本，罗马尼亚/欧元区）；⑦ 3 条「-7」确认为整道 Q7（34 分）；⑧ 材料信息提取与运用训练上线（希腊卷与阿根廷卷，答错记入错题本）。</p>'
- +'<p class="sm"><b>未完成：</b>其余试卷的 Q7 尚未逐套核对；新录入 Q7 的 (b)–(e) 逐点评分要点待补充（各卷已附官方 MS 链接）；主题 3–6 的完整知识卡仍待逐条按官方 Specification 填充（承接第一轮报告）。</p>'
+ +'<p class="sm"><b>未完成：</b>其余试卷的 Q7 尚未逐套核对；新录入 Q7 的 (b)–(e) 逐点评分要点待补充（各卷已附官方 MS 链接）——<b>已解决</b>（Round 5 第四阶段已按官方 MS 逐字核对并录入 46 条，见 Round 5 第四阶段报告）；主题 3–6 的完整知识卡仍待逐条按官方 Specification 填充（承接第一轮报告）。</p>'
  +'<p class="sm"><b>仍待核实：</b>202605A-7（无法从现有官方资料确认来源；两种误记假设——202506A 或 202606A——待核实，须目录方确认）；Jun 2025 01A Q6 的 MS 疑似印误（B 项排除理由国名疑似印反，已按表中数据纠正，答案 C 不受影响）；两道图题（Jun 2025 01 Q4 的 AD/SRAS 图、Oct 2023 Q6 的大米缓冲库存图）需对照原卷图示作答。</p></div>'
  +'<div class="card"><h3 style="margin-top:0">第三轮建设报告（Round 3 Report · 学习系统）</h3>'
  +'<p class="sm"><b>已完成：</b>① Personal Exam Strategy 四项深化（Dashboard）：最弱题型（按 Essay Log 题型平均得分率排序，列最弱 2 种及题目编号）、分析 (Analysis, AO3) vs 评价 (Evaluation, AO4) 对比条形图与差值建议、用时与失分分析（用时少但失分多 / 用时多但得分低，建议用时按 1.5 分钟/分估算）、下周 Top 5（综合未解决错题、最低掌握度、Essay Log 最低分章节、MCQ 最低正确率章节、已逾期知识点五路真实数据，不足不凑数）；无记录时显示空状态或标注「示意数据」的示例，真实记录出现后自动替换。② Brutal Honesty 真实流程：Essay Log 保存后在该条记录下方立即展开练后三问填写框（三问存入该条记录的新增字段，可事后编辑；空着时提示补上）；保存区加防估分提醒与「这是聊天批改给出的分数」勾选框，未勾选的记录显示「分数来源未确认」标签；Elite Economist Training 新增「复盘记录」区，按时间倒序汇总所有填过三问的记录并可回到练习室原记录；「复制三问去聊天复盘」按钮保留。③ 掌握度 6 个维度：每张完整知识卡新增知识理解 (Knowledge)、应用 (Application)、分析 (Analysis)、评价 (Evaluation)、图表与定量 (Diagram & Quantitative)、迁移 (Transfer) 六维 0–4 级，初次按总掌握度默认、之后逐个手动调整，总掌握度不由维度自动平均；维度存入新增字段 dimMastery，老数据按总掌握度默认显示；错题类型与维度对应时给出标注「按规则给出的建议，不是 AI 评分」的调低建议，采纳才改数据；Dashboard 新增「最弱维度」汇总；Revision Planner 已把最低维度 ≤1 级的知识卡优先排入今日到期并注明原因。④ 错题本顶部新增「按错误类型统计」：9 类各显示未解决/已解决条数与条形图，并列出每类未解决错题最多的知识点与一句话提示，只用真实错题记录。⑤ My Collection：每条收藏/笔记可加 1–3 个自由标签（新增字段 tags），可按标签筛选；顶部搜索框可搜标题、笔记内容与标签；新增「考前清单」（新增字段 examList）：条目只来自用户自己的收藏与笔记，可勾选完成、上下调整顺序、一键清空已完成项，无内容时显示空状态；每条仍保留「打开原文」。⑥ 左侧导航 TRACK A 下新增「Mock Examination 整卷模拟」，点开进入练习室整卷模拟区（第二轮两套模拟）。本轮新增数据全部使用新增字段（dimMastery / tags / examList，以及 Essay Log 记录内的 bh 与 scoreConfirmed），未改动或覆盖已有字段。</p>'
- +'<p class="sm"><b>未完成：</b>主题 3–6 的完整知识卡仍待逐条按官方 Specification 填充（现为条目已列、内容待补充）；新录入 Q7 的 (b)–(e) 逐点评分要点待补充；各考试系列官方等级分数线 (grade boundaries) 待补充（承接第一、二轮报告）。</p>'
+ +'<p class="sm"><b>未完成：</b>主题 3–6 的完整知识卡仍待逐条按官方 Specification 填充（现为条目已列、内容待补充）；新录入 Q7 的 (b)–(e) 逐点评分要点待补充——<b>已解决</b>（Round 5 第四阶段已按官方 MS 逐字核对并录入 46 条，见 Round 5 第四阶段报告）；各考试系列官方等级分数线 (grade boundaries) 待补充（承接第一、二轮报告）。</p>'
  +'<p class="sm"><b>仍待核实：</b>其余试卷的 Q7 尚未逐套核对；202605A-7 仍待目录方确认（无法从现有官方资料确认来源；两种误记假设——202506A 或 202606A——待核实，承接第二轮报告，不在本轮解决）；Jun 2025 01A Q6 的 MS 疑似印误与两道图题仍需对照原卷（见第二轮报告）。</p></div>'
  +'<div class="card"><h3 style="margin-top:0">v5 审查修复报告</h3>'
- +'<p class="sm">依据 REVIEW/CHATGPT_REVIEW_V5.md。第一批修第 3、6 项，第二批修第 1、2、5 项，第三批修第 4 项（均追加在文末）；Round 4（技术功能）进行中。优先级按 GPT 最新意见标注：第 1、2、5 项为 P0，第 3 项（Section C 题目选择）为 P1，第 6 项（IndexedDB 保存可靠性）为 P2，下文已按此更正；新增字段：mockHistory（第 3 项）与 drProg（第 4 项），老数据均有空值兜底（读取与导入时非数组一律补空数组）。技术名词按「中文 +（英文）」书写。</p>'
+ +'<p class="sm">依据 REVIEW/CHATGPT_REVIEW_V5.md。第一批修第 3、6 项，第二批修第 1、2、5 项，第三批修第 4 项（均追加在文末）；Round 4（技术功能）已完成（GPT 第六轮复查：代码审查层面放行）；Round 5（精英级优化）已完成（GPT 第九轮复查：代码审查通过）。优先级按 GPT 最新意见标注：第 1、2、5 项为 P0，第 3 项（Section C 题目选择）为 P1，第 6 项（IndexedDB 保存可靠性）为 P2，下文已按此更正；新增字段：mockHistory（第 3 项）与 drProg（第 4 项），老数据均有空值兜底（读取与导入时非数组一律补空数组）。技术名词按「中文 +（英文）」书写。</p>'
  +'<p class="sm"><b>第 3 项（P1）· Section C 题目选择——复现（已在 v5 代码核实）：</b>① 两个选题下拉框（data-mcsel="c1"/"c2"）的 change 处理只有赋值、无重复检查；两槽选同一题时，两个 Essay 输入框以同一题号读写同一份答案（st.c[题号]），两篇答案互相覆盖。② 交卷后（st.sub 存在）下拉框、两篇 Essay 与 Section B 输入框均未禁用、input 处理无 st.sub 守卫，交卷后仍可改选题与答案，自评读到的选题会与交卷状态错位。③ 答案按题号 id 存这一点本身正确，已保留。</p>'
  +'<p class="sm"><b>第 3 项（P1）· 修复：</b>① 下拉框 change 时若新值等于另一槽的值，拒绝并弹出提示（toast）「两题不能选同一道」、恢复原值；同时另一槽已选中的选项在下拉框中渲染为禁用（disabled）并标注「（另一题已选）」。② 交卷后锁定：两个下拉框、两篇 Essay 输入框、Section B 全部输入框渲染为禁用，input / change 处理加 st.sub 守卫；计时器与交卷按钮行为不变。③ 自评区新增「再做一次（新建记录）」按钮：点击后把当前 attempt（模拟卷 id、日期、c1、c2、三部分答案、自评分数、Section A 得分、总分、用时）追加（push）进新字段 U.mockHistory（只追加、绝不覆盖旧记录），再把该卷重置为全新默认状态；保存交卷记录（mocklog）仍每次新增一条 Essay Log，原行为保留。</p>'
  +'<p class="sm"><b>第 3 项（P1）· 测试证据（审计浏览器真机模拟逐项操作）：</b>① 重复选题拦截——通过：无障碍树（accessibility tree）显示两个下拉框中对方已选的选项均为 [disabled] 且带「（另一题已选）」后缀，尝试改选未生效（第二题仍为 202310-8）；JS 层 change 守卫为第二层防线（禁用选项本身不会触发 change 事件，此层经代码核查确认）。② 交卷后锁定——通过：交卷后探针节点列表显示两个下拉框与两篇 Essay 输入框均为 DISABLED，自评区正常出现，计时与交卷按钮未受影响。③ 答案/分数与题号绑定——通过：第一题改选 202201-8 后其输入框为空（未串题），选回 202401-9 后原答案自动回到该题号下；给 202401-9 的知识与分析（KAA）自评填 10 分后总分变为 10/80；整页刷新后答案仍在正确题号下。④ 再做一次——通过：点击后提示「已归档本次记录，本卷已重置为全新状态」，表单回到默认选题与空白；再次交卷后自评区显示「本卷已有 1 条归档记录」，且整页刷新后该计数仍在，旧记录未被覆盖。</p>'
@@ -2886,9 +2885,15 @@ VIEWS.settings=function(){
 +'<p class="sm"><b>复现（改前已在代码与官方资料核实）：</b>① 官方 MCQ 36 道中 31 道 kp 为空（F8），ch 字段全为「综合」；复习计划 errLoad 已计入官方 MCQ 错题（Round 4 已验证）。② INT_FREQ 为硬编码常量（7 行合计 32），计数依据只写了口径、无逐题推导表。③ Q7P 5 卷没有任何 (b)–(e) 评分点字段，站内说明为待补充；(a) 计算答案 5 卷中 2 卷已有、3 卷为空。④ 知识卡 28 条中主题 3–6 各只有 1 条 st:"pending" 占位卡。⑤ 两道图题标签已在。⑥ T16 页尾交卷按钮真实窄视口点击计时未单独验证。⑦ 模拟卷视图无面向用户的后台冻结 / 设备时间说明。</p>'
 +'<p class="sm"><b>改动内容：</b>① F8：36 道官方 MCQ 各加站内字段 topic（按题干 + 官方 MS 排除理由归纳），做题时显示在题干上方并标注「站内按题干与官方 MS 排除理由归纳，非官方分类」；MCQ 库说明与搜索结果卡同步显示主题，搜索可按主题命中；kp 仍空 31 道（无对应知识卡的不硬填），仅原有 5 道保留 kp。② INT_FREQ：新增 INT_FREQ_DERIV 逐题推导表（18 道题 × KAA/评价清单，写明计入规则；6 行 8 处单元格标待核实、不计入总数），考试频率页实时重算并与常量对照，显示「复算一致」（Ch.21=1、Ch.22=2、Ch.23=10、Ch.24=2、Ch.25=4、Ch.26=6、Ch.27=7，合计 32）；表下附注：若 8 处待核实全部计入，各行将变为 Ch.23=12、Ch.24=3、Ch.26=8、Ch.27=10，合计 40。③ Q7：5 卷全部按官方 MS 逐字核对并新增 pts 字段（(b)–(e) 评分要点共 46 条，来源为各卷 ms 编号：jan24 WEC14_01_MS_2401、jun25a WEC14_01A_2506_MS、oct25a WEC14_01A_2510_MS、jan26a WEC14_01A_2601_MS、jun26a WEC14_01A_2606_MS），材料题库逐卷小问表逐条渲染；同时补齐 3 个已核实的 (a) 计算答案（oct25a 15.47 个百分点、jan26a 83% / 15%、jun26a $13.2 billion），(a) 答案现为 5/5。④ 主题 3–6：按官方 Specification（2018, Issue 2）§4.3.3–4.3.6 核对后，4 条占位卡升级为结构化待补充骨架（子目清单共 47 条：主题三 15、主题四 9、主题五 14、主题六 9，每条均标待补充），知识库列表、知识卡详情与搜索均可看到子目清单；未写未经核实的 full 卡正文。⑤ 两道图题：标签核实仍在（Jun 2025 01 Q4 AD/SRAS 图、Oct 2023 Q6 大米缓冲库存图，均有「需对照原卷图示作答」提示），未画任何示意图。⑥ T16：代码路径核实两处交卷按钮均绑定同一 doMockSubmit 处理函数；真实窄视口点击计时仍未单独验证（见局限）。⑦ GPT 第六轮边界：模拟卷视图新增计时说明（后台完全冻结时无法保证截止瞬间交卷，回来/重载时按 deadline 补交卷；计时用设备时间，手动大幅改时间会影响它），计时逻辑本身未改。⑧ 附带修复（测试中发现，为保持本报告卡正常工作所必需）：第一阶段报告卡标题行多一个「+」（`+ +\'<div...\'` 使标题字符串被一元 + 转为 NaN 丢弃，设置页渲染出 stray "NaN"、标题缺失），已删去多余的「+」，标题恢复正常显示。</p>'
 +'<p class="sm"><b>测试证据（node 抽取站内真实函数与视图逐项断言，70/70 项全过；全部 10 个 script 块 node --check 通过）：</b>① F8：36/36 有 topic、31 道 kp 仍空、5 道 kp 保留；paintMcq 官方题显示主题行与「非官方分类」说明、自编题不显示；搜索「贸易条件计算」命中 4 道。② INT_FREQ：推导表 18 行、重算 7 行与常量一致、合计 32；6 行待核实、8 处单元格；若全部计入则为 Ch.23=12、Ch.24=3、Ch.26=8、Ch.27=10、合计 40。③ Q7：5/5 卷有 (b)–(e) pts、共 46 条均非空；(a) 答案 5/5；q7PaperHTML 与材料题库渲染含 MS 编号与要点原文。④ 知识卡：4 条占位卡 subs 为 15/9/14/9、24 张 full 卡未动；详情页显示子目清单且无编造正文；搜索「洛伦兹曲线」命中待补充卡。⑤ errLoad 回归：官方 MCQ off-2401-6 答错后 kp25a 的 errLoad=1。⑥ 模拟卷计时说明 4 项与两处按钮均已渲染、wireMock 源码核查两处绑定同一函数。⑦ 渲染冒烟：MCQ、考试频率、材料题库、知识库（含 kp3x 详情）、练习室、复习计划、搜索、设置页、模拟卷逐项无报错；console 零错误。⑧ 本报告卡标题修复：node 渲染 VIEWS.settings() 后标题「Round 5 精英级优化报告」正常出现，stray "NaN" 消失。</p>'
-+'<p class="sm"><b>如实说明的局限：</b>① 真实浏览器端到端点击（真实 IndexedDB 落盘、手机端点按）未在本环境执行，以上以站内真实函数的逐项断言 + 代码路径核查 + 渲染冒烟（DOM 桩）互证；落盘走既有 saveUser / flushSave 路径。② Q7 的 5 份官方 MS 中，jun25a 为 Pearson 官方 PDF，其余 4 份取自镜像站（jan24 MathsGenie、oct25a DynamicPapers、jan26a 与 jun26a alevelcopilot），内容逐字核对一致但非 Pearson 直链；官方 Specification 为 Pearson 官方 PDF。③ artifact.edit / artifact.export 在本执行环境不可用，故直接改本地导出文件 ~/workspace/your_files/elite-economist-system/elite-economist-system.html；线上 artifact（slug elite-economist-system）需由有 artifact 编辑权限的 agent 同步本次改动后才一致。</p>'
++'<p class="sm"><b>如实说明的局限：</b>① 真实浏览器端到端点击（真实 IndexedDB 落盘、手机端点按）未在本环境执行，以上以站内真实函数的逐项断言 + 代码路径核查 + 渲染冒烟（DOM 桩）互证；落盘走既有 saveUser / flushSave 路径。② Q7 的 5 份官方 MS 中，jun25a 为 Pearson 官方 PDF，其余 4 份取自镜像站（jan24 MathsGenie、oct25a DynamicPapers、jan26a 与 jun26a alevelcopilot），内容逐字核对一致但非 Pearson 直链；官方 Specification 为 Pearson 官方 PDF。③ artifact.edit / artifact.export 在本执行环境不可用，故直接改本地导出文件 ~/workspace/your_files/elite-economist-system/elite-economist-system.html；线上 artifact（slug elite-economist-system）需由有 artifact 编辑权限的 agent 同步本次改动后才一致。（已同步：2026-11-19 主代理核对导出文件 3278 行 / 667,029 字节、SHA-256 db8969a4e8b87e6fb2c44103da02d3ca621eeb5176a6a089c4ef3835bebb3dfe 与 GitHub commit f44959fe 一致，线上站点已同步；见下方最终整合卡。）</p>'
 +'<p class="sm"><b>仍待处理（以下为本阶段完成后的清单，第二、三阶段报告里的相关旧行以此处为准）：</b>202605A-7 仍待核实（须目录方确认）；主题 3–6 知识卡 full 正文仍待补充（需逐条按官方资料核实后填充）；T16 页尾交卷按钮真实窄视口点击计时仍待单独验证；各考试系列官方等级分数线待补充；SPEC 与站内考纲清单的差异待后续轮次处理（主题 3 缺经常账户失衡的缩减措施等 7 项、主题 4 缺贫困衡量等 4 项、主题 5 缺 2008 年金融危机需求侧政策等 5 项、主题 6 的 s6-6 与 s6-1 有两处与官方 §4.3.6 不完全对应），站内 SPEC 本轮未改写。</p></div>'
-+'<div class="card"><h3 style="margin-top:0">成绩与分数线</h3><p class="sm mut">本站记录你的<b>原始分</b>练习数据（<button class="btn sm ghost" data-go="dashboard">见 Dashboard</button> 与 <button class="btn sm ghost" data-go="mistakes">错题本</button>）。各考试系列的官方等级分数线 (grade boundaries) 与 UMS 换算以 Pearson 官方发布为准，本轮<b>待补充</b>，不编造数字。80/80 是训练目标，不是本站或任何 AI 能保证的结果。</p></div>';
++'<div class="card"><h3 style="margin-top:0">成绩与分数线</h3><p class="sm mut">本站记录你的<b>原始分</b>练习数据（<button class="btn sm ghost" data-go="dashboard">见 Dashboard</button> 与 <button class="btn sm ghost" data-go="mistakes">错题本</button>）。各考试系列的官方等级分数线 (grade boundaries) 与 UMS 换算以 Pearson 官方发布为准，本轮<b>待补充</b>，不编造数字。80/80 是训练目标，不是本站或任何 AI 能保证的结果。</p></div>'
++'<div class="card"><h3 style="margin-top:0">最终整合 · 已完成与待补充（Final Accounting，2026-11-19）</h3>'
++'<p class="sm">整合前基线（GitHub review/chatgpt-v5 分支 commit f44959fe）：3278 行 / 667,029 字节，SHA-256 db8969a4e8b87e6fb2c44103da02d3ca621eeb5176a6a089c4ef3835bebb3dfe。整合完成后线上站点与导出文件已同步核实（哈希一致）；main 未合并。GPT 审查状态：Round 4 代码审查层面放行（第六轮复查）；Round 5 代码审查通过（第九轮复查）；GPT 未独立重跑测试套件，也未做真实浏览器端到端测试。</p>'
++'<p class="sm"><b>已完成（R1–R5）：</b>① 第一轮 16 项修复（贸易条件与马歇尔-勒纳条件口径统一、指令词拆分、Section B 改逐卷核对、202506A-1 改归 Section A、kp22a/kp22b 改归主题 1、新增 10 张完整知识卡、去全球化标拓展、不点名国家封顶改逐题规则、定量技能 11 类、搜索检索收藏、Essay Log 保存与对比、复习计划间隔重复、导入验证、本地存储说明、MCQ 标注来源）。② GPT v5 审查 6 项修复（Section C 默认选题改本卷题目 + Composite Practice Paper 标注三处 + 来源清单；分数钳制 KAA ≤12、评价 ≤8、总分封顶 80、留空与 0 分区分、超限标待订正；Section C 防重复选题 + 交卷后锁定 + 再做一次归档；Data Response 进度持久化 drProg + 合并导入 + 保存版本号 saveSeq）。③ 第二轮：5 套 Q7 整卷核对录入（(a)–(e) 原题、Source Booklet 摘要、官方 QP/MS 链接）、36 道 Pearson 官方 MCQ、两套整卷模拟（Jan 2024 / Jun 2025 01A，2 小时 / 80 分）、综合考查频率表、十步批改标准、结构化自评与 AO1–AO4 追踪、202405-9 题意纠正、3 条 -7 确认为整道 Q7、材料信息提取训练。④ 第三轮：Personal Exam Strategy 四项深化、Brutal Honesty 流程、掌握度 6 维度、错题本 9 类统计、My Collection 标签与考前清单、Mock Examination 入口。⑤ 第四轮：显示与性能（主题 auto、字号根元素、对比度 WCAG AA、计时到点自动交卷、Section C 交卷按钮 + 6 表格横向滚动）、数据持久化与恢复（defaultU / sanitizeUser、17 条导入校验）、计分与校验 + 搜索扩面 5 组、计时器 Deadline 制（GPT 第六轮代码审查通过）。⑥ 第五轮：精英思维训练（第一性原理 4、逻辑挑战 6、反方论证 3、多因素分析 2、评价挑战 3、换国家重写 + 3 个未见场景、Research Lab 10 项清单 + 2 个 worked example、8 项能力追踪、eliteLog）、本科拓展 8 条 × 7 字段、交叉链接与学习路径（linkifyRefs、今日建议 nextStep 优先级 ①–⑩、学习路径条、搜索扩至 14 组）、已知缺口诚实处理（官方 MCQ topic 标签 36/36、INT_FREQ_DERIV 18 行复算一致、Q7 (b)–(e) 评分点 46 条 + (a) 答案 5/5、主题 3–6 占位卡升级为 47 条子目骨架）、AO3/AO4 建议逻辑统一为严格差值 > 0.5（GPT 第七、八轮修复，第九轮代码审查通过）。</p>'
++'<p class="sm"><b>待补充 / 待核实（不编造）：</b>① 202605A-7 待核实（无法从现有官方资料确认来源；两种误记假设——202506A 或 202606A——待核实，须目录方确认后才能入库）。② 主题 3–6 知识卡 full 正文待补充（现为结构化待补充骨架，子目清单共 47 条：主题三 15、主题四 9、主题五 14、主题六 9；未写未经核实的正文）。③ 各考试系列官方等级分数线 (grade boundaries) 待补充（以 Pearson 官方发布为准，不编造数字；80/80 是训练目标）。④ SPEC 清单与官方 Specification 的差异待补充（主题 3 缺经常账户失衡的缩减措施等 7 项、主题 4 缺贫困衡量等 4 项、主题 5 缺 2008 年金融危机需求侧政策等 5 项、主题 6 的 s6-6 与 s6-1 有两处与官方 §4.3.6 不完全对应；站内 SPEC 本轮未改写）。⑤ T16 待核实（页尾交卷按钮真实窄视口点击计时仍未单独验证；顶部新按钮手机视口实测成功交卷，两处按钮代码路径核实共用同一 doMockSubmit）。⑥ F8 待补充（36 道官方 MCQ 中 31 道 kp 仍空，仅 5 道已标注；已各加站内 topic 标签，按题干与官方 MS 排除理由归纳，非官方分类，kp 未硬填）。⑦ INT_FREQ 待补充（仍为硬编码常量；已加 18 行逐题推导表实时复算与常量一致，合计 32，6 行标待核实、不计入；常量本身未改为由推导表直接生成）。⑧ 模拟卷计时边界待核实（后台完全冻结时无法保证截止瞬间交卷，回来/重载时按 deadline 补交卷；计时用设备墙上时钟，手动大幅改时间会影响计时）。⑨ Q7 (b)–(e) 评分点来源待核实（46 条已按官方 MS 逐字核对，但 5 份 MS 中只有 jun25a 为 Pearson 官方 PDF 直链，其余 4 份取自镜像站：jan24 MathsGenie、oct25a DynamicPapers、jan26a 与 jun26a alevelcopilot；站内链接如实指向实际来源，不可说成全部取自 Pearson 直链）。⑩ 两道图题待补充（Jun 2025 01 Q4 AD/SRAS 图、Oct 2023 Q6 大米缓冲库存图：站内仅有「需对照原卷图示作答」标签，未画任何示意图）。⑪ 其余试卷的 Q7 待补充（除已核实的 5 套整卷外尚未逐套核对；202506A-10 官方存在但不在站内题库；其余范文题目的英文原文与官方 MS 评分要点待逐题核对后填充）。⑫ 无真实浏览器端到端测试（真实 IndexedDB 刷新/关闭/重开往返、JSON 文件下载与文件选择导入、手机端点按、后台冻结/恢复、加载耗时均未在本环境执行；现有证据为站内真实函数逐项断言 + 代码路径核查 + 渲染冒烟）。</p>'
++'<p class="sm"><b>25 项测试清单最终状态（Round 4 任务书清单；来源 REVIEW/CHATGPT_REVIEW_V5.md Round 4 一节）：</b>通过 18 项；部分通过 4 项（T12 计时到点、T19 主题 auto、T21 响应式已修；T15 的部分原因系 T16）；未通过 2 项（T20 字号、T24 对比度已修）；未定论 1 项（T16 交卷按钮窄视口可达）。最终：T12（Deadline 制，GPT 第六轮代码审查通过）、T19、T20、T21、T24 均已修复；T15 与 T16 相关的部分仍随 T16 未定论；T16 仍待真实浏览器终认。18 项通过项的逐项名目未见于审查记录原文，此处不补列、不编造。</p>'
++'<p class="sm"><b>如实说明（使用前请读）：</b>① 数据只保存在当前设备、当前浏览器的 IndexedDB 里，没有云端同步，不同设备、不同浏览器之间不会自动同步，换设备请用 JSON 导出/导入手动搬运；清除浏览器数据可能导致本地记录丢失，请定期导出备份。② 站内没有实时 AI 评分，不会用模板假装批改：写完 Essay 后点题目旁的「问 Viaana」，把题目和答案复制到聊天里由 Viaana 按官方 AO 批改，再把分数手动记回站内；错题调低掌握度的建议是按规则给出的，不是 AI 评分。③ 本站未做真实浏览器端到端测试（见上条⑫），计时、保存与导入的结论来自函数断言、代码路径核查与渲染冒烟。④ 模拟卷计时按截止时间 (deadline) 走，切换模块或切到后台不会暂停；后台完全冻结时无法在截止瞬间交卷，回来或重载时按 deadline 补交卷；计时用设备时间，手动大幅改时间会影响计时。</p></div>';
 };
 /* v5 审查复查后补充修复（第 4 项）：合并导入 (Merge Import)。以当前用户数据为底按字段合并备份 d，不整份替换；导入校验仍在读取阶段完成，校验失败不会调用本函数。 */
 function canonStr(x){if(x===null||typeof x!=="object")return JSON.stringify(x);if(Array.isArray(x))return "["+x.map(canonStr).join(",")+"]";return "{"+Object.keys(x).sort().map(k=>JSON.stringify(k)+":"+canonStr(x[k])).join(",")+"}";}
@@ -2935,7 +2940,20 @@ function mergeImportBackup(cur,d){
    }
   });
  }
- ["mistakes","mcqLog","essayLog","examList","mockHistory","eliteLog"].forEach(k=>{
+ ["mistakes","essayLog","examList","eliteLog"].forEach(k=>{
+  if(Array.isArray(d[k])){
+   if(!Array.isArray(out[k]))out[k]=[];
+   const seen={};out[k].forEach(x=>{seen[canonStr(x)]=1;});
+   d[k].forEach(item=>{
+    if(item&&typeof item==="object"&&typeof item.id==="string"){
+     const at=out[k].findIndex(x=>x&&typeof x==="object"&&x.id===item.id);
+     if(at>=0){out[k][at]=item;return;}
+    }
+    const s=canonStr(item);if(!seen[s]){seen[s]=1;out[k].push(item);}
+   });
+  }
+ });
+ ["mcqLog","mockHistory"].forEach(k=>{
   if(Array.isArray(d[k])){
    if(!Array.isArray(out[k]))out[k]=[];
    const seen={};out[k].forEach(x=>{seen[canonStr(x)]=1;});
@@ -3012,7 +3030,7 @@ BINDS.settings=function(){
   r.readAsText(f);ev.target.value="";});
  let armed=false;const cl=$("#sclear");
  cl.addEventListener("click",()=>{if(!armed){armed=true;cl.textContent="再点一次确认清空（不可恢复）";setTimeout(()=>{armed=false;cl.textContent="清空全部个人数据";},4000);return;}
-  U=defaultU();saveUser();flushSave();applyTheme();render();toast("个人数据已清空");});
+  U=defaultU();stopMockTimer();saveUser();flushSave();applyTheme();render();toast("个人数据已清空");});
 };
 /* ================= 第三轮（Round 3 · 学习系统） ================= */
 let BHOPEN=null, collQ="", collTag="";
