@@ -71,3 +71,11 @@
 - 已复核当前 `index.html`（3,297 行 / 436,232 字符），末尾含完整事件绑定、初始化调用及 `</script></body></html>` 闭合；DeepSeek收到的文本副本不完整，不代表仓库文件本身截断。Muse不得据此重写或删除源码。
 - 待执行事项仍以 `REVIEW/DEEPSEEK_AUDIT_2026-11-19.md` 的 P0-A、P0-B、P0-C、P1-A、P1-B 为准。
 - 本次 compare 显示 `review/chatgpt-v5` 与 `main` diverged（ahead 2 / behind 1）；暂停任何合并、rebase 或覆盖操作，未经用户批准不改 `main`。
+
+
+## 2026-11-19：最终验收合并工单已推送
+- 用户提交的《Elite Economist System 最终验收修改工单·合并版》已整理为仓库文件：`REVIEW/FINAL_ACCEPTANCE_MERGED_2026-11-19.md`。
+- 该工单合并 P0/P1/P2、此前 GPT/DeepSeek 审计、专有名词中英对照规则、最终验收标准与交付证据；作为 Muse 当前执行清单。先 P0，再术语扫描，再 P1/P2；完成后待 GPT 独立复查。
+- GPT 对基线 `index.html`（SHA `aa6b5992c8ac0ddba4d4f3d5f7d747691107d245`）做了初步静态检索：指定 20 个符号均可检索到，但不等于运行时可调用；确认 mocknav 仍直接调用 practice、202506A-1 仍混在 Essay 映射、parseCode 仍按题号后缀推断、INT_FREQ 仍硬编码、weakEssays 仍按 20 分统一归一、侧栏/无障碍多项要求尚未检索到。完整结果和其余待确认项见合并工单第 6 节。
+- 当前基线有 10 个 script 标签（含外链），最终只对 inline script 逐个 node --check；当前 HTML 已闭合且未检出“第 X 部分”注释。
+- 本次只新增审计工单和状态记录，没有修改 `index.html`。Muse 应直接从该文件读取，不需要用户复制粘贴。所有修复继续只在 `review/chatgpt-v5`，不自动同步/覆盖 `main`。
