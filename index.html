@@ -172,8 +172,8 @@ function fallbackCopy(txt,done){const ta=document.createElement("textarea");ta.v
 
 /* ================= 用户数据（IndexedDB，与内容数据分离） ================= */
 const DBNAME="elite-economist-u4", STORE="userdata";
-function defaultU(){return{favs:{},notes:{},mastery:{},masteryTs:{},mistakes:[],mcqLog:[],essayLog:[],settings:{theme:"dark",examDate:"",fontSize:100},planner:{},strategySeen:false,dimMastery:{},tags:{},examList:[],mockHistory:[],drProg:{},drafts:{},mock:{},selfeval:{}};}
-function sanitizeUser(rec){ const out=defaultU(); if(!rec||typeof rec!=="object")return out; const isO=x=>typeof x==="object"&&x!==null&&!Array.isArray(x); ["favs","notes","mastery","masteryTs","planner","dimMastery","tags","drProg","drafts","mock","selfeval"].forEach(k=>{if(isO(rec[k]))out[k]=rec[k];}); ["mistakes","mcqLog","essayLog","examList","mockHistory"].forEach(k=>{if(Array.isArray(rec[k]))out[k]=rec[k];}); if(isO(rec.settings))out.settings=Object.assign({theme:"dark",examDate:"",fontSize:100},rec.settings); if(typeof rec.strategySeen==="boolean")out.strategySeen=rec.strategySeen; Object.keys(rec).forEach(k=>{if(!(k in out))out[k]=rec[k];}); return out; }
+function defaultU(){return{favs:{},notes:{},mastery:{},masteryTs:{},mistakes:[],mcqLog:[],essayLog:[],settings:{theme:"dark",examDate:"",fontSize:100},planner:{},strategySeen:false,dimMastery:{},tags:{},examList:[],mockHistory:[],drProg:{},drafts:{},mock:{},selfeval:{},eliteLog:[]};}
+function sanitizeUser(rec){ const out=defaultU(); if(!rec||typeof rec!=="object")return out; const isO=x=>typeof x==="object"&&x!==null&&!Array.isArray(x); ["favs","notes","mastery","masteryTs","planner","dimMastery","tags","drProg","drafts","mock","selfeval"].forEach(k=>{if(isO(rec[k]))out[k]=rec[k];}); ["mistakes","mcqLog","essayLog","examList","mockHistory","eliteLog"].forEach(k=>{if(Array.isArray(rec[k]))out[k]=rec[k];}); if(isO(rec.settings))out.settings=Object.assign({theme:"dark",examDate:"",fontSize:100},rec.settings); if(typeof rec.strategySeen==="boolean")out.strategySeen=rec.strategySeen; Object.keys(rec).forEach(k=>{if(!(k in out))out[k]=rec[k];}); return out; }
 let U=defaultU();
 let dbOK=false;
 function idbOpen(){return new Promise((res,rej)=>{const r=indexedDB.open(DBNAME,1);r.onupgradeneeded=()=>{r.result.createObjectStore(STORE);};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
@@ -680,10 +680,10 @@ const KB=[
  lose:"失分点：只背职能清单不谈局限；把 WTO 的争端解决说成自动执行（实际靠成员执行裁决与授权报复）。",
  qs:["202201-9","202201-8"],spec:"Specification 主题 2 · 2.6 WTO"},
 /* ---- 其余主题：条目与结构已建，内容待补充（不编造） ---- */
-{id:"kp3x",theme:3,ch:"主题三",zh:"国际收支、汇率与国际竞争力（条目已建）",en:"Balance of payments, exchange rates and international competitiveness",st:"pending",spec:"Specification 主题 3 · 3.1–3.6",qs:[]},
-{id:"kp4x",theme:4,ch:"主题四",zh:"贫困与不平等（条目已建）",en:"Poverty and inequality",st:"pending",spec:"Specification 主题 4 · 4.1–4.4",qs:[]},
-{id:"kp5x",theme:5,ch:"主题五",zh:"国家在宏观经济中的作用（条目已建）",en:"The role of the state in the macroeconomy",st:"pending",spec:"Specification 主题 5 · 5.1–5.4",qs:[]},
-{id:"kp6x",theme:6,ch:"主题六",zh:"增长与发展（条目已建）",en:"Growth and development",st:"pending",spec:"Specification 主题 6 · 6.1–6.6",qs:[]}
+{id:"kp3x",theme:3,ch:"主题三",zh:"国际收支、汇率与国际竞争力（条目已建）",en:"Balance of payments, exchange rates and international competitiveness",st:"pending",specSec:"4.3.3",subs:["构成：经常账户、资本与金融账户", "经常账户赤字与顺差的成因", "缩减经常账户失衡的措施", "全球贸易失衡的意义", "固定/管理浮动/浮动制度的区别", "政府干预汇市：外汇交易、利率、量化宽松", "影响浮动汇率的因素：相对利率、相对通胀率（购买力平价理论）、经常账户、经济强弱、资本外逃、预期与投机、全球因素（如大宗商品价格下跌）", "重估与升值的区别", "贬值与贬值/下跌的区别", "汇率变动的影响：经常账户（马歇尔-勒纳条件与 J 曲线效应）、资本与金融账户、经济增长、就业与失业、通胀率、FDI 流动", "竞争性贬值/低估及其后果", "衡量：相对生产率、相对单位劳动成本、相对出口价格", "影响因素：生产率、人力资本质量、汇率、工资与非工资成本、管制、基础设施质量、非价格因素", "提升措施：改善教育与培训的政策、投资激励、私有化与放松管制、压低本币汇率的措施、贸易自由化", "意义：具有国际竞争力的好处、缺乏国际竞争力的弊端"],spec:"Specification 主题 3 · 3.1–3.6",qs:[]},
+{id:"kp4x",theme:4,ch:"主题四",zh:"贫困与不平等（条目已建）",en:"Poverty and inequality",st:"pending",specSec:"4.3.4",subs:["绝对贫困与相对贫困的区别", "绝对贫困与相对贫困的衡量", "绝对贫困与相对贫困变化的成因：经济增长、教育与培训、福利、税制结构变化、经济结构变化、援助、内战与冲突", "财富不平等与收入不平等的区别", "衡量：洛伦兹曲线与基尼系数", "国家内部与国家之间收入与财富不平等的成因", "不平等的影响：企业、激励、储蓄、教育、移民、预期寿命", "经济变迁与发展对不平等的影响", "自由市场经济（资本主义）对不平等的意义"],spec:"Specification 主题 4 · 4.1–4.4",qs:[]},
+{id:"kp5x",theme:5,ch:"主题五",zh:"国家在宏观经济中的作用（条目已建）",en:"The role of the state in the macroeconomy",st:"pending",specSec:"4.3.5",subs:["资本支出、经常支出与转移支付的区别", "公共支出规模与结构变化的原因（国际背景）：收入变化、年龄结构变化、预期变化", "公共支出占 GDP 比重不同的意义：生产率与增长、挤出效应、税收水平", "直接税与间接税的区别与例子", "累进税、比例税与累退税的区别", "直接税与间接税税率变化的经济影响：工作激励、税收收入（拉弗曲线分析）、收入分配、实际产出与就业、物价水平、贸易差额、FDI 流动", "财政赤字与财政盈余、公共部门债务、自动稳定器与相机抉择财政政策、财政赤字与国债、结构性与周期性财政赤字的区别", "影响财政赤字与国债规模的因素", "财政赤字与国债规模的意义：对利率的影响、偿债成本、代际公平", "政府运用财政、货币、汇率、供给侧政策与直接管制实现：削减财政赤字与国债、控制通胀、应对全球经济外部冲击、减少贫困与不平等", "应对 2008 年全球金融危机的需求侧政策", "管制跨国公司的措施：减少避税、转移定价管制、政府管制能力的限度", "政策变化对地方经济、国家经济与全球经济的影响", "政策制定者面临的问题：信息不准确、风险与不确定性、无法控制外部冲击"],spec:"Specification 主题 5 · 5.1–5.4",qs:[]},
+{id:"kp6x",theme:6,ch:"主题六",zh:"增长与发展（条目已建）",en:"Growth and development",st:"pending",specSec:"4.3.6",subs:["HDI 的三个构成：教育、健康、收入及其衡量方法", "HDI 比较各国生活水平的优点与局限", "其他发展衡量指标：农业男性劳动力占比、清洁用水、按人均能源消费、按千人计互联网接入、按千人计手机接入、按千人计医生数", "经济因素：大宗商品价格波动、初级产品依赖（普雷维什-辛格假说）、储蓄缺口（哈罗德-多马模型）、外汇缺口、资本外逃、人口因素（规模与年龄结构、移民）、债务（家庭与海外）、信贷与银行可得性、基础设施、教育与技能", "非经济因素：腐败、治理不善、内战、移民、恐怖主义", "市场化策略：贸易自由化、促进 FDI、取消政府补贴、私有化、浮动汇率制度、小额信贷", "干预主义策略：人力资本发展、保护主义、管理汇率、基础设施发展、与跨国公司合资、缓冲库存计划", "其他策略：工业化（刘易斯结构二元部门模型）、旅游业发展、初级产业发展、债务减免、援助", "国际机构的作用：世界银行、IMF、非政府组织"],spec:"Specification 主题 6 · 6.1–6.6",qs:[]}
 ];
 const MASTERY_LABELS=["0 · 完全不会","1 · 刚刚学习","2 · 基本理解","3 · 能独立解释和应用","4 · 熟练掌握"];
 </script>
@@ -1043,7 +1043,7 @@ const COMMAND_WORDS=[
 
 <script>
 /* ============ 第二轮数据：已核实 Q7 整卷（5 套）+ Pearson 官方 MCQ 原题（36 道） ============ */
-/* Q7P：英文原题逐字录入（来源：官方 QP/MS 核实报告 2026-11-19）；材料为摘要、非逐字原文；(b)–(e) 逐点评分要点未逐字核对，标待补充 */
+/* Q7P：英文原题逐字录入（来源：官方 QP/MS 核实报告 2026-11-19）；材料为摘要、非逐字原文；(b)–(e) 评分要点已按各卷官方 MS 逐字核对（见各卷 pts 字段，来源为各卷 ms 编号），(a) 计算答案亦按 MS 核对；未核对的仍标待补充 */
 const Q7P=[
 {id:"jan24",ds:"Jan 2024",date:"Friday 12 January 2024",paper:"WEC14/01",log:"P75595A",theme:"希腊 (Greece)",title:"The economy of Greece",
  figs:[["Figure 1","Real GDP, $ billion, 2008–2022","关键数据：2022 年实际 GDP = $221.3 billion（7(a) 计算用）。"],["Figure 2","National debt, % of GDP, 2008–2022","关键数据：2022 年国债占 GDP = 171.4%（7(a) 计算用）。"]],
@@ -1053,6 +1053,7 @@ const Q7P=[
  ["c","Examine",8,"With reference to the third paragraph of Extract A, examine two measures that the Government of Greece could take to increase the country's international competitiveness.",null],
  ["d","Analyse",6,"With reference to Extract A, analyse two roles of the European Central Bank (ECB).",null],
  ["e","Discuss",14,"With reference to the information provided and your own knowledge, discuss the likely economic benefits of a decrease in national debt, as a proportion of GDP, on the economy of Greece.",null]],
+ pts:{"b": ["财政紧缩知识：提高税收 + 削减政府支出，目标是降低总需求 (AD) 与通胀。", "应用（任选 2 条）：贷款条件要求这样做；为削减国债而必须这样做；削减老年人的养老金；经济规模缩水约 25%；收入下降约 30%；失业率上升，年轻人被迫出国。"], "c": ["KAA 措施：基础设施投资（交通/通讯 → 贸易、效率）；人力资本（教育与培训 → 技能、生产率、单位成本下降）；医疗保健（劳动力更具生产力、GDP、质量提升）。", "应用：欧洲央行建议资本投资；竞争力显著低于欧元区；竞争力排名 47/63。", "评价：财政赤字/国债 ↑ → 挤出效应 (crowding out)；机会成本（短期内对企业部门的支出减少）；时间与执行滞后，财政上可能不可持续；需求拉动通胀 → 价格竞争力下降；干预规模必须显著；政府失灵 (government failure) 风险；IMF 贷款条件限制范围。"], "d": ["知识：欧洲央行 (ECB) 的职能——实施货币政策（基准利率、资产购买、贷款标准、准备金要求）、通胀目标、预测、向各国央行与政府提供建议。", "分析：影响 AD 与控制通胀；传导机制 (transmission mechanism)；影响增长、发展与就业。", "应用：2023 年 3 月，欧洲央行将基准利率从 2.5% 上调至 3%（+0.5 个百分点）。"], "e": ["KAA 收益：信用评级 ↑ → 借贷成本 ↓ → 信心 ↑ → FDI ↑（评级从 A 降至 CCC，未来为 B+）；利息支出 ↓ → 金融挤出效应 ↓ → 利率 ↓ → 私人投资 ↑（「无法偿还债务」）；更少依赖 IMF/欧盟/ECB 的帮助（2010 年 IMF 贷款）；利息更低 = 对未来世代的成本更低，更多用于社会服务；通胀压力更小（投资者购买更多政府债券、无需印钞）。", "评价：两年内下降 19.6 个百分点，幅度显著；债务比率仍为欧元区最高；欧元区利率高 → 挤出效应可能持续（2023 年 3 月 ECB 2.5%→3%）；削减生产性支出会损害未来世代；通胀侵蚀实际债务价值；可能仍需依赖借贷/救助；赤字具有结构性、长期不可持续；债务比率可能因增长而下降但债务价值仍上升（2022 年实际 GDP 增长近 5%；2023 年增长预测下调）。"]},
  ms:"WEC14_01_MS_2401",qp:"https://qualifications.pearson.com/content/dam/pdf/International-Advanced-Level/Economics/2018/Exam-materials/wec14-01-que-20240113.pdf",msu:"https://assets.mathsgenie.co.uk/sources/boards/edexcel/international-a-level-edexcel-economics-2024-january-unit-4-developments-in-the-global-economy-wec14-01-3aadc696a5/mark_scheme_pdf-2d377b0b.pdf"},
 {id:"jun25a",ds:"Jun 2025 · 01A",date:"Tuesday 3 June 2025",paper:"WEC14/01A",log:"P78819A",theme:"阿根廷 (Argentina)",title:"The economy of Argentina",
  figs:[["Figure 1","Annual rate of inflation, as measured by the consumer price index (CPI)","关键数据：2023 年 12 月通胀率 25.5%，2024 年 9 月降至 3.5%（7(a) 计算用，以 MS 为准）。"],["Figure 2","Argentine peso–US dollar exchange rate, January 2023 to September 2024","显示比索对美元持续贬值的走势（逐点数值见官方 Source Booklet）；7(c) 引用。"]],
@@ -1062,33 +1063,37 @@ const Q7P=[
  ["c","Analyse",6,"With reference to Figure 2, analyse two policies that the Central Bank of Argentina can use to limit any further depreciation of the Argentine peso against the US dollar.",null],
  ["d","Explain",4,"Explain what is meant by 'absolute poverty'. (Extract A, line 20)",null],
  ["e","Discuss",14,"With reference to the information provided and your own knowledge, discuss the likely economic effects of a reduction in public expenditure as a proportion of GDP on Argentina's economy.",null]],
+ pts:{"b": ["KAA：经常账户改善（出口更便宜/更有竞争力，或进口更贵/竞争力下降）；资本与金融账户改善（更多 FDI 流入，或更少 FDI 流出）。", "应用：经常账户从 2023 年的赤字转为 2024 年的盈余。", "评价：取决于价格弹性与马歇尔-勒纳条件 (Marshall–Lerner condition)；J 曲线效应（先恶化后改善）；利润/利息/股息汇回属于第一收入流出；严格的资本/货币管制延缓效果；取决于贬值幅度；短期与长期/波动性、可能升值。"], "c": ["政策：卖出美元 / 买入比索（减少比索供给 / 增加比索需求）；提高利率（更高回报 → 比索需求 ↑）；结束量化宽松 (QE)（减少货币供给）。", "应用：2023 年 11 月至 12 月，比索约 360→800/USD（约 122%）；2023 年 1 月至 2024 年 9 月，约 200→900（约 350%）。"], "d": ["绝对贫困知识：低于 $2.15/天（2017 年购买力平价）；无法满足基本需求；缺乏食物、住所、衣物、清洁用水、卫生、医疗与教育。", "应用：自 2004 年以来生活水平下降、实际工资下降；绝对贫困人口占比上升 11 个百分点，2024 年上半年达 53%（2004–2024 年从 42% 升至 53%）。"], "e": ["KAA（10 点，压缩）：公共支出是 AD 的组成部分/注入，削减 → AD ↓ → 负乘数效应 → 增长下降（「2024 年经济规模小了 3%」）；收入与生活水平下降（「自 2004 年以来生活水平下降，实际工资下降」）；失业率通过派生需求上升（2024 年第二季度 7.6%）；通胀压力减小（AD ↓、物价水平 ↓、见图 1）；收入不平等加剧（转移支付削减、养老金/福利）；预算改善、借贷减少/偿还债务（「2024 年每月都有财政盈余」）；机会成本下降（债务利息减少）；挤出效应减小（利率更低、生产要素流向私营部门）；基础设施/教育/医疗削减 → 潜在产出 (LRAS) 下降（「能源与交通补贴」削减）；公共服务质量/数量下降 → 生活水平下降。", "评价（7 点）：幅度：从 GDP 的 38% 降至 32%（6 个百分点，相对显著）；取决于公共支出占 AD 的比重；取决于乘数大小；若 GDP 增长更快，总支出可能仍上升；取决于闲置产能/LRAS 弹性；挤出效应减小可能抵消 AD 下降（私人投资/消费 ↑）；取决于削减落点（削减福利 → 工作激励）。"]},
  ms:"WEC14_01A_2506_MS",qp:"https://qualifications.pearson.com/content/dam/pdf/International-Advanced-Level/Economics/2018/Exam-materials/wec14-01a-que-20250604.pdf",msu:"https://qualifications.pearson.com/content/dam/pdf/International-Advanced-Level/Economics/2018/Exam-materials/wec14-01a-rms-20250814.pdf"},
 {id:"oct25a",ds:"Oct 2025 · 01A",date:"Thursday 30 October 2025",paper:"WEC14/01A",log:"P87430A",theme:"印度 (India)",title:"印度主题（Source Booklet 标题见官方 QP）",
  figs:[["Figure 1","实际 GDP 增长率 2019–2025（中文转述，逐年数值见官方 Source Booklet）","7(a) 引用：计算 2020 年与 2021 年之间实际 GDP 增长率的变化。"],["Figure 2","（7(b) 引用，与通胀率 (rate of inflation) 相关）","标题与数据见官方 Source Booklet，本轮未逐字核对，不编造。"]],
  extracts:[["Extract A","External shocks in the global economy","全球经济中的外部冲击；7(c) 引用：两种可能制约印度 2025 年经济增长的外部冲击。"],["Extract B","（标题见官方 Source Booklet）","涉及印度央行基准利率 (base interest rate) 2025 年 1 月为 6.5%、印度政府 2024 年 10 月宣布供给侧计划；最后一段为 7(d) 引用（降息的两种可能影响），7(e) 讨论政府计划推出的供给侧政策。"]],
- parts:[["a","Calculate",2,"With reference to Figure 1, calculate the change in India's real GDP growth rate between 2020 and 2021. You are advised to show your working.",null],
+ parts:[["a","Calculate",2,"With reference to Figure 1, calculate the change in India's real GDP growth rate between 2020 and 2021. You are advised to show your working.","9.69% − (−5.78%) = 15.47 个百分点"],
  ["b","Explain",4,"With reference to Figure 2, explain what is meant by 'rate of inflation'.",null],
  ["c","Examine",8,"With reference to Extract A, examine two external shocks that could constrain India's rate of economic growth in 2025.",null],
  ["d","Analyse",6,"With reference to the last paragraph of Extract B, analyse two likely effects of a decrease in the base interest rate on the Indian economy.",null],
  ["e","Discuss",14,"With reference to the information provided, discuss the supply-side policies that the Government of India plans to introduce to increase the country's rate of economic growth and economic development.",null]],
+ pts:{"b": ["知识：价格水平/平均价格的百分比上升/变化。", "应用：2019–2022 年通胀上升 1.88 个百分点；2024–2025 年预测下降 0.27 个百分点；2022 年 6.65% → 2024 年 4.37%；2022 年最高，2025 年预计最低。"], "c": ["KAA 冲击：美国保护主义威胁（出口导向型增长 ↓、对美出口更贵）；大宗商品价格上升（生产成本 ↑、出口价格 ↑、竞争力下降）；供应链冲击（原材料短缺、延误、运输成本 ↑）。", "应用：商品净出口国，尤其是 IT 与制药业；大宗商品净进口国 → 通胀 ↑；频繁的自然灾害（气旋、洪水）+ 较差的公路/铁路基础设施 → 运输中断。", "评价：美国可能不实施保护主义；大宗商品价格波动，可能下跌；瓶颈可能激励国内采购/保护战略产业；印度「处境良好」（6760 亿美元外汇储备、最快实际 GDP 增长）；难以确定单一大冲击——很可能是多种冲击的组合。"], "d": ["KAA：基准利率下调的影响——消费 ↑/储蓄 ↓ → 通胀 ↑；投资 ↑ → 增长/就业 ↑；净贸易 ↑ → 经常账户改善。", "应用：基准利率 2025 年 1 月 6.5% → 2 月 6.25% → 4 月 6%（每次 0.25 个百分点）；通胀目标 4–6%；准确绘制并标注 AD 图可 +1 分。"], "e": ["KAA 供给侧政策（必须同时涉及增长与发展，否则最高 Level 2；未在材料中出现的政策最高 Level 2）：定义 + LRAS 图；「提高年轻劳动力的技能」（教育与培训 → 技能/人力资本/生产率 → 增长；就业能力、人均收入 ↑、发展；人均收入预计 +$2,000）；「鼓励更多创新」（生产率 ↑、单位成本/出口价格 ↓、效率/竞争力、FDI ↑、潜在产出 ↑、生活水平 ↑）；「基础设施投资」（交通/通讯 → 贸易、效率、运输成本/时间下降、生产能力 ↑、就业 ↑、人均收入 ↑、发展）；「削减高昂的官僚成本」（行政成本下降、盈利能力 ↑、创新投资、生产率 ↑、FDI ↑、就业、生活水平；「简化国内企业与跨国公司的融资流程」）。", "评价：干预主义政策 ↑ 公共支出、机会成本/不利的公共财政（「2025 年资本支出预算 15 万亿卢比」）；技能与基础设施投资的规模；时间/执行滞后；挤出效应（资源/金融）；各政策效果：技能取决于项目质量、受训者可能不从事受训岗位；创新不确定、耗时、风险高、缺乏熟练劳动力；基础设施取决于项目质量；削减官僚 → 监管监督减少、监测/控制不足。"]},
  ms:"WEC14_01A_2510_MS",qp:"https://dynamicpapers.com/wp-content/uploads/2026/02/October-2025-Unit-4A-QP-1.pdf",msu:"https://dynamicpapers.com/wp-content/uploads/2026/02/October-2025-Unit-4A-MS-3.pdf"},
 {id:"jan26a",ds:"Jan 2026 · 01A",date:"Wednesday 21 January 2026",paper:"WEC14/01A",log:"P87665A",theme:"全球收入不平等 (Global income inequality)",title:"全球收入不平等主题（Source Booklet 标题见官方 QP）",
  figs:[["Figure 1","Gini coefficient of global income inequality 2000–2020","显示 2000–2020 年全球基尼系数 (Gini coefficient) 的变化（具体数值见官方 Source Booklet）；7(c) 引用，须配洛伦兹曲线 (Lorenz curve) 图。"]],
  extracts:[["Extract A","（标题见官方 Source Booklet）","关于全球财富分配与收入不平等；第二段含 2000 年各收入群体财富份额数据（7(a) 引用，具体数字见官方材料）；line 15 涉及相对贫困 (relative poverty)（7(b) 引用）。"]],
- parts:[["a","Calculate",2,"With reference to the second paragraph of Extract A, calculate the share of global wealth of high-income advanced countries and middle-income developing countries in 2000. You are advised to show your working.",null],
+ parts:[["a","Calculate",2,"With reference to the second paragraph of Extract A, calculate the share of global wealth of high-income advanced countries and middle-income developing countries in 2000. You are advised to show your working.","高收入发达国家 71% + 12% = 83%；中等收入发展中国家 24% − 9% = 15%"],
  ["b","Explain",4,"Explain what is meant by 'relative poverty' (Extract A, line 15).",null],
  ["c","Analyse",6,"With reference to Figure 1, analyse the likely effect on global income inequality of the change in the global Gini coefficient from 2000 to 2020. Illustrate your answer with a Lorenz curve diagram.",null],
  ["d","Examine",8,"With reference to Extract A, examine two reasons why income inequality has increased within advanced economies.",null],
  ["e","Discuss",14,"With reference to Extract A and your own knowledge, discuss policies that a government could implement to reduce income inequality within its economy.",null]],
+ pts:{"b": ["相对贫困知识：低于中位收入的 60%（接受 50%）；缺乏维持平均生活水平的最低收入。", "应用：许多发达经济体的相对贫困率上升；日本/加拿大/德国/美国 +3 个百分点，法国 +2 个百分点；每 7 人中就有 1 人处于相对贫困。"], "c": ["洛伦兹曲线：正确标注坐标轴；正确标注原始曲线；基尼系数 2000 年 0.72，2020 年 0.67；新洛伦兹曲线位于原始曲线左侧；不平等下降 / 分配更平等；新曲线显示低收入群体所占收入比例更高（或高收入群体所占比例更低）。"], "d": ["KAA：不平等上升的原因——性别（机会更少、工资更低）；年龄（工资与经验/技能/生产率/教育相关）；居住地（城市收入更高、教育机会更好）；家庭债务（资金从负债的中等收入家庭流向金融部门/高收入者）；全球化（非熟练劳动力需求相对下降）；自动化/技术变革（技能过时、结构性失业）。", "应用：最富 1% 的份额从 9%（2000 年）升至 16%（2020 年）；女性每赚 $1 男性赚 $0.89，尽管女性学位更多；年轻人收入/财富更低；城市居民受教育程度更高；自 2005 年以来实际可支配收入下降，住房、医疗、教育成本上涨快于平均物价水平；家庭债务从可支配收入的 50%（2000 年）升至 120%（2020 年）；工资占全球 GDP 的份额下降。", "评价：各国显著性不同，工资最显著；数据可能不准确/不可靠，不平等变化很快；城市失业率更高且上升，长期不平等可能下降；去全球化可能减缓上升；很可能是多种原因的组合；显著性随时间变化。"], "e": ["KAA 政策：经济状况调查型福利（收入支持、住房福利——非全民）；为无资格者提供教育与培训（技能、人力资本、生产率、就业能力）；国家提供公共服务（医疗、社会住房）；减少歧视（平等机会、更高工资/生活水平）；提高最低工资（帮助最低收入者脱贫、实际收入 ↑）；更累进的税制（更多税档、更高免税额；支持在职穷人；「重新考虑如何分享经济收益」）。", "评价：福利复杂/昂贵，福利撤回导致贫困陷阱，未解决主要原因（低工资、技能缺口）；取决于教育/培训质量，受训者可能不从事受训岗位，生产率可能仍低；国家提供在发达经济体中效果可能相对不显著（已很广泛）；最低工资可能提高失业率与不平等；最高收入可能增长更快；对失业者/学生无影响；累进税可能导致税收流失、逃税/避税、收入下降（拉弗曲线，Laffer curve）、降低工作激励；部分性别/年龄差距可能反映文化规范；时间/执行滞后。"]},
  ms:"WEC14_01A_2601_MS",qp:"https://f7b64cf3-fcb1-457c-9e9f-f5e3f43cd8a3.usrfiles.com/ugd/f7b64c_9118983d41b14f54920fb4d80326c39a.pdf",msu:"https://www.alevelcopilot.com/whfile/18/6b/d9/4b/e7/78/ff/1d/87/68/ff/0e/31/bd/b5/f9.pdf"},
 {id:"jun26a",ds:"Jun 2026 · 01A",date:"Thursday 4 June 2026",paper:"WEC14/01A",log:"P87900A",theme:"土耳其 (Türkiye)",title:"（Source Booklet 标题见官方 QP，本轮未逐字核对）",
  figs:[],figNote:"本卷 Source Booklet 的标题与图表标题未在本轮逐字核对，见官方 QP 链接，本页不编造。",
  extracts:[["Extract A","（标题见官方 Source Booklet）","由小问引用可知：第一段涉及 2021–2024 年土耳其经济增长放缓；第二段涉及实际利率 (real interest rate)；line 16 含 FDI 数据（7(a) 引用：2024 年土耳其 GDP 约 $1.32 trillion，结合 line 16 计算 FDI 金额）。"]],
- parts:[["a","Calculate",2,"In 2024 Türkiye's GDP was estimated to be $1.32 trillion. With reference to Extract A, line 16, calculate the amount of foreign direct investment (FDI) in Türkiye in 2024. ($1 trillion = $1 000 000 000 000). You are advised to show your workings.",null],
+ parts:[["a","Calculate",2,"In 2024 Türkiye's GDP was estimated to be $1.32 trillion. With reference to Extract A, line 16, calculate the amount of foreign direct investment (FDI) in Türkiye in 2024. ($1 trillion = $1 000 000 000 000). You are advised to show your workings.","$1.32 trillion × 1% = $13.2 billion（$13,200,000,000）"],
  ["b","Explain",4,"With reference to the second paragraph of Extract A, explain what is meant by the real interest rate.",null],
  ["c","Analyse",6,"With reference to the first paragraph of Extract A, analyse two reasons why Türkiye's rate of economic growth decreased between 2021 and 2024.",null],
  ["d","Examine",8,"With reference to Extract A, examine two measures that the Government of Türkiye could use to attract a higher level of foreign direct investment.",null],
  ["e","Discuss",14,"With reference to the information provided and your own knowledge, discuss the likely causes of the current account deficit experienced by Türkiye since 2021.",null]],
+ pts:{"b": ["实际利率知识：名义利率经通胀调整；名义 − 通胀；经通胀调整后的借贷成本 / 储蓄回报。", "应用：通胀 2021–2022 年显著上升，2023 年非常高，2022 年 10 月峰值 85.5%，2023 年 7 月降至 47.3%；基准利率 2022 年 10 月 10.5%，2023 年 7 月 17.5% → 这一时期实际利率为负。"], "c": ["KAA：2021–2024 年增长下降的原因——高通胀 → 消费/AD ↓（实际收入、购买力、信心、不确定性）；本币贬值 → 进口价格 ↑、生产成本 ↑、SRAS 左移；经常账户赤字 → 净流出、净出口为负；FDI 下降 → 生产率/注入 ↓。", "应用：增长从 11.4%（2021 年）降至 3.2%（2024 年）。"], "d": ["KAA：吸引 FDI 的措施——降低通胀的宏观政策（信心、稳定、不确定性 ↓、原材料成本 ↓）；简化商业法规（更易创业、行政成本 ↓）；削减公司税（外国企业盈利能力 ↑）；放松劳动力市场管制（单位劳动成本 ↓）。", "应用：FDI 仅占 GDP 的 1%；低于墨西哥与罗马尼亚；单位劳动成本 (ULC) 高于保加利亚与波兰；通胀仍非常高。", "评价：加息降通胀可能削减增长 → FDI 更少；土耳其有优势（年轻劳动力、多样化制造业、充满活力的创业部门），无论如何都具吸引力；降低公司税短期有效，但若针对性不强可能损失税收/财政赤字；劳动成本更低 → 工人不满、生产率 ↓、竞争力 ↓；效果取决于政策变化的幅度；组合措施影响更大。"], "e": ["数据：赤字 −$13.7bn（2021 年）、−$10.2bn（2024 年）；通胀 36.1%（2021 年）→ 64.8%（2023 年）；里拉 1 TRY=$0.134（2021 年 1 月）→ $0.034（2024 年 1 月）。", "KAA 成因：通胀上升 → 出口竞争力下降、出口需求下降；本币贬值 → 进口更贵、进口支出更多；FDI 偏低 → 生产能力不足、无法以有竞争力的价格出口；其他国家单位劳动成本 (ULC) 更低（生产率更高）→ 更有竞争力、土耳其出口需求下降；负实际利率 → 储蓄意愿下降、消费 ↑、进口 ↑。", "评价：赤字幅度；2024 年通胀下降 → 出口价格竞争力可能上升；通胀与汇率变化很快（短期与长期）；基准利率从 10.5%（2022 年 10 月）升至 17.5%（2023 年 7 月）→ 消费 ↓、进口 ↓；失业率相对较高 → 消费 ↓、进口 ↓；本币贬值使出口更便宜 → 若马歇尔-勒纳条件 (Marshall–Lerner condition) 成立，长期经常账户改善；赤字自 2023–2024 年起下降；很可能是多种原因的组合，显著性随时间变化；多样化制造业基础、强大的金融体系、充满活力的创业部门 → 若出口上升，赤字可能下降。"]},
  ms:"WEC14_01A_2606_MS",qp:"https://www.alevelcopilot.com/whfile/aa/03/8a/1f/5e/06/67/c4/7e/da/a0/6a/64/c8/1c/db.pdf",msu:"https://www.alevelcopilot.com/whfile/c2/fa/07/f3/d7/a5/87/d1/55/64/3f/87/68/28/0c/b3.pdf"}
 ];
 const Q7BYCODE={"202506A-7":"jun25a","202510A-7":"oct25a","202601A-7":"jan26a"};
@@ -1097,158 +1102,158 @@ function trendSVG(fig){const pts=fig.up?"55,165 115,148 175,118 235,92 300,55":"
  return '<svg viewBox="0 0 340 205" style="width:100%;max-width:430px;height:auto;background:var(--surface);border:1px solid var(--line);border-radius:10px" role="img" aria-label="示意图"><line x1="45" y1="15" x2="45" y2="175" stroke="var(--ink2)" stroke-width="1.5"/><line x1="45" y1="175" x2="325" y2="175" stroke="var(--ink2)" stroke-width="1.5"/><polyline points="'+pts+'" fill="none" stroke="var(--pink)" stroke-width="2.5"/><text x="8" y="30" font-size="12" fill="var(--ink)">'+esc(fig.y)+'</text><text x="250" y="198" font-size="12" fill="var(--ink)">'+esc(fig.x)+'</text></svg><p class="sm mut">'+esc(fig.cap)+'</p>';}
 /* ---- Pearson 官方原题 36 道：英文逐字录入，答案与排除理由以 MS 为准；qzh 为翻译、非官方原文 ---- */
 const MCQ_OFF=[
-{id:"off-2401-1",src:"official",paper:"Jan 2024 · WEC14/01",qn:"Q1",ms:"WEC14_01_MS_2401",ch:"综合",kp:"",spec:"Section A · Jan 2024 WEC14/01 Q1",
+{id:"off-2401-1",src:"official",paper:"Jan 2024 · WEC14/01",qn:"Q1",ms:"WEC14_01_MS_2401",ch:"综合",kp:"",topic:"经济增长制约因素（经济因素）",spec:"Section A · Jan 2024 WEC14/01 Q1",
  q:"Which one of the following is an economic factor that might constrain the rate of economic growth of a country?",qzh:"下列哪一项是可能制约一国经济增长率的经济因素？",
  opts:["A high level of corruption","A reduced threat of terrorism","An increased access to credit","A lack of foreign currency"],ans:3,
  why:"只有 D「缺乏外汇 (lack of foreign currency)」是经济因素，且会制约增长。",wrong:["A 腐败是非经济因素，不符合题干的「经济因素」。","B 恐怖主义威胁减少是非经济因素，且方向是放松而非制约。","C 信贷可得性增加会促进而非制约增长。","—"]},
-{id:"off-2401-2",src:"official",paper:"Jan 2024 · WEC14/01",qn:"Q2",ms:"WEC14_01_MS_2401",ch:"综合",kp:"",spec:"Section A · Jan 2024 WEC14/01 Q2",
+{id:"off-2401-2",src:"official",paper:"Jan 2024 · WEC14/01",qn:"Q2",ms:"WEC14_01_MS_2401",ch:"综合",kp:"",topic:"政府支出分类（资本支出）",spec:"Section A · Jan 2024 WEC14/01 Q2",
  q:"In 2022 the Government of Brazil spent $160 million on 762 infrastructure projects. This public expenditure is an example of which one of the following?",qzh:"2022 年巴西政府在 762 个基础设施项目上支出 1.6 亿美元。这笔公共支出属于下列哪一类？",
  opts:["Expenditure on transfer payments","Current expenditure","Capital expenditure","Consumer expenditure"],ans:2,
  why:"基础设施投资形成资本存量，属于资本支出 (capital expenditure)。",wrong:["转移支付 (transfer payments) 是向个人的福利给付，不形成资产。","经常支出 (current expenditure) 是日常运行开支，基建不是。","—","消费支出 (consumer expenditure) 属于私人部门，不是政府支出分类。"]},
-{id:"off-2401-3",src:"official",paper:"Jan 2024 · WEC14/01",qn:"Q3",ms:"WEC14_01_MS_2401",ch:"综合",kp:"",spec:"Section A · Jan 2024 WEC14/01 Q3",
+{id:"off-2401-3",src:"official",paper:"Jan 2024 · WEC14/01",qn:"Q3",ms:"WEC14_01_MS_2401",ch:"综合",kp:"",topic:"国际收支资本与金融账户",spec:"Section A · Jan 2024 WEC14/01 Q3",
  q:"Between 2021 and 2022 the European Union (EU) recorded an increase in the capital and financial account surplus of the balance of payments. Ceteris paribus, which one of the following is the most likely reason for this increase in the EU's capital and financial account surplus?",qzh:"2021–2022 年欧盟国际收支的资本与金融账户顺差增加。在其他条件不变时，下列哪一项最可能是这一增加的原因？",
  opts:["An increase in inward foreign direct investment (FDI) and portfolio investment","An increase in the value of EU exports and a decrease in the value of EU imports","An increase in public sector borrowing and an increase in public sector debt","An increase in inflows into the primary income component of the EU's balance of payments"],ans:0,
  why:"只有 A（外商直接投资 (FDI) 与证券投资 (portfolio investment) 流入增加）属于资本与金融账户的流入。",wrong:["—","B 是出口与进口，属于经常账户 (current account)。","C 属于公共财政，不是国际收支账户的流入项。","D 一次收入 (primary income) 属于经常账户。"]},
-{id:"off-2401-4",src:"official",paper:"Jan 2024 · WEC14/01",qn:"Q4",ms:"WEC14_01_MS_2401",ch:"Ch.22",kp:"",spec:"Section A · Jan 2024 WEC14/01 Q4",
+{id:"off-2401-4",src:"official",paper:"Jan 2024 · WEC14/01",qn:"Q4",ms:"WEC14_01_MS_2401",ch:"Ch.22",kp:"",topic:"全球化的成本",spec:"Section A · Jan 2024 WEC14/01 Q4",
  q:"Globalisation has been associated with an increase in real GDP per capita in many countries. However, some economists consider that there are costs associated with globalisation. Ceteris paribus, which one of the following is a possible cost of globalisation on the global economy?",qzh:"全球化使许多国家人均实际 GDP 上升，但一些经济学家认为全球化也有成本。其他条件不变，下列哪一项是全球化对全球经济可能的成本？",
  opts:["Lower prices and higher consumer surplus","Lower rates of unemployment","Higher long-run average costs for transnational companies","Higher external costs arising from increased trade"],ans:3,
  why:"D 贸易增加带来的外部成本 (external costs) 上升是全球化的成本。",wrong:["A 价格更低、消费者剩余更高是收益。","B 失业率更低是收益。","C 全球化带来规模经济，跨国公司长期平均成本应下降而非上升，方向相反。","—"]},
-{id:"off-2401-5",src:"official",paper:"Jan 2024 · WEC14/01",qn:"Q5",ms:"WEC14_01_MS_2401",ch:"综合",kp:"",spec:"Section A · Jan 2024 WEC14/01 Q5",optHead:"两栏：Japanese yen（日元）/ US dollar（美元）——央行买入 (Buy) 还是卖出 (Sell)？",
+{id:"off-2401-5",src:"official",paper:"Jan 2024 · WEC14/01",qn:"Q5",ms:"WEC14_01_MS_2401",ch:"综合",kp:"",topic:"央行外汇干预（汇率）",spec:"Section A · Jan 2024 WEC14/01 Q5",optHead:"两栏：Japanese yen（日元）/ US dollar（美元）——央行买入 (Buy) 还是卖出 (Sell)？",
  q:"In 2022 the value of Japan's currency, the yen, depreciated significantly against the US dollar. Japan's central bank intervened in the currency markets to increase the external value of its currency. Which one of the following combinations of foreign currency transactions would Japan's central bank be most likely to use if it wanted to raise the value of the yen against the US dollar?",qzh:"2022 年日元对美元大幅贬值。日本央行干预外汇市场以提高日元的对外价值。若要使日元对美元升值，日本央行最可能采用下列哪种外汇交易组合？",
  opts:["Buy / Buy","Buy / Sell","Sell / Buy","Sell / Sell"],ans:1,
  why:"要抬高日元须买入日元（增加对日元的需求）、卖出美元。",wrong:["A 会买入美元，与抬高日元、压低美元的方向不符。","—","C 卖出日元会进一步压低日元。","D 卖出日元与买入日元的方向相反。"]},
-{id:"off-2401-6",src:"official",paper:"Jan 2024 · WEC14/01",qn:"Q6",ms:"WEC14_01_MS_2401",ch:"Ch.25",kp:"kp25a",spec:"Section A · Jan 2024 WEC14/01 Q6",
+{id:"off-2401-6",src:"official",paper:"Jan 2024 · WEC14/01",qn:"Q6",ms:"WEC14_01_MS_2401",ch:"Ch.25",kp:"kp25a",topic:"贸易条件计算",spec:"Section A · Jan 2024 WEC14/01 Q6",
  tbl:{head:["年份","出口价格指数","进口价格指数"],rows:[["2018","379.7","219.1"],["2019","354.4","214.2"],["2020","331.8","191.9"]]},
  q:"The table shows Bosnia and Herzegovina's index of export prices and index of import prices between 2018 and 2020, (2000=100). Ceteris paribus, which one of the following can be deduced from this table?",qzh:"下表为波黑 2018–2020 年出口价格指数与进口价格指数（2000=100）。其他条件不变，下列哪一项可由该表推出？",
  opts:["Between 2000 and 2018 Bosnia and Herzegovina's terms of trade worsened by 73.3%","Between 2000 and 2020 Bosnia and Herzegovina's terms of trade improved by 72.9%","Bosnia and Herzegovina had to export the same amount of goods and services to purchase a given quantity of imports each year","Bosnia and Herzegovina's index of import prices exceeded its index of export prices each year"],ans:1,
  why:"2020 年贸易条件指数 = 331.8 ÷ 191.9 × 100 ≈ 172.9，即比 2000 年改善 72.9%。",wrong:["A 把改善说成恶化：2018 年指数 = 379.7 ÷ 219.1 × 100 ≈ 173.3，是改善 73.3%。","—","C 与指数逐年变化矛盾：购买定量进口所需的出口量逐年不同。","D 说反了：出口价格指数每年都高于进口价格指数。"]},
-{id:"off-2506a-1",src:"official",paper:"Jun 2025 · WEC14/01A",qn:"Q1",ms:"WEC14_01A_2506_MS",ch:"综合",kp:"",spec:"Section A · Jun 2025 WEC14/01A Q1",
+{id:"off-2506a-1",src:"official",paper:"Jun 2025 · WEC14/01A",qn:"Q1",ms:"WEC14_01A_2506_MS",ch:"综合",kp:"",topic:"刘易斯二元部门模型（发展模型）",spec:"Section A · Jun 2025 WEC14/01A Q1",
  q:"Which one of the following is best explained by the Lewis structural dual-sector model?",qzh:"下列哪一项最能用刘易斯结构二元部门模型 (Lewis structural dual-sector model) 解释？",
  opts:["Privatisation","Industrialisation","Microfinance schemes","Development of primary industries"],ans:1,
  why:"刘易斯二元结构模型解释的是传统部门劳动力向现代工业部门转移，即工业化 (industrialisation)；其余三项均非该模型解释的对象。",wrong:["私有化不是该模型解释的对象。","—","小额信贷 (microfinance) 不是该模型解释的对象。","该模型讲的是劳动力离开初级部门，不是初级产业的发展。"]},
-{id:"off-2506a-2",src:"official",paper:"Jun 2025 · WEC14/01A",qn:"Q2",ms:"WEC14_01A_2506_MS",ch:"综合",kp:"",spec:"Section A · Jun 2025 WEC14/01A Q2",
+{id:"off-2506a-2",src:"official",paper:"Jun 2025 · WEC14/01A",qn:"Q2",ms:"WEC14_01A_2506_MS",ch:"综合",kp:"",topic:"油价下跌与经常账户",spec:"Section A · Jun 2025 WEC14/01A Q2",
  q:"In 2023, the value of oil and gas exports accounted for 50% of Saudi Arabia's GDP. Assuming the demand for oil and gas are price inelastic, which one of the following is most likely to result from a fall in world oil and gas prices?",qzh:"2023 年油气出口额占沙特阿拉伯 GDP 的 50%。假设油气需求价格无弹性，世界油气价格下跌最可能导致下列哪一项？",
  opts:["An improvement in Saudi Arabia's terms of trade","A deterioration in Saudi Arabia's current account deficit","A reduction in Saudi Arabia's budget deficit","An increase in transportation costs in Saudi Arabia"],ans:1,
  why:"油气出口收入大跌会使经常账户状况恶化。",wrong:["A 出口价格下跌会使贸易条件恶化而非改善。","—","C 出口收入减少会扩大而非缩小预算赤字。","D 油价下跌会使运输成本下降而非上升。"]},
-{id:"off-2506a-3",src:"official",paper:"Jun 2025 · WEC14/01A",qn:"Q3",ms:"WEC14_01A_2506_MS",ch:"综合",kp:"",spec:"Section A · Jun 2025 WEC14/01A Q3",
+{id:"off-2506a-3",src:"official",paper:"Jun 2025 · WEC14/01A",qn:"Q3",ms:"WEC14_01A_2506_MS",ch:"综合",kp:"",topic:"洛伦兹曲线与基尼系数（收入不平等）",spec:"Section A · Jun 2025 WEC14/01A Q3",
  q:"Between 2015 and 2022, the Lorenz curve of Zambia moved closer to the line of perfect equality. Which one of the following can be deduced from this information?",qzh:"2015–2022 年赞比亚的洛伦兹曲线 (Lorenz curve) 向完全平等线靠近。下列哪一项可由此推出？",
  opts:["The Gini coefficient for Zambia had decreased","The Government of Zambia had reduced its highest rate of income tax","The Marshall-Lerner condition had not been met","The rate of unemployment in Zambia had increased"],ans:0,
  why:"洛伦兹曲线靠近完全平等线意味着收入分配更平等，基尼系数 (Gini coefficient) 下降。",wrong:["—","B 降低最高所得税率会使分配更不平等，曲线远离平等线。","C 马歇尔-勒纳条件 (Marshall-Lerner condition) 与汇率变化有关，与洛伦兹曲线无关。","D 失业率上升会使曲线远离平等线。"]},
-{id:"off-2506a-4",src:"official",paper:"Jun 2025 · WEC14/01A",qn:"Q4",ms:"WEC14_01A_2506_MS",ch:"Ch.25",kp:"kp25a",spec:"Section A · Jun 2025 WEC14/01A Q4",
+{id:"off-2506a-4",src:"official",paper:"Jun 2025 · WEC14/01A",qn:"Q4",ms:"WEC14_01A_2506_MS",ch:"Ch.25",kp:"kp25a",topic:"贸易条件计算",spec:"Section A · Jun 2025 WEC14/01A Q4",
  q:"Between September 2023 and September 2024, Australia's average export prices decreased by 6.8% and their average import prices decreased by 1.1%. If September 2023 = 100, which one of the following was Australia's terms of trade in September 2024?",qzh:"2023 年 9 月至 2024 年 9 月，澳大利亚平均出口价格下降 6.8%、平均进口价格下降 1.1%。若 2023 年 9 月 = 100，2024 年 9 月澳大利亚的贸易条件是多少？",
  opts:["6.18","16.18","94.24","106.12"],ans:2,
  why:"贸易条件 = 93.2 ÷ 98.9 × 100 = 94.24。",wrong:["A 是 6.8 ÷ 1.1 的误算。","B 是 1.1 ÷ 6.8 × 100，分子分母用错。","—","D 是倒数（进口指数 ÷ 出口指数）。"]},
-{id:"off-2506a-5",src:"official",paper:"Jun 2025 · WEC14/01A",qn:"Q5",ms:"WEC14_01A_2506_MS",ch:"综合",kp:"",spec:"Section A · Jun 2025 WEC14/01A Q5",figNote:"题干含拉弗曲线图（见原卷图示）。",
+{id:"off-2506a-5",src:"official",paper:"Jun 2025 · WEC14/01A",qn:"Q5",ms:"WEC14_01A_2506_MS",ch:"综合",kp:"",topic:"拉弗曲线（税收与税收收入）",spec:"Section A · Jun 2025 WEC14/01A Q5",figNote:"题干含拉弗曲线图（见原卷图示）。",
  q:"The diagram illustrates the Laffer curve for a developed country. Which one of the following statements is true about the Laffer curve?",qzh:"图中为某发达国家的拉弗曲线 (Laffer curve)。下列关于拉弗曲线的说法哪一项正确？",
  opts:["It shows the relationship between quantitative easing and the rate of interest","It shows the relationship between the level of investment and the savings ratio","It shows the relationship between the unemployment rate and the rate of inflation","It shows the relationship between tax rates and the government's tax revenues"],ans:3,
  why:"拉弗曲线表示税率与政府税收收入之间的关系。",wrong:["A 描述的是货币政策工具之间的关系，不是拉弗曲线。","B 是哈罗德-多马模型 (Harrod-Domar model) 的内容。","C 是菲利普斯曲线 (Phillips curve)。","—"]},
-{id:"off-2506a-6",src:"official",paper:"Jun 2025 · WEC14/01A",qn:"Q6",ms:"WEC14_01A_2506_MS",ch:"综合",kp:"",spec:"Section A · Jun 2025 WEC14/01A Q6",
+{id:"off-2506a-6",src:"official",paper:"Jun 2025 · WEC14/01A",qn:"Q6",ms:"WEC14_01A_2506_MS",ch:"综合",kp:"",topic:"发展指标比较（HDI）",spec:"Section A · Jun 2025 WEC14/01A Q6",
  tbl:{head:["国家","HDI","平均受教育年限","出生时预期寿命","人均 GNI（2017 PPP）"],rows:[["泰国 Thailand","0.803","8.8 年","79.7 岁","$16 887"],["马来西亚 Malaysia","0.807","10.7 年","76.3 岁","$27 295"]]},
  q:"Which one of the following statements may be deduced from the data in the table?",qzh:"下表为 2022 年泰国与马来西亚的数据。下列哪一项可由表中数据推出？",
  opts:["Thailand was more economically developed than Malaysia","Students spent longer in education in Thailand than in Malaysia","Healthcare provision was better in Thailand than in Malaysia","Average incomes were higher in Thailand than in Malaysia"],ans:2,
  why:"泰国出生时预期寿命（79.7 岁）高于马来西亚（76.3 岁），可推断泰国的医疗供给 (healthcare provision) 更好。",
  wrong:["A 马来西亚 HDI（0.807）高于泰国（0.803），经济发展水平更高。","B 马来西亚平均受教育年限（10.7 年）长于泰国（8.8 年）。注：MS 对 B 项的排除理由原文国名疑似印反，此处按表中数据纠正后给出，正确答案 C 不受影响。","—","D 泰国人均 GNI（$16 887）低于马来西亚（$27 295）。"],
  note:"注：MS 对 B 项排除理由的原文国名疑似印反（原文称泰国受教育年限更长，与表中数据相反）；本题理由已按表中数据纠正，正确答案 C 不受影响。"},
-{id:"off-2506-1",src:"official",paper:"Jun 2025 · WEC14/01",qn:"Q1",ms:"WEC14_01_2506_MS",ch:"综合",kp:"",spec:"Section A · Jun 2025 WEC14/01 Q1",
+{id:"off-2506-1",src:"official",paper:"Jun 2025 · WEC14/01",qn:"Q1",ms:"WEC14_01_2506_MS",ch:"综合",kp:"",topic:"经济发展的影响因素",spec:"Section A · Jun 2025 WEC14/01 Q1",
  q:"India has experienced a significant increase in its economic development since 2002. Which one of the following is likely to have caused the increase in India's economic development?",qzh:"自 2002 年以来印度经济发展显著提升。下列哪一项最可能促成了印度经济发展水平的提升？",
  opts:["An increase in the proportion of people with access to the internet per thousand of population","A decrease in the proportion of people with access to mobile phones per thousand of population","An increase in terrorism and civil wars","A decrease in life expectancy at birth"],ans:0,
  why:"只有互联网普及率上升会促进经济发展，其余三项都会削弱发展。",wrong:["—","B 手机普及率下降会削弱发展。","C 恐怖主义与内战会削弱发展。","D 出生时预期寿命下降是发展倒退的表现。"]},
-{id:"off-2506-2",src:"official",paper:"Jun 2025 · WEC14/01",qn:"Q2",ms:"WEC14_01_2506_MS",ch:"综合",kp:"",spec:"Section A · Jun 2025 WEC14/01 Q2",
+{id:"off-2506-2",src:"official",paper:"Jun 2025 · WEC14/01",qn:"Q2",ms:"WEC14_01_2506_MS",ch:"综合",kp:"",topic:"国债减少的影响（国债与利率）",spec:"Section A · Jun 2025 WEC14/01 Q2",
  q:"Between 2020 and 2022 Sweden's national debt decreased from $184.4 billion to $180.2 billion. Which one of the following is the most likely effect of a decrease in the national debt of a country?",qzh:"2020–2022 年瑞典国债从 1844 亿美元降至 1802 亿美元。一国国债减少最可能带来下列哪一影响？",
  opts:["An increase in debt servicing costs","An increase in the rate of inflation","A decrease in the rate of interest","A decrease in absolute advantage"],ans:2,
  why:"国债减少会降低利率 (rate of interest)。",wrong:["A 国债减少会降低偿债成本 (debt servicing costs) 而非增加。","B 通胀更可能下降而非上升。","—","D 绝对优势 (absolute advantage) 与国债无关。"]},
-{id:"off-2506-3",src:"official",paper:"Jun 2025 · WEC14/01",qn:"Q3",ms:"WEC14_01_2506_MS",ch:"综合",kp:"",spec:"Section A · Jun 2025 WEC14/01 Q3",
+{id:"off-2506-3",src:"official",paper:"Jun 2025 · WEC14/01",qn:"Q3",ms:"WEC14_01_2506_MS",ch:"综合",kp:"",topic:"劳动生产率与国际竞争力",spec:"Section A · Jun 2025 WEC14/01 Q3",
  q:"In 2022 Romania's labour productivity increased at a faster rate than that of its main trading partners. Ceteris paribus, which one of the following can be deduced from this statement?",qzh:"2022 年罗马尼亚劳动生产率增速快于其主要贸易伙伴。其他条件不变，下列哪一项可由此推出？",
  opts:["Average export prices of Romanian goods and services increased relative to the average export prices of its trading partners","Unit labour costs in Romania decreased relative to the average unit labour costs of its trading partners","Romania's goods and services became less internationally competitive relative to its trading partners","Romania experienced an improvement in its terms of trade"],ans:1,
  why:"生产率相对上升会使单位劳动成本 (unit labour costs) 相对下降。",wrong:["A 出口价格会相对下降而非上升。","—","C 竞争力会提高而非下降。","D 出口价格相对下降意味着贸易条件恶化而非改善。"]},
-{id:"off-2506-4",src:"official",paper:"Jun 2025 · WEC14/01",qn:"Q4",ms:"WEC14_01_2506_MS",ch:"综合",kp:"",spec:"Section A · Jun 2025 WEC14/01 Q4",figNote:"图题：需对照原卷图示作答（选项为四幅 AD/SRAS 图，文字版无法逐字引用图示）。",
+{id:"off-2506-4",src:"official",paper:"Jun 2025 · WEC14/01",qn:"Q4",ms:"WEC14_01_2506_MS",ch:"综合",kp:"",topic:"货币贬值与 AD/SRAS（图题）",spec:"Section A · Jun 2025 WEC14/01 Q4",figNote:"图题：需对照原卷图示作答（选项为四幅 AD/SRAS 图，文字版无法逐字引用图示）。",
  q:"In each of the diagrams the original equilibrium is represented by P1 and Y1. Which one of these aggregate demand (AD) and short-run aggregate supply (SRAS) diagrams represents the most likely effect of a substantial currency depreciation?",qzh:"每幅图的原均衡均为 P1 与 Y1。下列哪幅总需求 (AD) 与短期总供给 (SRAS) 图最能表示一次大幅货币贬值的可能影响？",
  opts:["图 A（见原卷 Q4 图示）","图 B（见原卷 Q4 图示）","图 C（见原卷 Q4 图示）","图 D（见原卷 Q4 图示）"],ans:3,
  why:"大幅贬值会使进口成本上升、SRAS 左移，同时净出口上升、AD 右移，只有 D 同时符合这两点。",wrong:["A 的 SRAS 移动方向不对。","B 的 SRAS 移动方向不对。","C 的 AD 移动方向不对。","—"]},
-{id:"off-2506-5",src:"official",paper:"Jun 2025 · WEC14/01",qn:"Q5",ms:"WEC14_01_2506_MS",ch:"Ch.25",kp:"kp25a",spec:"Section A · Jun 2025 WEC14/01 Q5",
+{id:"off-2506-5",src:"official",paper:"Jun 2025 · WEC14/01",qn:"Q5",ms:"WEC14_01_2506_MS",ch:"Ch.25",kp:"kp25a",topic:"贸易条件计算",spec:"Section A · Jun 2025 WEC14/01 Q5",
  q:"Between December 2022 and December 2023, Australia's export prices decreased by 4.8% and import prices decreased by 3.1%. What was Australia's terms of trade in December 2023 if December 2022 = 100?",qzh:"2022 年 12 月至 2023 年 12 月，澳大利亚出口价格下降 4.8%、进口价格下降 3.1%。若 2022 年 12 月 = 100，2023 年 12 月澳大利亚的贸易条件是多少？",
  opts:["64.58","98.25","101.79","154.84"],ans:1,
  why:"贸易条件 = 95.2 ÷ 96.9 × 100 = 98.25。",wrong:["A 是 3.1 ÷ 4.8 的误算。","—","C 是进口/出口指数之比，公式倒置。","D 是 4.8 ÷ 3.1 的误算。"]},
-{id:"off-2506-6",src:"official",paper:"Jun 2025 · WEC14/01",qn:"Q6",ms:"WEC14_01_2506_MS",ch:"综合",kp:"",spec:"Section A · Jun 2025 WEC14/01 Q6",
+{id:"off-2506-6",src:"official",paper:"Jun 2025 · WEC14/01",qn:"Q6",ms:"WEC14_01_2506_MS",ch:"综合",kp:"",topic:"基尼系数与洛伦兹曲线（收入不平等）",spec:"Section A · Jun 2025 WEC14/01 Q6",
  fig:{up:true,y:"基尼系数 (%)",x:"年份",cap:"示意图：基尼系数上升趋势（非原卷图，仅示意趋势方向）。"},
  q:"The chart shows Uruguay's Gini coefficient, expressed as a percentage, between 2017 and 2021. Which one of the following can be deduced from this chart?",qzh:"图中为乌拉圭 2017–2021 年基尼系数（以百分比表示）。下列哪一项可由该图推出？",
  opts:["Uruguay's Lorenz curve shifted closer to the line of perfect equality","Uruguay experienced perfect income inequality","Uruguay's Lorenz curve shifted away from the line of perfect equality","Income inequality in Uruguay decreased by 1.3 percentage points"],ans:2,
  why:"基尼系数上升约 1.3 个百分点，洛伦兹曲线远离完全平等线。",wrong:["A 方向相反：曲线是远离而非靠近平等线。","B 完全不平等要求基尼系数为 100%，图中远未达到。","—","D 应为上升而非下降 1.3 个百分点。"]},
-{id:"off-2406-1",src:"official",paper:"Jun 2024 · WEC14/01",qn:"Q1",ms:"WEC14_01_2406_MS",ch:"综合",kp:"",spec:"Section A · Jun 2024 WEC14/01 Q1",
+{id:"off-2406-1",src:"official",paper:"Jun 2024 · WEC14/01",qn:"Q1",ms:"WEC14_01_2406_MS",ch:"综合",kp:"",topic:"世界银行的职能（国际机构）",spec:"Section A · Jun 2024 WEC14/01 Q1",
  q:"Which one of the following best describes the role of the World Bank?",qzh:"下列哪一项最能描述世界银行 (World Bank) 的职能？",
  opts:["To maintain exchange rate stability by ensuring international monetary cooperation between countries","To provide loans to countries that experience temporary current account deficits on their balance of payments","To resolve trade disputes between countries and set the rules of trade","To promote economic development through poverty reduction programmes"],ans:3,
  why:"通过减贫计划促进经济发展是世界银行的职能。",wrong:["A 是 IMF 的职能（国际货币合作与汇率稳定）。","B 是 IMF 的职能（向临时经常账户赤字的国家提供贷款）。","C 是 WTO 的职能（解决贸易争端、制定贸易规则）。","—"]},
-{id:"off-2406-2",src:"official",paper:"Jun 2024 · WEC14/01",qn:"Q2",ms:"WEC14_01_2406_MS",ch:"综合",kp:"",spec:"Section A · Jun 2024 WEC14/01 Q2",
+{id:"off-2406-2",src:"official",paper:"Jun 2024 · WEC14/01",qn:"Q2",ms:"WEC14_01_2406_MS",ch:"综合",kp:"",topic:"税制类型（比例税）",spec:"Section A · Jun 2024 WEC14/01 Q2",
  q:"The Government of Hungary operates an income tax system in which the proportion of income paid in tax by individuals remains constant as incomes increase. Which one of the following can be deduced from this information?",qzh:"匈牙利政府实行的所得税制度中，个人缴纳的税款占收入的比例不随收入增加而变化。下列哪一项可由此推出？",
  opts:["Hungary has a progressive tax system","Hungary has a regressive tax system","Hungary has a proportional tax system","Hungary has a specific tax system"],ans:2,
  why:"税款占收入的比例不随收入变化，即比例税 (proportional tax)。",wrong:["A 累进税 (progressive tax) 要求该比例随收入上升而提高，不符。","B 累退税 (regressive tax) 要求该比例随收入上升而下降，不符。","—","D 特定税 (specific tax) 是按数量定额征收，不符合该定义。"]},
-{id:"off-2406-3",src:"official",paper:"Jun 2024 · WEC14/01",qn:"Q3",ms:"WEC14_01_2406_MS",ch:"综合",kp:"",spec:"Section A · Jun 2024 WEC14/01 Q3",
+{id:"off-2406-3",src:"official",paper:"Jun 2024 · WEC14/01",qn:"Q3",ms:"WEC14_01_2406_MS",ch:"综合",kp:"",topic:"关税与反倾销（保护主义）",spec:"Section A · Jun 2024 WEC14/01 Q3",
  q:"In 2018 the UK Government introduced tariffs on imported steel. In 2022 it decided to maintain these tariffs until 2024. Which one of the following is the most likely reason why the UK Government maintained these tariffs until 2024?",qzh:"2018 年英国政府对进口钢铁征收关税，2022 年决定把关税维持到 2024 年。下列哪一项最可能是英国政府维持这些关税的原因？",
  opts:["To increase the level of unemployment in the UK steel industry","To prevent dumping of steel in the UK from foreign countries","To protect transnational companies supplying steel to the UK","To decrease government revenue from tariffs on imported steel"],ans:1,
  why:"维持关税是为了防止倾销 (dumping)、保护国内钢铁业与就业，A、C、D 的方向均与关税目的相反。",wrong:["A 方向相反：关税意在保护而非增加钢铁业失业。","—","C 关税保护的是国内生产者，不是向英国供货的跨国公司。","D 维持关税不会以减少关税收入为目的，方向不符。"]},
-{id:"off-2406-4",src:"official",paper:"Jun 2024 · WEC14/01",qn:"Q4",ms:"WEC14_01_2406_MS",ch:"Ch.25",kp:"kp25a",spec:"Section A · Jun 2024 WEC14/01 Q4",
+{id:"off-2406-4",src:"official",paper:"Jun 2024 · WEC14/01",qn:"Q4",ms:"WEC14_01_2406_MS",ch:"Ch.25",kp:"kp25a",topic:"贸易条件计算",spec:"Section A · Jun 2024 WEC14/01 Q4",
  q:"In 2021 Tanzania's index of export prices was 142.3 and its index of import prices was 121.3. Which one of the following was Tanzania's terms of trade in 2021?",qzh:"2021 年坦桑尼亚出口价格指数为 142.3、进口价格指数为 121.3。2021 年坦桑尼亚的贸易条件是多少？",
  opts:["21.0","85.2","117.3","263.6"],ans:2,
  why:"贸易条件 = 142.3 ÷ 121.3 × 100 = 117.3。",wrong:["A 用了减法（142.3 − 121.3）。","B 用了倒数（121.3 ÷ 142.3 × 100）。","—","D 用了加法。"]},
-{id:"off-2406-5",src:"official",paper:"Jun 2024 · WEC14/01",qn:"Q5",ms:"WEC14_01_2406_MS",ch:"综合",kp:"",spec:"Section A · Jun 2024 WEC14/01 Q5",
+{id:"off-2406-5",src:"official",paper:"Jun 2024 · WEC14/01",qn:"Q5",ms:"WEC14_01_2406_MS",ch:"综合",kp:"",topic:"发展指标比较（HDI）",spec:"Section A · Jun 2024 WEC14/01 Q5",
  tbl:{head:["国家","HDI","平均受教育年限","预期寿命","人均 GNI"],rows:[["智利 Chile","0.855","10.9 年","78.9 岁","$24 563"],["乌拉圭 Uruguay","0.809","9.0 年","75.4 岁","$21 269"]]},
  q:"Which one of the following statements can be deduced from the data in the table?",qzh:"下表为 2021 年智利与乌拉圭的数据。下列哪一项可由表中数据推出？",
  opts:["Literacy rates must be higher in Uruguay than in Chile","Uruguay is less economically developed than Chile","Average incomes are higher in Uruguay than in Chile","Uruguay has better provision of healthcare than Chile"],ans:1,
  why:"乌拉圭 HDI（0.809）低于智利（0.855），可推断乌拉圭经济发展水平更低。",wrong:["A 识字率表中无数据，且智利平均受教育年限（10.9 年）长于乌拉圭（9.0 年），不能推出。","—","C 智利人均 GNI（$24 563）高于乌拉圭（$21 269）。","D 智利预期寿命（78.9 岁）高于乌拉圭（75.4 岁），方向相反。"]},
-{id:"off-2406-6",src:"official",paper:"Jun 2024 · WEC14/01",qn:"Q6",ms:"WEC14_01_2406_MS",ch:"综合",kp:"",spec:"Section A · Jun 2024 WEC14/01 Q6",
+{id:"off-2406-6",src:"official",paper:"Jun 2024 · WEC14/01",qn:"Q6",ms:"WEC14_01_2406_MS",ch:"综合",kp:"",topic:"基尼系数与洛伦兹曲线（收入不平等）",spec:"Section A · Jun 2024 WEC14/01 Q6",
  fig:{up:false,y:"基尼系数 (%)",x:"年份",cap:"示意图：基尼系数下降趋势（非原卷图，仅示意趋势方向）。"},
  q:"The chart shows the Dominican Republic's Gini coefficient, expressed as a percentage, between 2018 and 2021. Which one of the following can be deduced from this chart?",qzh:"图中为多米尼加共和国 2018–2021 年基尼系数（以百分比表示）。下列哪一项可由该图推出？",
  opts:["Between 2018 and 2021 the Lorenz curve shifted closer to the line of perfect equality","Between 2018 and 2019 the distribution of income became more unequal","Between 2019 and 2020 there was perfect income inequality","Between 2020 and 2021 income inequality increased by approximately 1.1%"],ans:0,
  why:"基尼系数下降约 1.1 个百分点，收入分配更平等、洛伦兹曲线靠近平等线。",wrong:["—","B 方向相反：该时段分配趋于更平等。","C 完全不平等要求基尼系数为 100%，不存在。","D 应为下降而非上升约 1.1%。"],
  note:"注：QP 文本提取中 A 项首词有乱码，已按 MS 与图表趋势还原为上述表述。"},
-{id:"off-2306-1",src:"official",paper:"Jun 2023 · WEC14/01",qn:"Q1",ms:"WEC14_01_2306_MS",ch:"Ch.25",kp:"kp25e",spec:"Section A · Jun 2023 WEC14/01 Q1",
+{id:"off-2306-1",src:"official",paper:"Jun 2023 · WEC14/01",qn:"Q1",ms:"WEC14_01_2306_MS",ch:"Ch.25",kp:"kp25e",topic:"初级产品依赖与 Prebisch–Singer 假说",spec:"Section A · Jun 2023 WEC14/01 Q1",
  q:"Which one of the following suggests that primary product dependency is a constraint on growth and development?",qzh:"下列哪一项表明初级产品依赖 (primary product dependency) 是增长与发展的制约？",
  opts:["The Prebisch–Singer hypothesis","The Marshall–Lerner condition","The Lewis structural dual-sector model","The Harrod–Domar model"],ans:0,
  why:"Prebisch–Singer 假说讲初级产品贸易条件长期恶化，说明初级产品依赖制约增长与发展。",wrong:["—","B 马歇尔-勒纳条件与经常账户有关。","C 刘易斯模型与工业化有关。","D 哈罗德-多马模型与储蓄缺口有关。"]},
-{id:"off-2306-2",src:"official",paper:"Jun 2023 · WEC14/01",qn:"Q2",ms:"WEC14_01_2306_MS",ch:"综合",kp:"",spec:"Section A · Jun 2023 WEC14/01 Q2",
+{id:"off-2306-2",src:"official",paper:"Jun 2023 · WEC14/01",qn:"Q2",ms:"WEC14_01_2306_MS",ch:"综合",kp:"",topic:"政府支出分类（资本支出）",spec:"Section A · Jun 2023 WEC14/01 Q2",
  q:"In 2022 the Australian Government announced that it would invest nearly $13.6 billion in major infrastructure projects. This change in public expenditure is an example of an increase in which one of the following?",qzh:"2022 年澳大利亚政府宣布将投资近 136 亿美元于重大基础设施项目。这笔公共支出的变化属于下列哪一项的增加？",
  opts:["Transfer payments","Automatic stabilisers","Current expenditure","Capital expenditure"],ans:3,
  why:"基建投资是资本支出 (capital expenditure)。",wrong:["转移支付是向个人的给付。","自动稳定器 (automatic stabilisers) 不是相机抉择的财政政策，基建投资是主动决策。","经常支出是日常开支。","—"]},
-{id:"off-2306-3",src:"official",paper:"Jun 2023 · WEC14/01",qn:"Q3",ms:"WEC14_01_2306_MS",ch:"综合",kp:"",spec:"Section A · Jun 2023 WEC14/01 Q3",
+{id:"off-2306-3",src:"official",paper:"Jun 2023 · WEC14/01",qn:"Q3",ms:"WEC14_01_2306_MS",ch:"综合",kp:"",topic:"国际竞争力的影响因素",spec:"Section A · Jun 2023 WEC14/01 Q3",
  q:"In 2022 South Korea's international competitiveness ranking was four places lower than it was in 2021. Which one of the following measures is most likely to increase South Korea's international competitiveness?",qzh:"2022 年韩国国际竞争力排名比 2021 年下降四位。下列哪项措施最可能提高韩国的国际竞争力？",
  opts:["Stricter regulation of product markets","Privatisation of state-owned enterprises","Greater restrictions on free trade","Less spending on education and training"],ans:1,
  why:"私有化 (privatisation) 能提高效率与竞争力，A、C、D 都会降低竞争力。",wrong:["A 更严的产品市场监管会降低竞争力。","—","C 更多自由贸易限制会降低竞争力。","D 减少教育与培训支出会削弱人力资本与竞争力。"]},
-{id:"off-2306-4",src:"official",paper:"Jun 2023 · WEC14/01",qn:"Q4",ms:"WEC14_01_2306_MS",ch:"Ch.21",kp:"",spec:"Section A · Jun 2023 WEC14/01 Q4",
+{id:"off-2306-4",src:"official",paper:"Jun 2023 · WEC14/01",qn:"Q4",ms:"WEC14_01_2306_MS",ch:"Ch.21",kp:"",topic:"运输成本与贸易（全球化）",spec:"Section A · Jun 2023 WEC14/01 Q4",
  fig:{up:true,y:"运费（千美元）",x:"时间",cap:"示意图：集装箱运费上涨趋势（非原卷图，仅示意趋势方向）。"},
  q:"The chart shows average global container shipping costs, in $ thousands, between January 2020 and October 2021. Ceteris paribus, which one of the following is most likely to result from this trend in global container shipping costs?",qzh:"图中为 2020 年 1 月至 2021 年 10 月全球平均集装箱运费（千美元）。其他条件不变，集装箱运费的这一趋势最可能导致下列哪一项？",
  opts:["Costs of production for businesses will fall","Global inflationary pressures will not change","Patterns of world trade will not change","Trade as a proportion of world GDP will fall"],ans:3,
  why:"运费大幅上涨会推高企业生产成本与全球通胀压力、改变贸易格局并抑制贸易占 GDP 比重，A、B、C 均与成本上升的方向相反。",wrong:["A 方向相反：运费上涨使生产成本上升。","B 全球通胀压力会上升而非不变。","C 贸易格局会改变而非不变。","—"]},
-{id:"off-2306-5",src:"official",paper:"Jun 2023 · WEC14/01",qn:"Q5",ms:"WEC14_01_2306_MS",ch:"Ch.23",kp:"",spec:"Section A · Jun 2023 WEC14/01 Q5",
+{id:"off-2306-5",src:"official",paper:"Jun 2023 · WEC14/01",qn:"Q5",ms:"WEC14_01_2306_MS",ch:"Ch.23",kp:"",topic:"绝对优势与比较优势",spec:"Section A · Jun 2023 WEC14/01 Q5",
  tbl:{head:["国家","电视（台）","电脑（台）"],rows:[["Country M","24 000","24 000"],["Country Z","60 000","60 000"]]},figNote:"表中为各国用全部资源二选一时可生产的数量。",
  q:"Which one of the following can be deduced from this table?",qzh:"下表为 M 国与 Z 国可生产的电视与电脑数量。下列哪一项可由该表推出？",
  opts:["Country M and Country Z will both benefit from specialisation and trade","There are zero opportunity costs for both countries in producing televisions or computers","Country Z has an absolute advantage over Country M in the production of televisions and computers","Country M has a comparative advantage over Country Z in the production of televisions and computers"],ans:2,
  why:"Z 国两种产品产量均为 M 国的 2.5 倍，在两种产品上都有绝对优势 (absolute advantage)；两国机会成本均为 1:1，无比较优势。",wrong:["A 机会成本比率相同、无比较优势差异，专业化与贸易无收益，不能推出双方都受益。","B 机会成本为 1 台电视 = 1 台电脑，不为零。","—","D 机会成本相同，M 国没有比较优势 (comparative advantage)。"]},
-{id:"off-2306-6",src:"official",paper:"Jun 2023 · WEC14/01",qn:"Q6",ms:"WEC14_01_2306_MS",ch:"综合",kp:"",spec:"Section A · Jun 2023 WEC14/01 Q6",optHead:"两栏：Rupee（卢比）/ Dollar（美元）——央行买入 (Buy) 还是卖出 (Sell)？",
+{id:"off-2306-6",src:"official",paper:"Jun 2023 · WEC14/01",qn:"Q6",ms:"WEC14_01_2306_MS",ch:"综合",kp:"",topic:"央行外汇干预（汇率）",spec:"Section A · Jun 2023 WEC14/01 Q6",optHead:"两栏：Rupee（卢比）/ Dollar（美元）——央行买入 (Buy) 还是卖出 (Sell)？",
  q:"In July 2022 the Central Bank of India aimed to increase the value of the Indian rupee against the US dollar. Which one of the following combinations of foreign currency transactions would the Central Bank of India use to increase the value of the rupee against the US dollar?",qzh:"2022 年 7 月印度央行希望提高印度卢比对美元的价值。印度央行会采用下列哪种外汇交易组合来提高卢比对美元的价值？",
  opts:["Buy / Buy","Sell / Buy","Buy / Sell","Sell / Sell"],ans:2,
  why:"须买入卢比、卖出美元。",wrong:["A 会买入美元，方向不符。","B 卖出卢比会使卢比贬值。","—","D 卖出卢比与买入卢比方向相反。"]},
-{id:"off-2310-1",src:"official",paper:"Oct 2023 · WEC14/01",qn:"Q1",ms:"WEC14_01_MS_2310",ch:"综合",kp:"",spec:"Section A · Oct 2023 WEC14/01 Q1",
+{id:"off-2310-1",src:"official",paper:"Oct 2023 · WEC14/01",qn:"Q1",ms:"WEC14_01_MS_2310",ch:"综合",kp:"",topic:"经济增长制约因素（非经济因素）",spec:"Section A · Oct 2023 WEC14/01 Q1",
  q:"Which one of the following is a non-economic factor that might constrain the rate of economic growth and economic development of a country?",qzh:"下列哪一项是可能制约一国经济增长与经济发展的非经济因素？",
  opts:["A poorly educated workforce","Volatile commodity prices","Capital flight","High levels of corruption"],ans:3,
  why:"腐败 (corruption) 是非经济因素，A、B、C 均为经济因素。",wrong:["A 劳动力教育水平低是经济因素。","B 大宗商品价格波动是经济因素。","C 资本外逃 (capital flight) 是经济因素。","—"]},
-{id:"off-2310-2",src:"official",paper:"Oct 2023 · WEC14/01",qn:"Q2",ms:"WEC14_01_MS_2310",ch:"综合",kp:"",spec:"Section A · Oct 2023 WEC14/01 Q2",
+{id:"off-2310-2",src:"official",paper:"Oct 2023 · WEC14/01",qn:"Q2",ms:"WEC14_01_MS_2310",ch:"综合",kp:"",topic:"劳动生产率与国际竞争力",spec:"Section A · Oct 2023 WEC14/01 Q2",
  q:"In 2021 the UK experienced a fall in labour productivity. It remained below the average labour productivity of its main trading partners. Ceteris paribus, which one of the following can be deduced from this statement?",qzh:"2021 年英国劳动生产率下降，且仍低于其主要贸易伙伴的平均水平。其他条件不变，下列哪一项可由此推出？",
  opts:["UK goods and services were less internationally competitive than those of its trading partners","Average export prices of UK goods and services were lower than the average export prices of its trading partners","Unit labour costs in the UK were the same as the average unit labour costs of its trading partners","The UK experienced a significant deterioration in its terms of trade"],ans:0,
  why:"生产率相对下降会使竞争力下降、出口价格与单位劳动成本相对上升。",wrong:["—","B 出口价格会相对更高而非更低，方向相反。","C 单位劳动成本会更高而非相同。","D 出口价格相对上升意味着贸易条件改善而非恶化。"]},
-{id:"off-2310-3",src:"official",paper:"Oct 2023 · WEC14/01",qn:"Q3",ms:"WEC14_01_MS_2310",ch:"综合",kp:"",spec:"Section A · Oct 2023 WEC14/01 Q3",
+{id:"off-2310-3",src:"official",paper:"Oct 2023 · WEC14/01",qn:"Q3",ms:"WEC14_01_MS_2310",ch:"综合",kp:"",topic:"央行准备金要求与货币供给（货币政策）",spec:"Section A · Oct 2023 WEC14/01 Q3",
  q:"In 2020 Japan's central bank, the Bank of Japan, increased its reserve asset (liquidity) requirements for commercial banks. Ceteris paribus, which one of the following is the most likely effect of this decision?",qzh:"2020 年日本央行提高了商业银行的准备金（流动性）要求。其他条件不变，这一决定最可能的影响是下列哪一项？",
  opts:["An increase in the money supply","An increase in the level of real output","A decrease in the rate of inflation","A decrease in the rate of unemployment"],ans:2,
  why:"提高准备金要求会收缩货币供给、压低产出与通胀、推高失业，A、B、D 方向均相反。",wrong:["A 货币供给会减少而非增加。","B 实际产出会下降而非上升。","—","D 失业率会上升而非下降。"]},
-{id:"off-2310-4",src:"official",paper:"Oct 2023 · WEC14/01",qn:"Q4",ms:"WEC14_01_MS_2310",ch:"综合",kp:"",spec:"Section A · Oct 2023 WEC14/01 Q4",
+{id:"off-2310-4",src:"official",paper:"Oct 2023 · WEC14/01",qn:"Q4",ms:"WEC14_01_MS_2310",ch:"综合",kp:"",topic:"基尼系数与洛伦兹曲线（收入不平等）",spec:"Section A · Oct 2023 WEC14/01 Q4",
  fig:{up:false,y:"基尼系数 (%)",x:"年份",cap:"示意图：基尼系数下降趋势（非原卷图，仅示意趋势方向）。"},
  q:"The chart shows Georgia's Gini coefficient, expressed as a percentage, between 2017 and 2020. Which one of the following can be deduced from this chart?",qzh:"图中为格鲁吉亚 2017–2020 年基尼系数（以百分比表示）。下列哪一项可由该图推出？",
  opts:["The distribution of income became more unequal","Georgia experienced perfect income equality","Income inequality increased by 3.4%","Georgia's Lorenz curve shifted closer to the line of perfect equality"],ans:3,
  why:"基尼系数下降 3.4 个百分点，收入分配更平等、洛伦兹曲线靠近平等线。",wrong:["A 方向相反：分配变得更平等。","B 完全平等要求基尼系数为零。","C 应为下降 3.4 个百分点而非上升。","—"]},
-{id:"off-2310-5",src:"official",paper:"Oct 2023 · WEC14/01",qn:"Q5",ms:"WEC14_01_MS_2310",ch:"综合",kp:"",spec:"Section A · Oct 2023 WEC14/01 Q5",
+{id:"off-2310-5",src:"official",paper:"Oct 2023 · WEC14/01",qn:"Q5",ms:"WEC14_01_MS_2310",ch:"综合",kp:"",topic:"绝对贫困的定义",spec:"Section A · Oct 2023 WEC14/01 Q5",
  q:"In 2022 Madagascar had an absolute poverty rate of 71%. Which one of the following statements about absolute poverty is true?",qzh:"2022 年马达加斯加绝对贫困率为 71%。下列关于绝对贫困 (absolute poverty) 的说法哪一项正确？",
  opts:["Absolute poverty is the inability of individuals or groups to meet their basic needs","Absolute poverty is based on value judgements and is subject to changes over time","Absolute poverty measures the percentage of people within a country earning less than 60% of median income","Absolute poverty measures the percentage of people earning more than $2.15 a day at 2017 PPP values"],ans:0,
  why:"绝对贫困指个人或群体无法满足基本需要 (basic needs)。",wrong:["—","B 描述的是相对贫困（基于价值判断、随时间变化）。","C 描述的是相对贫困（低于中位收入的 60%）。","D 应为低于（而非高于）每天 $2.15（2017 PPP）。"]},
-{id:"off-2310-6",src:"official",paper:"Oct 2023 · WEC14/01",qn:"Q6",ms:"WEC14_01_MS_2310",ch:"综合",kp:"",spec:"Section A · Oct 2023 WEC14/01 Q6",figNote:"图题：需对照原卷图示作答（选项为原卷图中的面积字母，见原卷 Q6 图示）。",
+{id:"off-2310-6",src:"official",paper:"Oct 2023 · WEC14/01",qn:"Q6",ms:"WEC14_01_MS_2310",ch:"综合",kp:"",topic:"缓冲库存计划（图题/价格支持）",spec:"Section A · Oct 2023 WEC14/01 Q6",figNote:"图题：需对照原卷图示作答（选项为原卷图中的面积字母，见原卷 Q6 图示）。",
  q:"The graph shows the market for rice in Indonesia. The Government guarantees a minimum support price of P1 and operates a buffer stock scheme. Between 2021 and 2022 output of rice increased from 0L to 0M. Which one of the following areas would be the government expenditure on the buffer stock scheme?",qzh:"图中为印度尼西亚大米市场。政府保证最低支持价格 P1 并实行缓冲库存 (buffer stock) 计划。2021–2022 年大米产量从 0L 增至 0M。下列哪个面积是政府在缓冲库存计划上的支出？",
  opts:["UVWX","UVML","P2P1UX","P2P1VW"],ans:1,
  why:"政府按支持价收购的过剩产量为 LM、收购支出对应面积 UVML，其余面积均非政府收购支出。",wrong:["A UVWX 不是政府收购支出对应的面积。","—","C P2P1UX 不是政府收购支出对应的面积。","D P2P1VW 不是政府收购支出对应的面积。"]}
@@ -1269,7 +1274,7 @@ function drSummaryHTML(){
  const overallDen=totParts+DRTRAIN.length;const overallNum=totAns+trainDone;const overall=overallDen?Math.round(overallNum/overallDen*100):0;
  const hasAny=totAns>0||trainDone>0;
  let h='<div class="card mint"><h3 style="margin-top:0">Data Response 进度汇总 (Progress Summary)</h3>';
- if(!hasAny)h+='<div class="empty"><b>还没有 Data Response 作答记录。</b>在下方任意一套已核实 Q7 整卷的 (a)–(e) 小问里写下答案，或完成一组材料提取训练，这里会自动汇总你的真实进度；没有记录时不显示任何虚构数据。</div>';
+ if(!hasAny)h+='<div class="empty"><b>还没有 Data Response 作答记录。</b>在下方<a href="#q7verified">任意一套已核实 Q7 整卷</a>的 (a)–(e) 小问里写下答案，或完成一组<a href="#drtrain">材料提取训练</a>，这里会自动汇总你的真实进度；没有记录时不显示任何虚构数据。</div>';
  h+='<p class="sm" style="margin:.3rem 0"><b>总体完成率 (Overall Completion)：</b>'+overall+'%（已答小问 '+totAns+' / '+totParts+' + 提取训练已答 '+trainDone+' / '+DRTRAIN.length+'）</p><div class="bar mint"><i style="width:'+overall+'%"></i></div>'
  +perPaper.map(x=>'<p class="sm" style="margin:.3rem 0"><b>'+esc(x.p.ds)+' · '+esc(x.p.paper)+' · '+esc(x.p.theme)+'</b>：已答 '+x.ans+' / 5 · 已自评 '+x.scored+' / 5 · 完成率 '+x.rate+'%</p><div class="bar"><i style="width:'+x.rate+'%"></i></div>').join("")
  +'<p class="sm" style="margin:.3rem 0"><b>材料信息提取与运用训练 (Extraction Training)：</b>'+(trainDone?'已答 '+trainDone+' / '+DRTRAIN.length+' 组 · 答对 '+trainOk+' 组 · 正确率 (Accuracy) '+Math.round(trainOk/trainDone*100)+'%':'尚未作答，暂无正确率。')+'</p>'
@@ -1284,7 +1289,7 @@ function q7PaperHTML(p){
  +p.extracts.map(f=>'<p class="sm" style="margin:.25rem 0"><b>'+esc(f[0])+' · <span class="en">'+esc(f[1])+'</span></b><br><span class="mut">要点摘要：'+esc(f[2])+'</span></p>').join("")
  +'<p class="sm"><span class="tag gold">摘要非逐字原文</span> <span class="mut">完整材料见官方链接：</span><a href="'+p.qp+'" target="_blank" rel="noopener">Question Paper (QP)</a> · <a href="'+p.msu+'" target="_blank" rel="noopener">Mark Scheme ('+esc(p.ms)+')</a></p>'
  +'<div class="tblwrap"><table><tr><th style="width:52px">小问</th><th style="width:88px">指令词</th><th style="width:46px">分值</th><th>英文原题（逐字）与评分要点状态</th></tr>'
- +p.parts.map(pt=>'<tr><td><b>7('+pt[0]+')</b></td><td>'+esc(pt[1])+'</td><td>'+pt[2]+'</td><td><span class="en">'+esc(pt[3])+'</span>'+(pt[4]?'<br><span class="tag mint">MS 答案</span> <b>'+esc(pt[4])+'</b>':'<br><span class="sm mut">'+(pt[1]==="Calculate"?'计算答案见官方 MS 链接（待补充）':'评分要点待补充（见官方 MS 链接）')+'</span>')+'</td></tr>').join("")
+ +p.parts.map(pt=>'<tr><td><b>7('+pt[0]+')</b></td><td>'+esc(pt[1])+'</td><td>'+pt[2]+'</td><td><span class="en">'+esc(pt[3])+'</span>'+(pt[4]?'<br><span class="tag mint">MS 答案</span> <b>'+esc(pt[4])+'</b>':"")+(p.pts&&p.pts[pt[0]]?'<br><span class="tag mint">官方 MS 评分要点（'+esc(p.ms)+'）</span><ul class="tight">'+p.pts[pt[0]].map(s=>'<li>'+esc(s)+'</li>').join("")+'</ul>':(pt[4]?"":'<br><span class="sm mut">'+(pt[1]==="Calculate"?'计算答案（<a href="'+p.msu+'" target="_blank" rel="noopener">官方 MS</a>，待补充）':'评分要点待补充（<a href="'+p.msu+'" target="_blank" rel="noopener">官方 MS</a>）')+'</span>'))+'</td></tr>').join("")
  +'</table></div>'
  +'<h3>按小问作答 (Answer by Part) · '+esc(p.ds)+'</h3><p class="sm mut">每个小问单独作答并自评：答案输入即自动保存到本机（刷新不丢）；自评分数 (Self-assessment Score) 留空 = 未评分，填 0 = 0 分，超过该小问满分会自动按满分计入。状态按内容推导：未答 / 已答 / 已自评。</p>'
  +p.parts.map(pt=>{
@@ -1380,7 +1385,7 @@ function bindDrTrain(){
 /* ---------- 十步批改标准 + 结构化自评 + AO 追踪 ---------- */
 const TENSTEPS=[["审题","圈出指令词、对象与限定词，先确认题目真正问什么。"],["定义","关键术语定义准确，用官方口径。"],["知识覆盖","覆盖官方 MS 的 KAA 要点，不漏核心得分点。"],["应用","材料数据与自选国家例子已引用、且真正用进分析，不是装饰。"],["分析","因果链至少 3–4 环，逻辑不断裂。"],["图表/定量","图或计算正确，且与分析结合（不是孤立摆图）。"],["评价","排序 (prioritisation) + 时间维度 + 幅度 + 反方，至少两个评价维度。"],["判断","有依据的结论，不是简单重复前文。"],["结构","段落分工清晰，每段一个要点。"],["表达","术语准确、无跑题。"]];
 function tenStepsHTML(){
- return '<h3 style="margin-top:0">十步批改标准（教学用）</h3><p class="sm"><span class="tag gold">教学用批改标准</span> <span class="mut">依据官方 AO1–AO4 与 Mark Scheme 等级描述制定，<b>非 Pearson 官方标准</b>。批改时逐项核对：</span></p><ol class="tight">'
+ return '<h3 style="margin-top:0">十步批改标准（教学用）</h3><p class="sm"><span class="tag gold">教学用批改标准</span> <span class="mut">依据官方 AO1–AO4 与 Mark Scheme 等级描述制定（<button class="btn sm ghost" data-go="toolkit">看工具箱 · 官方等级描述</button>），<b>非 Pearson 官方标准</b>。批改时逐项核对：</span></p><ol class="tight">'
  +TENSTEPS.map(s=>'<li><b>'+esc(s[0])+'：</b>'+esc(s[1])+'</li>').join("")+'</ol>'
  +'<p class="sm"><b>三种批改模式下十步的权重：</b></p><ul class="tight"><li><b>Strict（严格考试模式）：</b>十步全部按 MS 等级严格打分，任何一步断裂都直接压低等级，不给安慰分。</li><li><b>Detailed（详细学习模式）：</b>十步逐项指出断层——断在哪一步、为什么断、怎么补。</li><li><b>Quick（快速反馈模式）：</b>只给最主要的 3 个问题——从十步中挑出失分最重的三步，其余不展开。</li></ul>';
 }
@@ -1415,6 +1420,9 @@ function aoTrackHTML(){
 }
 /* ---------- 综合考查频率（18 道口径）与已核实试卷清单 ---------- */
 const INT_FREQ=[["Ch.21 全球化的成因",1],["Ch.22 全球化的影响（收益与成本）",2],["Ch.23 专业化与贸易的收益",10],["Ch.24 贸易格局的影响因素",2],["Ch.25 贸易条件",4],["Ch.26 贸易集团与经济一体化",6],["Ch.27 保护主义与世界贸易组织 (WTO)",7]];
+const INT_FREQ_RULE="计入：某题 KAA 或评价清单中至少有一条以该章节核心内容为分析对象的完整要点（定义/机制/评价），且该条在站内已逐字核对（非 partial 截断条目），则计入该章节。待核实：仅在其他章节的论证中顺带提及该章节概念、或相关条目标注未逐字核全（partial/截断），无法确定官方 MS 是否将其作为该章节考查点，列入待核实、不计入总数。";
+/* INT_FREQ 逐题推导表（Round 5 第四阶段）：每行按 VER 的 KAA/评价清单归纳；pend 为待核实、不计入总数 */
+const INT_FREQ_DERIV=[{"code": "202101-8", "chs": [25], "ev": "KAA：贸易条件 (terms of trade) 定义与宏观效应（贸易差额、AD、增长、通胀、预算）；评价：弹性与 SRAS 等均围绕贸易条件。", "pend": ""}, {"code": "202106-7e", "chs": [23, 26], "ev": "KAA：贸易创造基于比较优势法则 (comparative advantage)（Ch.23）；贸易协定与贸易转移 (trade diversion)（Ch.26）。", "pend": ""}, {"code": "202110-8", "chs": [23, 24, 27], "ev": "KAA：新兴经济体专业化分工变化（Ch.23）、世界贸易格局变化（Ch.24）；评价：取决于保护主义措施，如美国对华贸易战（Ch.27）。", "pend": ""}, {"code": "202110-9", "chs": [23, 25], "ev": "KAA：按比较优势专业化与贸易收益（Ch.23）；评价：贸易条件可能恶化，互利要求贸易条件落在机会成本比率之间（Ch.25）。", "pend": ""}, {"code": "202201-8", "chs": [21, 23, 26, 27], "ev": "KAA：运输/通讯成本、贸易自由化、贸易集团、政治开放（Ch.21）；比较优势的应用（Ch.23）；贸易集团数量与规模（Ch.26）；评价：多哈回合与 WTO 对非关税壁垒成效有限、贸易战与去全球化（Ch.27）。", "pend": ""}, {"code": "202201-9", "chs": [27], "ev": "KAA/评价：限制自由贸易的理由（保护幼稚产业、防倾销、纠正逆差等）与关税/配额/补贴等手段（Ch.27）。", "pend": "比较优势：仅评价段一句话提及扭曲比较优势，属其他论证的机制，待核实。"}, {"code": "202210-9", "chs": [22, 23], "ev": "KAA：比较优势→专业化与贸易（Ch.23）；收益与成本均围绕全球化对各方的影响（Ch.22）。", "pend": ""}, {"code": "202210-10", "chs": [23, 27], "ev": "KAA：发展中国家无法利用农产品比较优势（Ch.23）；补贴作为针对发展中国家的保护主义（Ch.27）。", "pend": "贸易格局/贸易转移：KAA 有一条「对贸易格局的影响：贸易转移」，但该条分析的是补贴对发展中国家的影响，格局与转移为传导渠道，是否单计 Ch.24/Ch.26 待核实。"}, {"code": "202301-8", "chs": [23, 26], "ev": "KAA：贸易创造基于比较优势法则（Ch.23）；加入贸易集团的收益（Ch.26）。", "pend": ""}, {"code": "202305-7e", "chs": [25], "ev": "KAA/评价：全部围绕贸易条件改善的因素（相对通胀、生产率、劳动成本、汇率、大宗商品价格）与普雷维什-辛格假说 (Prebisch–Singer hypothesis)（Ch.25）。", "pend": ""}, {"code": "202310-8", "chs": [25], "ev": "KAA/评价：全部围绕贸易条件恶化的因素与幅度（相对通胀、生产率、劳动成本、汇率、资本投资、大宗商品价格）（Ch.25）。", "pend": "保护主义：KAA 有一条把关税列为贸易条件恶化因素之一（进口价格↑），该条分析对象是贸易条件而非保护主义本身，是否单计 Ch.27 待核实。"}, {"code": "202401-9", "chs": [23, 24, 26], "ev": "KAA：比较优势、新兴经济体开放、贸易集团/双边协定、汇率、保护主义、竞争力、FDI、去工业化，均为贸易格局的影响因素（Ch.24）；比较优势为其中一因（Ch.23）；贸易集团与贸易创造/转移（Ch.26）。", "pend": "保护主义：评价段有一条「其他国家可能以本国保护主义政策报复」，属格局变化的后果之一，是否单计 Ch.27 待核实。"}, {"code": "202405-9", "chs": [26], "ev": "KAA/评价：全部围绕经济与货币联盟（转换成本、丧失独立货币政策与贬值能力、《增长与稳定公约》、收益列于评价项下）（Ch.26）。", "pend": ""}, {"code": "202410-8", "chs": [23, 27], "ev": "KAA 首条：扭曲比较优势→专业化减少、世界产出减少（Ch.23）；保护主义政策对全球经济的影响（Ch.27）。", "pend": ""}, {"code": "202506-7e", "chs": [23, 26], "ev": "KAA：贸易创造基于比较优势法则、RCEP 自由贸易区（Ch.23、Ch.26）。", "pend": "保护主义：评价段末句括号内提及美国与欧盟保护主义，表述截断、未逐字核全，是否计入 Ch.27 待核实。"}, {"code": "202506A-8", "chs": [22], "ev": "KAA/评价：全部围绕中国经济放缓对全球经济的影响（世界贸易、全球通胀、出口伙伴、供应链、FDI、旅游）（Ch.22）。", "pend": ""}, {"code": "202601-7e", "chs": [27], "ev": "KAA/评价：全部围绕提高关税的原因与后果（不公平贸易规则、逆差、制造业就业、保护幼稚/战略产业、增加税收）（Ch.27）。", "pend": ""}, {"code": "202605A-8", "chs": [27], "ev": "KAA/评价：全部围绕关税增加对全球经济的代价（关税定义、效率下降、通胀、增长、失业、FDI、供应链、贸易战）（Ch.27）。", "pend": "比较优势/贸易转移：KAA 有一条「效率/比较优势下降：关税扭曲世界贸易→贸易转移增加」，比较优势与转移均为关税效应的表述，是否单计 Ch.23/Ch.26 待核实。"}];
 const VERIFIED_PAPERS=["Jan 2024 · WEC14/01","Jun 2024 · WEC14/01","Jun 2023 · WEC14/01","Oct 2023 · WEC14/01","Jun 2025 · WEC14/01","Jun 2025 · WEC14/01A","Oct 2025 · WEC14/01A","Jan 2026 · WEC14/01A","Jun 2026 · WEC14/01A"];
 /* ---------- 整卷模拟 ---------- */
 const MOCKDEFS=[
@@ -1430,7 +1438,7 @@ function codePaperLabel(code){const p=parseCode(code);if(!p||!p.year)return code
 function mockSrcHTML(d,st){
  const p=Q7P.find(x=>x.id===d.paper);
  const selInfo=function(code){return d.origC.some(function(o){return o.code===code;})?"原卷题："+codePaperLabel(code):"他卷题，来源试卷："+codePaperLabel(code);};
- let h='<div class="card" style="padding:12px 16px"><h3 style="margin-top:0">各部分来源（Sources）</h3>'
+ let h='<div class="card" id="mocksrc" style="padding:12px 16px"><h3 style="margin-top:0">各部分来源（Sources）</h3>'
  +'<p class="sm" style="margin:.25rem 0"><b>Section A：</b>该卷官方 Q1–Q6（已逐题录入，答案以官方评分标准 (Mark Scheme, MS) 为准）。</p>'
  +'<p class="sm" style="margin:.25rem 0"><b>Section B：</b>该卷 Q7 全套（'+esc(p.ds)+' · '+esc(p.paper)+' · '+esc(p.theme)+'）；本站材料为摘要，完整材料册 (Source Booklet) 见<a href="'+esc(p.qp)+'" target="_blank" rel="noopener">官方试卷 (Question Paper, QP)</a>，评分细则见<a href="'+esc(p.msu)+'" target="_blank" rel="noopener">官方 MS</a>。</p>'
  +'<p class="sm" style="margin:.25rem 0 .1rem"><b>Section C：</b>自题库选取（可自选任意两道）。该卷原 Section C 三道题（已对照官方 QP 逐题核对题号与题干）：</p><ul class="tight sm">'
@@ -1488,14 +1496,15 @@ function mockState(id){U.mock=U.mock||{};if(!U.mock[id]){const d=MOCKDEFS.find(m
 function mockCardHTML(){
  return '<h3 style="margin-top:0">Full Paper Simulation · 整卷模拟（2 小时 / 80 分）</h3>'
  +'<p style="margin:.2rem 0">'+COMPOSITE_TAG+'</p>'
- +'<p class="sm mut">真实结构：Section A 6 分 + Section B 34 分 + Section C 选二 40 分。Section A 用该卷官方 Q1–Q6，Section B 用该卷 Q7 全套；<b>Section B 材料为摘要，完整 Source Booklet 见官方 QP 链接</b>；Section C 自已核对题库选取（默认已填该卷原 Section C 的两道，也可自选任意两道，逐题来源见点开后的来源清单）——因此整卷为组合练习卷，不是该卷原卷的完整再现。草稿自动保存到本机，按模拟卷分别保存；交卷后按自评清单自查，成绩只记你的真实自评记录。</p>'
+ +'<p class="sm mut">真实结构：Section A 6 分 + Section B 34 分 + Section C 选二 40 分。Section A 用该卷官方 Q1–Q6，Section B 用该卷 Q7 全套；<b>Section B 材料为摘要，完整 Source Booklet 见<a href="#mocksrc">上方来源清单里的官方 QP 链接</a></b>；Section C 自已核对题库选取（默认已填该卷原 Section C 的两道，也可自选任意两道，逐题来源见<a href="#mocksrc">点开后的来源清单</a>）——因此整卷为组合练习卷，不是该卷原卷的完整再现。草稿自动保存到本机，按模拟卷分别保存；交卷后按自评清单自查，成绩只记你的真实自评记录。</p>'
  +'<div class="btnrow">'+MOCKDEFS.map(m=>'<button class="btn sm '+(MOCKCUR===m.id?"":"ghost")+'" data-mocktab="'+m.id+'">'+esc(m.name)+'</button>').join("")+'</div><div id="mockbody"></div>';
 }
 function mockBodyHTML(){
  const d=MOCKDEFS.find(m=>m.id===MOCKCUR);const st=mockState(d.id);const p=Q7P.find(x=>x.id===d.paper);
  let h='<div class="secthead"><b>'+esc(d.name)+'</b><span class="timer" id="mocktimer">'+fmtHMS(st.deadline?mockRemain(st):st.left)+'</span></div>'
  +'<p style="margin:.4rem 0">'+COMPOSITE_TAG+' <span class="sm mut">本卷为组合练习卷：Section A、Section B 取自该卷官方试卷，Section C 自题库选取，并非该卷原卷。</span></p>'+mockSrcHTML(d,st)
- +'<div class="btnrow"><button class="btn sm" id="mockplay"'+(st.sub?" disabled":"")+'>'+(st.deadline?"暂停":"开始 / 继续")+'</button><button class="btn sm ghost" id="mockreset"'+(st.sub?" disabled":"")+'>重置计时（2:00:00）</button>'+(st.sub?'<span class="tag mint">已交卷 · 自评见下方</span>':"")+'</div>';
+ +'<div class="btnrow"><button class="btn sm" id="mockplay"'+(st.sub?" disabled":"")+'>'+(st.deadline?"暂停":"开始 / 继续")+'</button><button class="btn sm ghost" id="mockreset"'+(st.sub?" disabled":"")+'>重置计时（2:00:00）</button>'+(st.sub?'<span class="tag mint">已交卷 · <a href="#mockselfeval">自评见下方</a></span>':"")+'</div>'
+ +'<p class="sm mut">计时说明：计时按截止时间（deadline）走，切换模块或切到后台不会暂停；但如果页面在后台被系统完全冻结，网页无法在截止瞬间执行交卷，回来或重载时会按截止时间补交卷。计时用设备时间，手动大幅改时间会影响计时。</p>';
  h+='<h3>Section A · 选择题（6 分）</h3>'+d.secA.map((qid,i)=>{const q=mcqById(qid);const sel=st.a[qid];const show=!!st.sub;
   return '<div class="card" style="padding:10px 14px"><p class="sm" style="margin:.2rem 0"><b>Q'+(i+1)+'.</b> <span class="en">'+esc(q.q)+'</span></p>'+(q.tbl?tblHTML(q.tbl):"")+(q.fig?trendSVG(q.fig):"")+(q.figNote?'<p class="sm mut">'+esc(q.figNote)+'</p>':"")+(q.optHead?'<p class="sm mut">'+esc(q.optHead)+'</p>':"")
   +q.opts.map((o,oi)=>'<button class="opt'+(show?(oi===q.ans?" right":(sel===oi?" wrong":"")):(sel===oi?" right":""))+'" data-ma="'+qid+'" data-moi="'+oi+'"'+(show?" disabled":"")+'><b>'+"ABCD"[oi]+'.</b> '+esc(o)+'</button>').join("")
@@ -1504,7 +1513,7 @@ function mockBodyHTML(){
  +p.parts.map(pt=>'<div style="margin:8px 0"><p class="sm" style="margin:.2rem 0"><b>7('+pt[0]+') '+esc(pt[1])+' · '+pt[2]+' 分</b> <span class="en">'+esc(pt[3])+'</span></p><textarea rows="4" data-mb="'+pt[0]+'" placeholder="在此作答 7('+pt[0]+')…"'+(st.sub?" disabled":"")+'>'+esc(st.b[pt[0]]||"")+'</textarea></div>').join("");
  const cOpts=Object.keys(VER).filter(c=>parseCode(c).marks===20);
  const cSel=(key,cur)=>{const other=key==="c1"?st.c2:st.c1;return '<select data-mcsel="'+key+'"'+(st.sub?" disabled":"")+'>'+cOpts.map(c=>'<option value="'+c+'"'+(c===cur?" selected":"")+(c===other&&c!==cur?" disabled":"")+'>'+c+" · "+esc(essayByCode(c).zh)+(c===other&&c!==cur?"（另一题已选）":"")+'</option>').join("")+'</select>';};
- h+='<h3>Section C · Essay 选二（每题 20 分）'+(st.sub?"":' <button class="btn mint sm" id="mocksubmit2" style="vertical-align:middle">交卷并进入自评</button>')+'</h3><p class="sm mut">Section C 自已核对题库选取，默认已填该卷原 Section C 的两道，可改选任意两道（逐题来源见上方来源清单）。两题不能选同一道；交卷后选题与答案锁定。</p>'
+ h+='<h3>Section C · Essay 选二（每题 20 分）'+(st.sub?"":' <button class="btn mint sm" id="mocksubmit2" style="vertical-align:middle">交卷并进入自评</button>')+'</h3><p class="sm mut">Section C 自已核对题库选取，默认已填该卷原 Section C 的两道，可改选任意两道（逐题来源<a href="#mocksrc">见上方来源清单</a>）。两题不能选同一道；交卷后选题与答案锁定。</p>'
  +'<p class="sm">第一题 '+cSel("c1",st.c1)+'</p><textarea rows="8" data-mc="'+esc(st.c1)+'" placeholder="在此写第一篇 Essay…"'+(st.sub?" disabled":"")+'>'+esc(st.c[st.c1]||"")+'</textarea>'
  +'<p class="sm">第二题 '+cSel("c2",st.c2)+'</p><textarea rows="8" data-mc="'+esc(st.c2)+'" placeholder="在此写第二篇 Essay…"'+(st.sub?" disabled":"")+'>'+esc(st.c[st.c2]||"")+'</textarea>';
  if(!st.sub)h+='<div class="btnrow"><button class="btn mint" id="mocksubmit">交卷并进入自评</button></div>';
@@ -1522,7 +1531,7 @@ function mockSelfHTML(d,st){
  const rawTotal=aS+bRawT+cRawT;
  const over=rawTotal>80||p.parts.some(pt=>clampScore(sub.b[pt[0]],pt[2]).over)||["c1k","c1e","c2k","c2e"].some(k=>cCl[k].over);
  const dispVal=function(raw,max){const c=clampScore(raw,max);return c.blank?"":c.val;};
- let h='<div class="card mint"><h3 style="margin-top:0">交卷自评清单</h3><p style="margin:.2rem 0">'+COMPOSITE_TAG+(over?' <span class="tag red">待订正</span>':"")+'</p>'
+ let h='<div class="card mint" id="mockselfeval"><h3 style="margin-top:0">交卷自评清单</h3><p style="margin:.2rem 0">'+COMPOSITE_TAG+(over?' <span class="tag red">待订正</span>':"")+'</p>'
  +'<p class="sm"><b>Section A（对答案自判）：'+aS+' / 6</b>（上方每题已显示对错与 MS 理由；答错的题在保存记录时自动进入错题本）</p>'
  +'<p class="sm" style="margin-bottom:2px"><b>Section B（按小问分值自评，对照官方 MS）：</b></p>'
  +p.parts.map(pt=>'<p class="sm" style="margin:.15rem 0">7('+pt[0]+') '+esc(pt[1])+'：<input type="number" min="0" max="'+pt[2]+'" data-mss-b="'+pt[0]+'" value="'+dispVal(sub.b[pt[0]],pt[2])+'" style="width:80px"> / '+pt[2]+' 分</p>').join("")
@@ -1612,7 +1621,7 @@ function wireMock(){
 const NAV=[
  {g:"总览",items:[["dashboard","Dashboard 学习总览"],["search","双语搜索"]]},
  {g:"TRACK A · 考试卓越",items:[["kb","Knowledge Base 知识库"],["essays","Essay Library 范文库"],["dataresponse","Data Response 材料题库"],["mcq","MCQ Bank 选择题库"],["frequency","Exam Frequency 考试频率"],["practice","AI Practice Room 练习室"],["mocknav","Mock Examination 整卷模拟"],["quant","Quantitative Skills 定量技能"]]},
- {g:"TRACK B · 思维卓越",items:[["elite","Elite Economist Training"],["extension","Advanced Extension 本科拓展"]]},
+ {g:"TRACK B · 思维卓越",items:[["elite","Elite Economist Training"],["researchlab","Research Lab · 读报告方法"],["extension","Advanced Extension 本科拓展"]]},
  {g:"个人系统",items:[["collection","My Collection 我的收藏"],["mistakes","Mistake Book 错题本"],["planner","Revision Planner 复习计划"],["toolkit","Exam Toolkit 考试工具箱"],["settings","Settings 设置与数据"]]}
 ];
 let curView="dashboard", curParam=null;
@@ -1659,11 +1668,11 @@ VIEWS.dashboard=function(){
  +'<div class="stat"><b>'+(ms?ms.acc+"%":"—")+'</b><span>MCQ 练习正确率'+(ms?"（共 "+ms.n+" 题次）":"")+'</span></div>'
  +'<div class="stat"><b>'+unres+'</b><span>错题本未解决条目</span></div>'
  +'<div class="stat"><b>'+Object.keys(U.favs).length+'</b><span>我的收藏</span></div>'
- +'<div class="stat"><b>'+(dte==null?"未设置":dte+" 天")+'</b><span>距离考试（在「设置」填写你的真实考试日期）</span></div></div>';
+ +'<div class="stat"><b>'+(dte==null?"未设置":dte+" 天")+'</b><span>距离考试（<button class="btn sm ghost" data-go="settings">在「设置」填写你的真实考试日期</button>）</span></div></div>';
  if(!ms&&!started&&!U.mistakes.length){
-  h+='<div class="empty"><b>还没有学习记录。</b>建议的起步顺序：① 先看「知识库」顶部的官方考纲核对清单，确认六大主题全貌；② 学 Ch.21 第一个知识点并标记掌握程度；③ 到 MCQ Bank 做一组练习——你的正确率、错题和薄弱点会自动从真实记录生成，不会用假数据填充。</div>';
+  h+='<div class="empty"><b>还没有学习记录。</b>建议的起步顺序：① 先看「知识库」顶部的官方考纲核对清单，确认六大主题全貌；② 学 Ch.21 第一个知识点并标记掌握程度；③ 到 MCQ Bank 做一组练习——你的正确率、错题和薄弱点会自动从真实记录生成，不会用假数据填充。 <button class="btn sm ghost" data-go="kb">打开知识库</button> <button class="btn sm ghost" data-go="kb" data-param="kp21a">学 Ch.21 第一个知识点</button> <button class="btn sm ghost" data-go="mcq">打开 MCQ Bank</button></div>';
  }
- h+='<div class="card pink"><h3 style="margin-top:0">双轨架构 · Elite Economist System</h3><div class="grid2"><div><span class="tag">TRACK A</span><b>考试卓越</b><p class="sm mut">Knowledge Base · Essay Library · Exam Frequency · AI Practice Room · Mock Examination 整卷模拟（练习室已接入两套已核实整卷）</p></div><div><span class="tag mint">TRACK B</span><b>思维卓越</b><p class="sm mut">First Principles · Logic Challenge · Advanced Evaluation · Unseen Scenarios · Research Lab（在 Elite Economist Training 模块）</p></div></div><p class="sm">底层共享：个人记忆、错题、收藏、训练记录、复习计划、IndexedDB 持久化数据库——全部模块读写同一份你的数据。</p><p class="sm mut">初始时间分配建议（后续按真实表现调整，临近考试提高 Track A 比重）：官方知识与考试能力 45% · Essay 写作与批改 25% · 经济学思维与逻辑训练 20% · 大学级拓展 10%。</p><p class="sm"><i>不要成为一个能够背出所有经济学答案的人，要成为一个即使遇到从未见过的经济学问题，也能够自己推导出答案的人。</i></p></div>';
+ h+='<div class="card pink"><h3 style="margin-top:0">双轨架构 · Elite Economist System</h3><div class="grid2"><div><span class="tag">TRACK A</span><b>考试卓越</b><p class="sm mut"><button class="btn sm ghost" data-go="kb">Knowledge Base 知识库</button> <button class="btn sm ghost" data-go="essays">Essay Library 范文库</button> <button class="btn sm ghost" data-go="frequency">Exam Frequency 考试频率</button> <button class="btn sm ghost" data-go="practice">AI Practice Room 练习室</button> <button class="btn sm ghost" data-go="mocknav">Mock Examination 整卷模拟</button><br>练习室已接入两套已核实整卷。</p></div><div><span class="tag mint">TRACK B</span><b>思维卓越</b><p class="sm mut"><button class="btn sm ghost" data-go="elite">Elite Economist Training 精英训练</button>（First Principles · Logic Challenge · Advanced Evaluation · Unseen Scenarios 在内） <button class="btn sm ghost" data-go="researchlab">Research Lab 读报告方法</button> <button class="btn sm ghost" data-go="extension">Advanced Extension 本科拓展</button></p></div></div><p class="sm">底层共享：个人记忆、错题、收藏、训练记录、复习计划、IndexedDB 持久化数据库——全部模块读写同一份你的数据。</p><p class="sm mut">初始时间分配建议（后续按真实表现调整，临近考试提高 Track A 比重）：官方知识与考试能力 45% · Essay 写作与批改 25% · 经济学思维与逻辑训练 20% · 大学级拓展 10%。</p><p class="sm"><i>不要成为一个能够背出所有经济学答案的人，要成为一个即使遇到从未见过的经济学问题，也能够自己推导出答案的人。</i></p></div>';
  /* Personal Exam Strategy */
  h+='<h2>Personal Exam Strategy · 个人考试策略分析</h2>';
  if(!ms&&!U.mistakes.length&&!started){
@@ -1682,13 +1691,105 @@ VIEWS.dashboard=function(){
  }
  h+=strategyR3HTML();
  h+=weakestDimHTML();
- h+='<h2>今日建议</h2><div class="card"><ul class="tight">'
- +(unres?'<li>先清错题本：还有 <b>'+unres+'</b> 条未解决错题。<button class="btn sm ghost" data-go="mistakes">打开错题本</button></li>':"")
- +'<li>按考纲顺序推进：知识库里标「已填充」的 Ch.21–25 是本轮已核对内容；其余主题条目已列、内容待补充，不会用编造内容填充。</li>'
- +'<li>写 Essay 后点任意题目旁的「问 Viaana」，把题目和你的答案复制到聊天里按官方 AO 批改——站内没有实时 AI，不会用模板假装批改。</li></ul></div>';
+ h+=todayAdviceHTML();
+ h+=trackProgressHTML();
  return h;
 };
 BINDS.dashboard=function(){bindUserCtl($("#view"));};
+/* ---------- Round 5 第三阶段：Dashboard 今日建议（真实记录）与 Track A/B 进度一览 ---------- */
+/* 下一步建议的优先级（取第一条命中项）：① 未解决错题 ≥5 条；② 最弱维度平均 ≤1；③ AO3/AO4 均值差 >0.5（≥2 条带 AO 记录）；④ 掌握度 ≤1 的知识卡；⑤ 未做过精英练习；⑥ 材料题未作答；⑦ 未做过整卷模拟；⑧ 未解决错题 >0；⑨ Essay 得分率最低 <70%；⑩ 按复习计划复习。无任何记录时返回 null，调用方显示起步引导，不编造。 */
+function weakestDimOverall(){
+ const ids=Object.keys(U.dimMastery||{});
+ if(!ids.length)return null;
+ const sums={};DIMS.forEach(function(d){sums[d[0]]=0;});
+ ids.forEach(function(id){const d=U.dimMastery[id];DIMS.forEach(function(x){sums[x[0]]+=(+d[x[0]]||0);});});
+ const avgs=DIMS.map(function(d){return{key:d[0],label:d[1],avg:sums[d[0]]/ids.length};}).sort(function(a,b){return a.avg-b.avg;});
+ const w=avgs[0];if(w.avg>1)return null;
+ let kpId=null;KB.filter(function(k){return k.st==="full";}).forEach(function(k){const d=dimOf(k.id);if(d&&d[w.key]<=1&&(kpId==null||(U.mastery[k.id]||0)<(U.mastery[kpId]||0)))kpId=k.id;});
+ if(!kpId)return null;
+ const k=kpById(kpId);return{label:w.label,avg:w.avg,kp:k,val:dimOf(kpId)[w.key]};
+}
+function hasAnyRecord(){
+ return KB.some(function(k){return k.st==="full"&&U.mastery[k.id]!=null;})
+ ||(U.mcqLog||[]).length>0||(U.essayLog||[]).length>0||(U.mistakes||[]).length>0
+ ||eliteLogRoot().length>0||drAnsweredCount()>0||(U.mockHistory||[]).length>0
+ ||Object.keys(U.dimMastery||{}).length>0;
+}
+function nextStep(){
+ if(!hasAnyRecord())return null;
+ const unres=(U.mistakes||[]).filter(function(m){return !m.resolved;});
+ function topMistakeKp(){const byKp={};unres.forEach(function(m){if(m.kp)byKp[m.kp]=(byKp[m.kp]||0)+1;});const topId=Object.keys(byKp).sort(function(a,b){return byKp[b]-byKp[a];})[0];return topId?{k:kpById(topId),n:byKp[topId]}:null;}
+ if(unres.length>=5){const t=topMistakeKp();return{text:"先清错题本：还有 <b>"+unres.length+"</b> 条未解决错题"+(t&&t.k?"，其中 "+t.n+" 条对应 "+esc(t.k.ch+" · "+t.k.zh):"")+"。",rule:"命中规则 ①：未解决错题 ≥ 5 条时优先清错题。",go:"mistakes",param:null,btn:"打开错题本",go2:(t&&t.k)?["kb",t.k.id,"先补 "+t.k.zh]:null};}
+ const wd=weakestDimOverall();
+ if(wd)return{text:"最弱维度是 <b>"+esc(wd.label)+"</b>（平均 "+wd.avg.toFixed(1)+" / 4）：先补 "+esc(wd.kp.ch+" · "+wd.kp.zh)+"，该卡此维度仅 "+wd.val+" 级。",rule:"命中规则 ②：最弱维度平均 ≤ 1 级时优先补该维度最低的知识卡。",go:"kb",param:wd.kp.id,btn:"打开 "+wd.kp.zh};
+ const AL=(U.essayLog||[]).filter(function(r){return !r.mock&&r.ao&&(+r.ao[2]>0||+r.ao[3]>0);});
+ if(AL.length>=2){
+  const a3=AL.reduce(function(s,r){return s+(+r.ao[2]||0);},0)/AL.length,a4=AL.reduce(function(s,r){return s+(+r.ao[3]||0);},0)/AL.length;
+  if(a4<a3-0.05)return{text:"AO4 评价平均 "+a4.toFixed(1)+" 分，比 AO3 分析（"+a3.toFixed(1)+" 分）低 "+(a3-a4).toFixed(1)+" 分：优先练评价的排序与有依据的判断。",rule:"命中规则 ③：带 AO 分数的记录 ≥ 2 条且 AO3/AO4 均值差 > 0.5 时，按更弱一项建议。",go:"elite",param:"eval:ev1",btn:"去练评价挑战"};
+  if(a3<a4-0.05)return{text:"AO3 分析平均 "+a3.toFixed(1)+" 分，比 AO4 评价（"+a4.toFixed(1)+" 分）低 "+(a4-a3).toFixed(1)+" 分：优先练因果链的完整度。",rule:"命中规则 ③：带 AO 分数的记录 ≥ 2 条且 AO3/AO4 均值差 > 0.5 时，按更弱一项建议。",go:"elite",param:"logic:lc1",btn:"去练逻辑挑战"};
+ }
+ const low=KB.filter(function(k){return k.st==="full"&&U.mastery[k.id]!=null&&U.mastery[k.id]<=1;}).sort(function(a,b){return U.mastery[a.id]-U.mastery[b.id];});
+ if(low.length){const k=low[0];return{text:"掌握度最低的知识卡是 "+esc(k.ch+" · "+k.zh)+"（当前 "+U.mastery[k.id]+" 级）：先把它学到能独立应用。",rule:"命中规则 ④：有已标记掌握度 ≤ 1 的知识卡时，优先补掌握度最低的一张（未标记的卡不计入，避免一有未学卡就永远只推它）。",go:"kb",param:k.id,btn:"打开 "+k.zh};}
+ const started=KB.filter(function(k){return k.st==="full"&&U.mastery[k.id]!=null;}).length;
+ if(!eliteLogRoot().length&&(started>0||(U.mcqLog||[]).length>0||(U.essayLog||[]).length>0))return{text:"你还没有做过精英思维练习：从第一性原理第一练开始，用 5 步推导一次，再自判对错。",rule:"命中规则 ⑤：已有知识 / MCQ / Essay 记录、但精英练习记录为 0 时，建议先做一次精英练习。",go:"elite",param:"fp:fp1",btn:"去做第一性原理练习"};
+ if(drAnsweredCount()===0&&(started>0||(U.mcqLog||[]).length>0))return{text:"材料题（Data Response）还没有作答记录：先做一套已核实 Q7 整卷的 (a) 小问。",rule:"命中规则 ⑥：已有学习记录、但材料题已答小问为 0 时，建议开始材料题。",go:"dataresponse",param:null,btn:"打开材料题库"};
+ if(!(U.mockHistory||[]).length&&(U.essayLog||[]).length>=3)return{text:"你已攒了 "+(U.essayLog||[]).length+" 条 Essay Log，还没有整卷模拟归档：做一套 2 小时整卷模拟，检验真实用时与总分。",rule:"命中规则 ⑦：Essay Log ≥ 3 条、整卷模拟归档为 0 时，建议做一次整卷模拟。",go:"mocknav",param:null,btn:"打开整卷模拟"};
+ if(unres.length>0){const t=topMistakeKp();return{text:"先清错题本：还有 <b>"+unres.length+"</b> 条未解决错题"+(t&&t.k?"，其中 "+t.n+" 条对应 "+esc(t.k.ch+" · "+t.k.zh):"")+"。",rule:"命中规则 ⑧：未解决错题 > 0 时优先清错题。",go:"mistakes",param:null,btn:"打开错题本",go2:(t&&t.k)?["kb",t.k.id,"先补 "+t.k.zh]:null};}
+ const rated=(U.essayLog||[]).map(function(r){const ti=essayTypeInfo(r);return ti.max?{r:r,rate:r.total/ti.max*100}:null;}).filter(Boolean).sort(function(a,b){return a.rate-b.rate;});
+ if(rated.length&&rated[0].rate<70){const e=essayByCode(rated[0].r.code);return{text:"Essay 得分率最低的是 "+(e?esc(e.code+" · "+e.zh):esc(rated[0].r.code))+"（"+rated[0].rate.toFixed(0)+"%）：合上范文限时重写一遍，再对着官方评分要点自查。",rule:"命中规则 ⑨：Essay Log 最低得分率 < 70% 时建议重练该题。",go:"practice",param:null,btn:"去练习室重练"};}
+ return{text:"按复习计划复习今日到期项：到期与逾期项优先，薄弱知识点排在最前。",rule:"命中规则 ⑩：以上均未命中时，按复习计划复习。",go:"planner",param:null,btn:"打开复习计划"};
+}
+function todayAdviceHTML(){
+ const sg=nextStep();
+ let h='<h2>今日建议</h2><div class="card">';
+ if(!sg){
+  h+='<p><b>还没有学习记录。</b>建议的起步顺序：</p><ul class="tight">'
+  +'<li>① 先看知识库顶部的官方考纲核对清单，确认六大主题全貌。 <button class="btn sm ghost" data-go="kb">打开知识库</button></li>'
+  +'<li>② 学 Ch.21 第一个知识点并标记掌握程度。 <button class="btn sm ghost" data-go="kb" data-param="kp21a">学 kp21a · 全球化的定义与特征</button></li>'
+  +'<li>③ 到 MCQ Bank 做一组练习——你的正确率、错题和薄弱点会自动从真实记录生成，不会用假数据填充。 <button class="btn sm ghost" data-go="mcq">打开 MCQ Bank</button></li></ul>'
+  +'<p class="sm mut">规则：无记录时只给起步引导，不编造建议；有了记录后，这里会按优先级 ①–⑩ 生成一条下一步建议。</p>';
+ }else{
+  h+='<p><b>下一步建议：</b>'+sg.text+'</p><p class="sm mut">'+esc(sg.rule)+' 优先级：① 未解决错题 ≥5 条；② 最弱维度平均 ≤1；③ AO3/AO4 均值差 >0.5（≥2 条带 AO 记录）；④ 掌握度 ≤1 的知识卡；⑤ 未做过精英练习；⑥ 材料题未作答；⑦ 未做过整卷模拟；⑧ 未解决错题 >0；⑨ Essay 得分率最低 <70%；⑩ 按复习计划复习。</p>'
+  +'<div class="btnrow"><button class="btn" data-go="'+sg.go+'"'+(sg.param?' data-param="'+sg.param+'"':"")+'>'+esc(sg.btn)+'</button>'
+  +(sg.go2?'<button class="btn ghost" data-go="'+sg.go2[0]+'" data-param="'+sg.go2[1]+'">'+esc(sg.go2[2])+'</button>':"")+'</div>';
+ }
+ h+='<p class="sm mut" style="margin-top:8px">按考纲顺序推进：知识库里标「已填充」的 Ch.21–25 是本轮已核对内容；其余主题条目已列、内容待补充，不会用编造内容填充。</p>'
+ +'<p class="sm mut">写 Essay 后点任意题目旁的「问 Viaana」，把题目和你的答案复制到聊天里按官方 AO 批改——站内没有实时 AI，不会用模板假装批改。</p></div>';
+ return h;
+}
+function trackProgressHTML(){
+ const ms=mcqStats();
+ const fullKPs=KB.filter(function(k){return k.st==="full";});
+ const started=fullKPs.filter(function(k){return U.mastery[k.id]!=null;}).length;
+ const mastered=fullKPs.filter(function(k){return (U.mastery[k.id]||0)>=3;}).length;
+ const unres=(U.mistakes||[]).filter(function(m){return !m.resolved;}).length;
+ const drN=drAnsweredCount(), mockN=(U.mockHistory||[]).length, essN=(U.essayLog||[]).length;
+ const fp=eliteCount("fp"), lg=eliteCount("logic"), ct=eliteCount("counter"), mf=eliteCount("multi"), ev=eliteCount("eval"), un=eliteCount("unseen");
+ const labN=eliteLogRoot().filter(function(x){return x.kind==="lab";}).length;
+ const hasAny=hasAnyRecord();
+ function trow(label,txt,go,param){return '<p class="sm" style="margin:.35rem 0"><b>'+esc(label)+'</b> '+txt+' <button class="btn sm ghost" data-go="'+go+'"'+(param?' data-param="'+param+'"':"")+'>去看看</button></p>';}
+ let h='<h2>学习路径 · Track A / B 进度一览</h2><div class="card"><p class="sm mut">按真实记录汇总：各轨已练 / 已掌握计数、模拟历史与错题概况；没有记录的项显示「暂无记录」，不做假进度。</p>';
+ if(!hasAny)h+='<div class="empty">还没有任何学习记录。先按「今日建议」的起步顺序开始：知识库 → Ch.21 → MCQ；有了记录后，这里会自动汇总两轨进度。</div>';
+ else{
+  h+='<div class="grid2"><div><span class="tag">TRACK A</span> <b>考试卓越</b>'
+  +trow("知识库：","已标记掌握度 "+started+" / "+fullKPs.length+" 张 · 达到「能独立应用」（≥3 级）"+mastered+" 张","kb")
+  +trow("MCQ：",ms?("共 "+ms.n+" 题次 · 正确率 "+ms.acc+"%"):"暂无记录","mcq")
+  +trow("Essay Log：",essN?essN+" 条练习记录":"暂无记录","practice")
+  +trow("材料题：","已答小问 "+drN+" / "+(Q7P.length*5)+" 道","dataresponse")
+  +trow("整卷模拟：",mockN?("已归档 "+mockN+" 次"):"暂无归档记录","mocknav")
+  +trow("错题本：",unres+" 条未解决 / 共 "+(U.mistakes||[]).length+" 条","mistakes")
+  +'</div><div><span class="tag mint">TRACK B</span> <b>思维卓越</b>'
+  +trow("第一性原理：",fp.n?("已记录 "+fp.n+" 次 · 自判正确 "+fp.c+" 次"):"暂无记录","elite","fp:fp1")
+  +trow("逻辑挑战：",lg.n?("已记录 "+lg.n+" 次 · 答对 "+lg.c+" 次"):"暂无记录","elite","logic:lc1")
+  +trow("反方论证：",ct.n?("已记录 "+ct.n+" 次 · 答对 "+ct.c+" 次"):"暂无记录","elite","counter:ca1")
+  +trow("多因素分析：",mf.n?("已记录 "+mf.n+" 次 · 答对 "+mf.c+" 次"):"暂无记录","elite","multi:mf1")
+  +trow("评价挑战：",ev.n?("已记录 "+ev.n+" 次 · 答对 "+ev.c+" 次"):"暂无记录","elite","eval:ev1")
+  +trow("未见场景：",un.n?("已生成 "+un.n+" 道改写练习题"):"暂无记录","elite","rewrite")
+  +trow("Research Lab：",labN?("已完成 worked example "+labN+" / 2 个"):"暂无记录","researchlab")
+  +'</div></div>';
+ }
+ return h+'</div>';
+}
 /* ---------- Knowledge Base ---------- */
 VIEWS.kb=function(param){
  if(param&&kpById(param))return kbDetail(param);
@@ -1704,7 +1805,7 @@ VIEWS.kb=function(param){
 function kbListHTML(theme){
  const list=KB.filter(k=>!theme||k.theme===theme);
  return list.map(k=>{
-  if(k.st==="pending")return '<div class="card"><span class="tag gold">内容待补充</span> <b>'+esc(k.zh)+'</b><br><span class="sm mut en">'+esc(k.en)+'</span><p class="sm mut">对应考纲：'+esc(k.spec)+'。条目与结构已建，内容将在后续轮次按官方资料逐条填充，本轮不编造。</p></div>';
+  if(k.st==="pending")return '<div class="card"><span class="tag gold">内容待补充</span> <b>'+esc(k.zh)+'</b><br><span class="sm mut en">'+esc(k.en)+'</span><p class="sm mut">对应考纲：'+esc(k.spec)+'。官方考纲子目清单共 '+(k.subs?k.subs.length:0)+' 条（均待补充，按 Specification Issue 2 §'+esc(k.specSec||"")+' 所列），正文将在后续轮次按官方资料逐条填充，本轮不编造。</p><div class="btnrow"><button class="btn sm" data-go="kb" data-param="'+k.id+'">展开看子目清单</button></div></div>';
   const m=U.mastery[k.id];
   return '<div class="card"><div class="secthead"><b>'+esc(k.ch)+" · "+esc(k.zh)+'</b><span class="tag mint">已核对</span>'+(m!=null?'<span class="tag">掌握度 '+m+'</span>':"")+'</div><p class="sm mut en">'+esc(k.en)+'</p><p class="sm">'+esc(k.defZh)+'</p><div class="btnrow"><button class="btn sm" data-go="kb" data-param="'+k.id+'">展开学习</button>'+favBtn(k.id)+askBtn("请讲解这个 U4 知识点并考我："+k.ch+" "+k.zh+"（"+k.en+"）。定义："+k.defZh)+'</div></div>';
  }).join("");
@@ -1718,9 +1819,27 @@ BINDS.kb=function(param){
  $$("#view .pill-nav button").forEach(b=>b.addEventListener("click",()=>paint(+b.dataset.th)));
  paint(0);
 };
+/* ---------- Round 5 第三阶段：知识卡内「见 kpXX / 见范文库」文字指向转可点深链（数据原文不动，渲染时转换；目标不存在的题号不链接） ---------- */
+function essayLinkTarget(code){
+ if(essayByCode(code))return code;
+ if(/-\d+$/.test(code)&&essayByCode(code+"e"))return code+"e";
+ return null;
+}
+function linkifyRefs(html){
+ var out=html;
+ out=out.replace(/\b(20\d{4}A?-\d+[a-z]?)\b/g,function(m,code){var t=essayLinkTarget(code);return t?'<button class="btn sm ghost" data-go="essays" data-param="'+t+'">'+code+'</button>':m;});
+ var changed=false;
+ out=out.replace(/(见|详见)\s*(kp[0-9]+[a-z])/g,function(m,w,id){changed=true;return w+' <button class="btn sm ghost" data-go="kb" data-param="'+id+'">'+id+'</button>';});
+ if(changed)out=out.replace(/(、|与)\s*(kp[0-9]+[a-z])/g,function(m,sep,id){return sep+' <button class="btn sm ghost" data-go="kb" data-param="'+id+'">'+id+'</button>';});
+ out=out.replace(/（见范文库）/g,'（<button class="btn sm ghost" data-go="essays" data-param="202310-8">见范文库 202310-8</button>）');
+ out=out.replace(/结构见范文解析/g,'结构见 <button class="btn sm ghost" data-go="essays" data-param="202310-8">范文解析 202310-8</button>');
+ out=out.replace(/（见范文库对应 VER 条目）/g,'（<button class="btn sm ghost" data-go="essays" data-param="202405-9">见范文库 202405-9 · 官方评分要点</button>）');
+ return out;
+}
 function kbDetail(id){
- const k=kpById(id);if(!k||k.st!=="full")return '<div class="empty">该知识点内容待补充。</div>';
- const row=(t,v)=>v?'<p class="kv"><b class="t">'+t+'：</b>'+v+'</p>':"";
+ const k=kpById(id);if(!k)return '<div class="empty">该知识点内容待补充。</div>';
+ if(k.st!=="full")return '<button class="btn ghost sm" data-go="kb">← 返回知识库</button><h1 style="margin-top:10px">'+esc(k.ch)+" · "+esc(k.zh)+'</h1><p class="mut en">'+esc(k.en)+'</p><p><span class="tag gold">内容待补充</span><span class="tag grey">'+esc(k.spec)+'</span></p><div class="card"><h3 style="margin-top:0">官方考纲子目清单（内容待补充）</h3><p class="sm mut">以下子目按 Pearson Edexcel IAL Economics Specification（2018, Issue 2）§'+esc(k.specSec||"")+' 所列，逐条核对后填充；本轮不写未经核实的正文。每条均为待补充。</p><ul class="tight">'+(k.subs||[]).map(s=>'<li>'+esc(s)+'</li>').join("")+'</ul></div>';
+ const row=(t,v)=>v?'<p class="kv"><b class="t">'+t+'：</b>'+linkifyRefs(v)+'</p>':"";
  let h='<button class="btn ghost sm" data-go="kb">← 返回知识库</button><h1 style="margin-top:10px">'+esc(k.ch)+" · "+esc(k.zh)+'</h1><p class="mut en">'+esc(k.en)+'</p><p><span class="tag mint">已核对 · 官方 Mark Scheme 口径</span><span class="tag grey">'+esc(k.spec)+'</span></p>';
  h+=userCtl(k.id,"请详细讲解并考我这个知识点："+k.ch+" "+k.zh+"（"+k.en+"）\n英文定义："+k.defEn+"\n因果链："+k.chain);
  h+=dimSectionHTML(k);
@@ -1731,7 +1850,7 @@ function kbDetail(id){
  +row("形成原因",esc(k.causes))
  +row("运行机制",esc(k.mechanism))
  +'<p class="kv"><b class="t">完整因果逻辑链：</b></p><div class="chain">'+arrows(k.chain)+'</div>'
- +(k.diagram?diagramHTML(k.diagram)+(k.diagramNote?'<p class="sm mut">'+esc(k.diagramNote)+'</p>':""):"")
+ +(k.diagram?diagramHTML(k.diagram)+(k.diagramNote?'<p class="sm mut">'+linkifyRefs(esc(k.diagramNote))+'</p>':""):"")
  +row("现实案例",esc(k.caseTxt))
  +row("Essay 应用",esc(k.essayUse))
  +row("Data Response 应用",esc(k.drUse))
@@ -1788,24 +1907,24 @@ BINDS.essays=function(param){
 function essayDetail(code){
  const e=essayByCode(code);const p=parseCode(code);const v=VER[code];const mo=MODELS[code];
  let h='<button class="btn ghost sm" data-go="essays">← 返回范文库</button><h1 style="margin-top:10px">'+code+'</h1>';
- h+='<div class="tblwrap"><table><tr><th style="width:110px">考试季</th><td>'+p.year+" 年 "+p.month+' 月</td></tr>'
+ h+='<div class="tblwrap" id="essay-meta"><table><tr><th style="width:110px">考试季</th><td>'+p.year+" 年 "+p.month+' 月</td></tr>'
  +'<tr><th>试卷</th><td>IAL Economics Unit 4 · '+esc(p.ver)+(p.china?"（与普通卷分开管理）":"")+'</td></tr>'
  +'<tr><th>Section / 题号</th><td>'+p.section+" · "+p.q+'</td></tr>'
  +'<tr><th>分值</th><td>'+(p.marks?p.marks+" 分"+(p.marks===20?"（KAA 12 + Evaluation 8）":p.marks===14?"（KAA 8 + Evaluation 6）":p.marks===34?"（整道 Q7：(a)–(e) 五小问合计）":""):"待核实（目录只写到 Q7，小问未核对官方试卷，不推断为 7(e)）")+'</td></tr>'
  +'<tr><th>分类 / 章节</th><td>'+esc(e.cat)+" · "+esc(e.ch)+" · 主题"+e.theme+'</td></tr>'
  +'<tr><th>中文题意</th><td>'+esc(e.zh)+'</td></tr>'
- +'<tr><th>核实状态</th><td>'+(v?"英文原文与官方 Mark Scheme 要点已核对（2026-11-14 核对报告）":"目录已录入；英文原文与官方评分要点待补充")+(SRC_PENDING[code]?"；<b>试卷来源待核实</b>（无法从现有官方资料确认来源，见下方说明）":"")+'</td></tr></table></div>';
+ +'<tr><th>核实状态</th><td>'+(v?"英文原文与官方 Mark Scheme 要点已核对（2026-11-14 核对报告）":"目录已录入；英文原文与官方评分要点待补充")+(SRC_PENDING[code]?"；<b>试卷来源待核实</b>（无法从现有官方资料确认来源，<a href='#pending-note'>见下方说明</a>）":"")+'</td></tr></table></div>';
  if(p.section==="Section A"){h+='<div class="card"><h3 style="margin-top:0">分类说明（第一轮修复）</h3><p class="sm">本题是 June 2025 WEC14/01A 的 <b>Section A 选择题 Q1</b>（关于 Lewis 双部门模型 (Lewis dual-sector model) 与工业化），不是 Section B 材料题、也不是 Section C Essay。原目录曾误归为「国债增加的弊端」，现已改正分类；题目原文与选项已于第二轮录入 MCQ Bank 的 Pearson 官方原题集。它不计入 Essay 练习，请勿用 Essay 模板作答。</p><div class="btnrow"><button class="btn sm" data-go="mcq">去 MCQ Bank 做这道官方原题</button></div></div>';}
  if(Q7BYCODE[code]){h+='<div class="card mint"><h3 style="margin-top:0">核实结论（第二轮）</h3><p class="sm">本题号已核实为<b>整道 Q7（34 分）</b>，不是单独的 7(e)：(a)–(e) 五个小问的官方原题、Source Booklet 材料摘要与官方 QP/MS 链接已录入「Data Response 材料题库」的已核实 Q7 整卷区。</p><div class="btnrow"><button class="btn sm" data-go="dataresponse">打开材料题库看整卷</button></div></div>';}
- if(code==="202605A-7"){h+='<div class="card"><h3 style="margin-top:0">待核实说明（第二轮核查）</h3><p class="sm">「202605A-7」这一编号<b>无法从现有官方资料确认来源</b>：在 Pearson 官方已发布的试卷代码与原题中未查到与之对应的 Q7。两种误记假设：① 把 202506A（2025 年 6 月，阿根廷卷）误写成 202605A——若如此则与 202506A-7 重复；② 把 202606A（2026 年 6 月，土耳其卷）误写成 202605A。在目录方确认之前，本条保持「待核实」：不改成 7(e)，也不并入 202606A-7。土耳其卷 Q7 已作为独立的已核实试卷录入材料题库（不在本目录内）。</p></div>';}
- if(code==="202605A-8"){h+='<div class="card"><h3 style="margin-top:0">来源待核实说明（本批核查）</h3><p class="sm">本题的英文题干与官方评分要点已在第二轮录入（见下方），但<b>试卷归属无法从现有官方资料确认</b>：本批用英文原题全文检索 Pearson 官方试卷 (QP) 与评分标准 (MS)，未找到与该题干对应的官方来源；题干所述事件发生在 2025 年 7 月，其所属考季亦无法据此确定。按核查口径保持「来源待核实」：不改写题号、不并入其他试卷，待目录方或官方资料确认后再补来源链接。</p></div>';}
- if(code==="202605A-9"){h+='<div class="card"><h3 style="margin-top:0">来源待核实说明（本批核查）</h3><p class="sm">本条与 202605A-8 共用「202605A」前缀，<b>无法从现有官方资料确认来源</b>，保持待核实。本批已凭官方 QP 核对 Jun 2025 WEC14/01A 的 Q9：原题为移民流入欧盟 (EU) 的收益题，与本条目录题意（不平等加剧成因）不同，因此不能把本条改写或合并为 202506A-9。</p></div>';}
- if(code==="202605A-10"){h+='<div class="card"><h3 style="margin-top:0">来源待核实说明（本批核查）</h3><p class="sm">本条与 202605A-8/-9 共用「202605A」前缀，<b>无法从现有官方资料确认来源</b>，保持待核实。本批已凭官方 QP 确认 Jun 2025 WEC14/01A 的 Q10 真实存在（伊拉克国家债务题），但它不在本站题库中，且与本条目录题意（提升国际竞争力）不同，不合并、不改号。</p></div>';}
+ if(code==="202605A-7"){h+='<div class="card" id="pending-note"><h3 style="margin-top:0">待核实说明（第二轮核查）</h3><p class="sm">「202605A-7」这一编号<b>无法从现有官方资料确认来源</b>：在 Pearson 官方已发布的试卷代码与原题中未查到与之对应的 Q7。两种误记假设：① 把 202506A（2025 年 6 月，阿根廷卷）误写成 202605A——若如此则与 202506A-7 重复；② 把 202606A（2026 年 6 月，土耳其卷）误写成 202605A。在目录方确认之前，本条保持「待核实」：不改成 7(e)，也不并入 202606A-7。土耳其卷 Q7 已作为独立的已核实试卷录入材料题库（不在本目录内）。</p></div>';}
+ if(code==="202605A-8"){h+='<div class="card" id="pending-note"><h3 style="margin-top:0">来源待核实说明（本批核查）</h3><p class="sm">本题的英文题干与官方评分要点已在第二轮录入（<a href="#ver-detail">见下方</a>），但<b>试卷归属无法从现有官方资料确认</b>：本批用英文原题全文检索 Pearson 官方试卷 (QP) 与评分标准 (MS)，未找到与该题干对应的官方来源；题干所述事件发生在 2025 年 7 月，其所属考季亦无法据此确定。按核查口径保持「来源待核实」：不改写题号、不并入其他试卷，待目录方或官方资料确认后再补来源链接。</p></div>';}
+ if(code==="202605A-9"){h+='<div class="card" id="pending-note"><h3 style="margin-top:0">来源待核实说明（本批核查）</h3><p class="sm">本条与 202605A-8 共用「202605A」前缀，<b>无法从现有官方资料确认来源</b>，保持待核实。本批已凭官方 QP 核对 Jun 2025 WEC14/01A 的 Q9：原题为移民流入欧盟 (EU) 的收益题，与本条目录题意（不平等加剧成因）不同，因此不能把本条改写或合并为 202506A-9。</p></div>';}
+ if(code==="202605A-10"){h+='<div class="card" id="pending-note"><h3 style="margin-top:0">来源待核实说明（本批核查）</h3><p class="sm">本条与 202605A-8/-9 共用「202605A」前缀，<b>无法从现有官方资料确认来源</b>，保持待核实。本批已凭官方 QP 确认 Jun 2025 WEC14/01A 的 Q10 真实存在（伊拉克国家债务题），但它不在本站题库中，且与本条目录题意（提升国际竞争力）不同，不合并、不改号。</p></div>';}
  if(code==="202506A-9"){h+='<div class="card mint"><h3 style="margin-top:0">官方 QP 核对（本批）</h3><p class="sm">已对照 Pearson 官方 QP（wec14-01a-que-20250604.pdf）逐题核对：Jun 2025 WEC14/01A · Section C · Q9 原题为「Evaluate the likely benefits of a significant increase in migration into the EU.」，与目录题意一致，题号无误。官方 MS 评分要点尚未录入，范文待补充，不编造。</p></div>';}
- if(code==="202401-8"||code==="202401-10"){h+='<div class="card mint"><h3 style="margin-top:0">官方 QP 核对（本批）</h3><p class="sm">已对照 Pearson 官方 QP（wec14-01-que-20240113.pdf）逐题核对：本题为 Jan 2024 WEC14/01 · Section C · '+p.q+'，题号与题意与原卷一致。官方 MS 评分要点尚未逐字录入（见上方核实状态），不编造。</p></div>';}
+ if(code==="202401-8"||code==="202401-10"){h+='<div class="card mint"><h3 style="margin-top:0">官方 QP 核对（本批）</h3><p class="sm">已对照 Pearson 官方 QP（wec14-01-que-20240113.pdf）逐题核对：本题为 Jan 2024 WEC14/01 · Section C · '+p.q+'，题号与题意与原卷一致。官方 MS 评分要点尚未逐字录入（<a href="#essay-meta">见上方核实状态</a>），不编造。</p></div>';}
  h+=userCtl("essay:"+code,"请按官方 AO 和 Mark Scheme 讲解这道题："+code+" "+e.zh+(v?"\n英文原文："+v.en:"")+(mo?"\n（站内有 AI 范文，请同时指出范文可改进之处）":""));
  if(v){
-  h+='<div class="card"><h3 style="margin-top:0">官方英文原文（已核对）</h3><p class="en">'+esc(v.en)+'</p>'
+  h+='<div class="card" id="ver-detail"><h3 style="margin-top:0">官方英文原文（已核对）</h3><p class="en">'+esc(v.en)+'</p>'
   +(v.partial?'<p><span class="tag gold">部分核对</span> <small>'+esc(v.partial)+'；完整清单请查官方 Mark Scheme 原文，站内不补编。</small></p>':"")
   +(v.note?'<p class="sm"><b>注：</b>'+esc(v.note)+'</p>':"")
   +'<h3>官方 Mark Scheme · KAA 要点</h3><ul class="tight">'+v.kaa.map(x=>'<li>'+esc(x)+'</li>').join("")+'</ul>'
@@ -1847,11 +1966,11 @@ VIEWS.dataresponse=function(){
  h+='<div class="card"><h3 style="margin-top:0">逐卷核对：Q7 各小问的真实分值与指令词（5 卷已核实）</h3><div class="tblwrap"><table><tr><th>试卷</th><th>(a)</th><th>(b)</th><th>(c)</th><th>(d)</th><th>(e)</th><th>合计</th><th>指令词 (a)–(e)</th></tr>'
  +Q7P.map(p=>'<tr><td>'+esc(p.ds)+' · '+esc(p.paper)+'</td>'+p.parts.map(pt=>'<td>'+pt[2]+'</td>').join("")+'<td>34</td><td>'+p.parts.map(pt=>pt[1]).join(" / ")+'</td></tr>').join("")+'</table></div>'
  +'<p class="sm mut">说明：01A 卷自 2025 年 6 月起每个考季都有（2025 年 6 月之前只有 01 卷）。五卷的 (e) 都是 14 分，但 (b)(c)(d) 的分值与指令词逐卷不同——这正是不能用固定结构的原因。其余试卷的小问分值与指令词尚未逐套核对，标「待核实」，不推断。一般规律仅供参考（不是规则）：(a) 多为低分计算/解释小问，(e) 为 14 分 Discuss 类讨论题，须引用材料、KAA 8 + Evaluation 6。</p></div>';
- h+='<h2>已核实 Q7 整卷（5 套）</h2>'+Q7P.map(q7PaperHTML).join("");
+ h+='<h2 id="q7verified">已核实 Q7 整卷（5 套）</h2>'+Q7P.map(q7PaperHTML).join("");
  h+='<h2>材料信息提取与运用训练</h2><div id="drtrain"></div>';
  h+='<h2>Section B 相关题目（目录）</h2>'
- +sevens.map(e=>{const v=VER[e.code];const p=parseCode(e.code);const qp=Q7BYCODE[e.code];return '<div class="card" style="padding:12px 16px"><b>'+e.code+'</b> <span class="tag">Section B · '+esc(p.q)+(p.marks?" · "+p.marks+" 分":"")+'</span>'+(p.marks===34?' <span class="tag mint">Q7 整道（34 分）· 已核实</span>':"")+(p.unverified?' <span class="tag red">题号待核实</span>':"")+' <b>'+esc(e.zh)+'</b>'+(qp?'<p class="sm mut">已核实为整道 Q7：材料摘要与 (a)–(e) 官方原题见上方「已核实 Q7 整卷」。</p>':v?'<p class="sm en mut">'+esc(v.en)+'</p><button class="btn sm" data-go="essays" data-param="'+e.code+'">看官方评分要点</button>':e.code==="202605A-7"?'<p class="sm mut">无法从现有官方资料确认来源；两种误记假设（202506A 阿根廷卷或 202606A 土耳其卷）待核实，须目录方确认后才能入库，确认前保持待核实，详见范文库该题页。</p>':'<p class="sm mut">原文与材料待补充；该题的 Source Booklet 材料与 (a)–(d) 小问尚未录入，不编造。</p>')+'</div>';}).join("");
- h+='<div class="empty"><b>其余试卷的 Q7 尚未逐套核对</b>：录入前不编造其材料与小问；已核实的 5 套见上方。Jun 2026 01A 土耳其卷 Q7 已作为独立已核实试卷列入上方整卷数据（用户书本目录里没有这一条，故不写入目录）。</div>';
+ +sevens.map(e=>{const v=VER[e.code];const p=parseCode(e.code);const qp=Q7BYCODE[e.code];return '<div class="card" style="padding:12px 16px"><b>'+e.code+'</b> <span class="tag">Section B · '+esc(p.q)+(p.marks?" · "+p.marks+" 分":"")+'</span>'+(p.marks===34?' <span class="tag mint">Q7 整道（34 分）· 已核实</span>':"")+(p.unverified?' <span class="tag red">题号待核实</span>':"")+' <b>'+esc(e.zh)+'</b>'+(qp?'<p class="sm mut">已核实为整道 Q7：材料摘要与 (a)–(e) 官方原题<a href="#q7verified">见上方「已核实 Q7 整卷」</a>。</p>':v?'<p class="sm en mut">'+esc(v.en)+'</p><button class="btn sm" data-go="essays" data-param="'+e.code+'">看官方评分要点</button>':e.code==="202605A-7"?'<p class="sm mut">无法从现有官方资料确认来源；两种误记假设（202506A 阿根廷卷或 202606A 土耳其卷）待核实，须目录方确认后才能入库，确认前保持待核实，<button class="btn sm ghost" data-go="essays" data-param="202605A-7">详见范文库该题页</button>。</p>':'<p class="sm mut">原文与材料待补充；该题的 Source Booklet 材料与 (a)–(d) 小问尚未录入，不编造。</p>')+'</div>';}).join("");
+ h+='<div class="empty"><b>其余试卷的 Q7 尚未逐套核对</b>：录入前不编造其材料与小问；已核实的 5 套<a href="#q7verified">见上方</a>。Jun 2026 01A 土耳其卷 Q7 已作为独立已核实试卷列入上方整卷数据（用户书本目录里没有这一条，故不写入目录）。</div>';
  return h;
 };
 BINDS.dataresponse=function(){bindUserCtl($("#view"));bindDrTrain();bindDrProg();};
@@ -1859,7 +1978,7 @@ BINDS.dataresponse=function(){bindUserCtl($("#view"));bindDrTrain();bindDrProg()
 let MCQSES=null, mcqTimerInt=null, MCQF="all";
 function stopMcqTimer(){if(mcqTimerInt){clearInterval(mcqTimerInt);mcqTimerInt=null;}}
 VIEWS.mcq=function(param){
- return '<h1>MCQ Bank · 选择题库</h1><p class="mut">Section A 在真考中是 6 道题、6 分。本库严格区分来源：<span class="tag mint">Pearson Official Past Paper Questions · Pearson 官方原题：'+MCQ_OFF.length+' 道</span> <span class="tag gold">Original Practice Questions · 自编练习题：'+MCQS.length+' 道</span>。官方原题的英文题干与选项逐字录入，答案与排除理由以官方 Mark Scheme 为准，中文题意为翻译、非官方原文；图题已标注「需对照原题图示」，示意图均标明为示意图、非原卷图。每题含中英双语、详细解析与每个错误选项的原因。答错会自动进入错题本。</p>'
+ return '<h1>MCQ Bank · 选择题库</h1><p class="mut">Section A 在真考中是 6 道题、6 分。本库严格区分来源：<span class="tag mint">Pearson Official Past Paper Questions · Pearson 官方原题：'+MCQ_OFF.length+' 道</span> <span class="tag gold">Original Practice Questions · 自编练习题：'+MCQS.length+' 道</span>。官方原题的英文题干与选项逐字录入，答案与排除理由以官方 Mark Scheme 为准，中文题意为翻译、非官方原文；图题已标注「需对照原题图示」，示意图均标明为示意图、非原卷图。每题含中英双语、详细解析与每个错误选项的原因。答错会自动进入错题本。官方原题每道另有站内按题干归纳的主题标签（非官方分类），做题时显示在题干上方。</p>'
  +'<div class="card"><h3 style="margin-top:0">选择练习模式</h3>'
  +'<div class="btnrow"><span class="sm mut" style="align-self:center">来源筛选：</span>'
  +'<button class="btn sm '+(MCQF==="all"?"":"ghost")+'" data-srcf="all">全部（'+ALLMCQ.length+' 题）</button>'
@@ -1893,7 +2012,7 @@ function paintMcq(){
  if(!q){finishMcq(false);return;}
  const kp=q.kp?kpById(q.kp):null; const off=q.src==="official";
  st.innerHTML='<div class="card"><div class="secthead"><b>第 '+(s.idx+1)+" / "+s.list.length+' 题</b>'+(off?'<span class="tag mint">Pearson 官方原题 · Official Past Paper</span><span class="tag">'+esc(q.paper)+' '+esc(q.qn)+'</span>':'<span class="tag gold">自编练习题 · Original Practice</span>')+'<span class="tag">'+esc(q.ch)+'</span><span class="tag grey">'+esc(q.spec)+'</span>'+(s.left!=null?'<span class="timer" id="mcqtimer" style="font-size:1.2rem">'+fmtTime(s.left)+'</span>':"")+'</div>'
- +'<p class="en" style="font-size:1.02rem">'+esc(q.q)+'</p>'
+ +(off&&q.topic?'<p class="sm">主题（按题干归纳）：<b>'+esc(q.topic)+'</b> <span class="mut">（站内按题干与官方 MS 排除理由归纳，非官方分类）</span></p>':"")+'<p class="en" style="font-size:1.02rem">'+esc(q.q)+'</p>'
  +(q.tbl?tblHTML(q.tbl):"")+(q.fig?trendSVG(q.fig):"")+(q.figNote?'<p class="sm mut">'+esc(q.figNote)+'</p>':"")
  +'<p class="mut">'+(off?'中文题意（翻译，非官方原文）：':'')+esc(q.qzh)+'</p>'
  +(q.optHead?'<p class="sm mut">'+esc(q.optHead)+'</p>':"")
@@ -1934,12 +2053,20 @@ VIEWS.frequency=function(){
  const byCat={},byYear={},bySec={};
  ESSAYS.forEach(e=>{const p=parseCode(e.code);byCat[e.cat]=(byCat[e.cat]||0)+1;byYear[p.year]=(byYear[p.year]||0)+1;bySec[p.section]=(bySec[p.section]||0)+1;});
  const bars=(obj,total)=>Object.keys(obj).sort((a,b)=>obj[b]-obj[a]).map(k=>'<p style="margin:.15rem 0"><b>'+esc(k)+'</b> · '+obj[k]+' 道</p><div class="bar"><i style="width:'+Math.round(obj[k]/total*100)+'%"></i></div>').join("");
- let h='<h1>Exam Frequency · 考试频率</h1><p class="mut">统计口径分两种，不要混用：<b>直接考查频率 (Direct Testing Frequency)</b> 按目录分类统计——目录共 84 条记录，其中 79 道论述题（Section B 7(e) 与 Section C）+ 4 道整道 Q7 + 1 道 Section A 选择题（202506A-1），数据源为已录入的真题目录（2020.10–2026.05，21 个考试季）。<b>综合考查频率 (Integrated Testing Frequency)</b> 见下方专表，口径更窄、只基于已核对题目。历史频率不等于未来概率，本页不预测下一次考试题目；低频考点不会被删除。</p>';
+ const derivRows=INT_FREQ_DERIV.map(r=>'<tr><td><button class="btn sm ghost" data-go="essays" data-param="'+r.code+'">'+r.code+'</button></td><td>'+r.chs.map(c=>"Ch."+c).join("、")+'</td><td class="sm">'+esc(r.ev)+'</td><td class="sm mut">'+(r.pend?esc(r.pend):"—")+'</td></tr>').join("");
+ const derivRec=[21,22,23,24,25,26,27].map(n=>{const c=INT_FREQ_DERIV.filter(r=>r.chs.indexOf(n)>=0).length;const o=(INT_FREQ.filter(x=>x[0].indexOf("Ch."+n)===0)[0]||[])[1];return "Ch."+n+" "+c+(c===o?"=":"≠")+o;}).join("；");
+ const derivTot=INT_FREQ_DERIV.reduce((s,r)=>s+r.chs.length,0),derivTotO=INT_FREQ.reduce((s,r)=>s+r[1],0);
+ const derivOk=[21,22,23,24,25,26,27].every(n=>INT_FREQ_DERIV.filter(r=>r.chs.indexOf(n)>=0).length===(INT_FREQ.filter(x=>x[0].indexOf("Ch."+n)===0)[0]||[])[1]);
+ let h='<h1>Exam Frequency · 考试频率</h1><p class="mut">统计口径分两种，不要混用：<b>直接考查频率 (Direct Testing Frequency)</b> 按目录分类统计——目录共 84 条记录，其中 79 道论述题（Section B 7(e) 与 Section C）+ 4 道整道 Q7 + 1 道 Section A 选择题（202506A-1），数据源为已录入的真题目录（2020.10–2026.05，21 个考试季）。<b>综合考查频率 (Integrated Testing Frequency)</b> <a href="#intfreq">见下方专表</a>，口径更窄、只基于已核对题目。历史频率不等于未来概率，本页不预测下一次考试题目；低频考点不会被删除。</p>';
  h+='<div class="grid2"><div class="card"><h3 style="margin-top:0">按分类（主题）· 直接频率</h3>'+bars(byCat,84)+'</div>'
  +'<div class="card"><h3 style="margin-top:0">按 Section · 直接频率</h3>'+bars(bySec,84)+'<h3>按年份</h3>'+bars(byYear,84)+'</div></div>';
- h+='<div class="card"><h3 style="margin-top:0">综合考查频率 (Integrated Testing Frequency)</h3><p class="sm"><b>口径与范围：仅基于 18 道已核对官方原文的题目</b>（9 道 Ch.21–25 核心题 + 9 道相关题，英文原文与官方 Mark Scheme 已逐题核对）；每道题按其官方 Mark Scheme 的 KAA 与评价内容涉及的章节计数，<b>一道题可计入多个章节</b>，故各行合计大于 18。<b>其余 66 条目录记录待逐题对照官方 Mark Scheme 编码，暂不计入，不编造。</b></p>'
+ h+='<div class="card" id="intfreq"><h3 style="margin-top:0">综合考查频率 (Integrated Testing Frequency)</h3><p class="sm"><b>口径与范围：仅基于 18 道已核对官方原文的题目</b>（9 道 Ch.21–25 核心题 + 9 道相关题，英文原文与官方 Mark Scheme 已逐题核对）；每道题按其官方 Mark Scheme 的 KAA 与评价内容涉及的章节计数，<b>一道题可计入多个章节</b>，故各行合计大于 18。<b>其余 66 条目录记录待逐题对照官方 Mark Scheme 编码，暂不计入，不编造。</b></p>'
  +'<div class="tblwrap"><table><tr><th>章节</th><th>涉及题数（18 道口径）</th></tr>'+INT_FREQ.map(r=>'<tr><td>'+esc(r[0])+'</td><td>'+r[1]+'</td></tr>').join("")+'</table></div>'
- +'<p class="sm mut">计数依据为站内已核对的 18 道题 KAA/评价清单（见范文库各题详情）。</p></div>';
+ +'<p class="sm mut">计数依据为下表逐题推导（每道题的 KAA/评价要点原文见范文库各题详情）。</p>'
+ +'<h3 style="margin-top:14px">逐题推导表（18 道题 × KAA/评价清单）</h3><p class="sm"><b>计入规则：</b>'+esc(INT_FREQ_RULE)+'</p>'
+ +'<div class="tblwrap"><table><tr><th>题号</th><th>计入章节</th><th>依据（KAA/评价要点摘要）</th><th>待核实（不计入总数）</th></tr>'+derivRows+'</table></div>'
+ +'<p class="sm"><b>复算：</b>'+derivRec+'；合计 '+derivTot+'（原常量合计 '+derivTotO+'）——'+(derivOk?"复算一致。":"与原常量不一致，已按推导表修正，见变更说明。")+'</p>'
+ +'<p class="sm mut">若把上表 8 处待核实全部计入，各行将变为 Ch.23=12、Ch.24=3、Ch.26=8、Ch.27=10（其余不变），合计 40；本次按上述计入规则不计入，留待对照官方 MS 原文确认后再议。</p></div>';
  h+='<div class="card"><h3 style="margin-top:0">已核实试卷清单</h3><p class="sm">以下 9 卷的官方 QP/MS 已核对（本页综合频率、材料题库整卷与官方 MCQ 均出自这些试卷）：</p><ul class="tight">'+VERIFIED_PAPERS.map(x=>'<li>'+esc(x)+'</li>').join("")+'</ul></div>';
  h+='<div class="card"><h3 style="margin-top:0">已逐题核对的 Ch.21–25 核心题（9 道）</h3><p class="sm mut">在 18 道贸易/全球化题中，9 道为 Ch.21–25 核心题（分类依据已核对报告）：</p>'
  +ESSAYS.filter(e=>VER[e.code]&&VER[e.code].core).map(e=>'<p><button class="btn sm ghost" data-go="essays" data-param="'+e.code+'">'+e.code+'</button> '+esc(e.zh)+' <span class="tag grey">'+esc(e.ch)+'</span></p>').join("")+'</div>';
@@ -1957,7 +2084,7 @@ VIEWS.practice=function(){
  +'<div class="btnrow"><span class="timer" id="ptimer">30:00</span><button class="btn sm" id="pstart">开始 30 分钟计时</button><button class="btn sm ghost" id="preset">重置</button><span class="sm mut" id="wc">0 词</span></div>'
  +'<textarea id="pans" rows="12" placeholder="在这里写你的英文答案（草稿自动保存在本机，按题目分别保存）…"></textarea>'
  +'<div class="btnrow"><button class="btn mint" id="pcopy">复制题目 + 我的答案去聊天批改</button><button class="btn ghost" id="pask">只问 Viaana 这道题的思路</button></div>'
- +'<p class="sm mut">批改将遵守 Brutal Honesty 规则（见 Elite Economist Training）：不因努力加分、不把篇幅与术语等同于质量、每次回答「真正掌握了什么 / 以为掌握其实没有 / 明天考试最可能在哪失分」三问。</p></div>';
+ +'<p class="sm mut">批改将遵守 Brutal Honesty 规则（<button class="btn sm ghost" data-go="elite">见 Elite Economist Training</button>）：不因努力加分、不把篇幅与术语等同于质量、每次回答「真正掌握了什么 / 以为掌握其实没有 / 明天考试最可能在哪失分」三问。</p></div>';
  h+='<div class="card">'+tenStepsHTML()+'</div>';
  h+='<div class="card">'+selfEvalHTML()+'</div>';
  h+='<div class="card"><h3 style="margin-top:0">Essay Log · 练习记录</h3><p class="sm mut">站内没有自动 AI 评分，也不会假装已经批改：写完后用上方按钮把答案发到聊天里由 Viaana 按官方 AO 批改，再把批改给出的分数与失分原因手动记到这里。记录保存在本机，可查看历史，并对比同一道题的多次练习。</p>'
@@ -2076,26 +2203,411 @@ BINDS.quant=function(){
   fb.innerHTML='<p class="sm" style="'+(ok?"color:var(--mint-deep)":"color:var(--red)")+'"><b>'+(ok?"✓ 正确":"✗ 再想想")+'</b> 参考答案：'+p[1]+'。'+esc(p[2])+'</p>';
  }));
 };
+/* ================= Round 5 · 第一阶段：精英思维训练交互 ================= */
+/* 素材来源只限已核实内容：5 篇范文（MODELS）、18 道已核对 Essay（VER/ESSAYS）、36 道官方 MCQ（MCQ_OFF，含 HDI 表 off-2506a-6）与 24 张知识卡（KB）。标准本科定义（如纳什均衡）如出现须标注为一般理论、非官方考点，本阶段未引入新的本科定义。 */
+const ELITE_SKILLS=[
+ ["fp","First Principles","第一性原理"],
+ ["logic","Causal Reasoning","因果推理"],
+ ["crit","Critical Thinking","批判性思维"],
+ ["counter","Counterargument","反方论证"],
+ ["multi","Multi-factor Analysis","多因素分析"],
+ ["transfer","Transfer Learning","迁移学习"],
+ ["evidence","Evidence Evaluation","证据评价"],
+ ["judge","Independent Judgement","独立判断"]
+];
+/* 精英练习记录：只追加、不改写旧记录；老数据缺 eliteLog 时由 eliteLogRoot() 兜底为空数组。 */
+function eliteLogRoot(){if(!Array.isArray(U.eliteLog))U.eliteLog=[];return U.eliteLog;}
+function logElite(kind,item,ok){const L=eliteLogRoot();L.push({id:"el"+Date.now().toString(36)+L.length,kind:kind,item:item,ok:ok==null?null:!!ok,ts:Date.now()});saveUser();}
+function eliteCount(kind){const L=eliteLogRoot().filter(function(x){return x.kind===kind;});return{n:L.length,c:L.filter(function(x){return x.ok===true;}).length};}
+function drAnsweredCount(){let n=0;const dp=U.drProg||{};Object.keys(dp).forEach(function(pid){if(pid==="train")return;const p=dp[pid];if(p&&typeof p==="object")Object.keys(p).forEach(function(part){const r=p[part];if(r&&r.answer!=null&&String(r.answer).trim()!=="")n++;});});return n;}
+function bhFilledCount(){return (U.essayLog||[]).filter(function(r){return r.bh&&[r.bh.q1,r.bh.q2,r.bh.q3].some(function(x){return x&&String(x).trim();});}).length;}
+/* ---------- 第一性原理：分步揭示 + 自判（不做 AI 评分） ---------- */
+const FP_EX=[
+ {id:"fp1",title:"生产率上升，为什么反而让贸易条件恶化？",src:"取材：202310-8 范文第二条 KAA 链与评价段",go:["essays","202310-8","打开范文 202310-8 看评价段"],
+  steps:["起点：出口产业的相对生产率上升（例如资本投资↑ → 人均产出↑）。","生产率↑ → 单位劳动成本 (unit labour costs)↓。","世界市场竞争激烈，企业把成本下降的一部分转化为更低的出口价格，以争夺市场份额。","进口价格由国外决定、不变 → 出口价格相对进口价格↓。","结论：贸易条件 ToT = 出口价格指数 ÷ 进口价格指数 × 100 下降 → 贸易条件恶化。"],
+  check:{q:"贸易条件恶化，是否意味着这个国家一定受害了？",opts:[
+   {t:"是，恶化就是福利受损",ok:false,why:"不对。生产率型恶化伴随产出与实际收入上升：国家在价格上让出一部分效率收益，但以数量形式保留了其余部分——这是 202310-8 范文评价段的原意。"},
+   {t:"不一定：数量与实际收入同时上升，福利可能改善",ok:true,why:"对。区分「指数恶化」与「福利受损」正是本题评价段的核心：生产率驱动的恶化部分是经济强健的标志。"},
+   {t:"取决于汇率是否同时贬值",ok:false,why:"不对。汇率是另一条恶化渠道，不是判断福利的决定因素；判断福利要看数量效应与收入效应，不是看汇率。"}]}},
+ {id:"fp2",title:"贬值之后，经常账户一定改善吗？",src:"取材：202310-8 范文评价段（马歇尔-勒纳条件）与 J 曲线图",go:["essays","202310-8","打开范文 202310-8 看评价段"],
+  steps:["起点：一国货币贬值 (depreciation)。","价格效应：外币计价出口价格↓、本币计价进口价格↑ → 贸易条件 ToT 先变差。","数量效应：出口品更便宜 → 出口量↑；进口品更贵 → 进口量↓。","经常账户是否改善，取决于数量效应是否压倒价格效应。","结论：马歇尔-勒纳条件 (Marshall-Lerner condition)：出口与进口需求价格弹性 (PED) 之和大于 1 时，贬值改善经常账户；小于 1 时反而恶化。"],
+  check:{q:"贬值后第一个月，经常账户最可能怎样？",opts:[
+   {t:"立即改善，因为出口量马上上升",ok:false,why:"不对。短期合同已签、消费习惯未变，数量来不及调整，进口账单先变贵——J 曲线效应 (J-curve effect)：先恶化、后改善。"},
+   {t:"先恶化、长期才可能改善",ok:true,why:"对。短期数量刚性使价格效应占上风；长期数量调整后，若满足马歇尔-勒纳条件，经常账户才改善。"},
+   {t:"不变，价格效应与数量效应恰好抵消",ok:false,why:"不对。两者没有「恰好抵消」的理由；净方向取决于弹性之和是否大于 1，这正是马歇尔-勒纳条件要判断的事。"}]}},
+ {id:"fp3",title:"从比较优势出发，专业化为什么能让两国都获益？",src:"取材：202110-9 范文第一、二段与评价段",go:["essays","202110-9","打开范文 202110-9 看评价段"],
+  steps:["起点：比较优势 (comparative advantage)——一国专业化于其机会成本 (opportunity cost) 最低的产品。","每单位资源都用在相对最有效率的地方 → 世界总产出上升。","两国按介于各自机会成本比率之间的价格进行贸易。","贸易后消费点位于本国生产可能性边界 (PPC) 之外——自给自足下根本达不到的组合。","结论：同样的国民资源换得更大的商品与服务束 → 实际收入与生活水平上升。"],
+  check:{q:"贸易互利成立，必须满足什么条件？",opts:[
+   {t:"贸易条件落在两国机会成本比率之间",ok:true,why:"对。这是 202110-9 评价段里最能显示理解深度的点：贸易条件落在区间内，两国才都获益；落在区间外，一方的好处会漏到国外。"},
+   {t:"两国出口价格都上升",ok:false,why:"不对。价格都上升与互利没有必然联系；关键是贸易价格相对于各自机会成本的位置。"},
+   {t:"一国拥有绝对优势 (absolute advantage)",ok:false,why:"不对。绝对优势不是贸易互利的条件，比较优势才是——202110-9 范文失分点第一条就是混淆两者。"}]}},
+ {id:"fp4",title:"取消关税，为什么能提高世界产出？",src:"取材：202201-8 范文第三、五段与评价段",go:["essays","202201-8","打开范文 202201-8 看评价段"],
+  steps:["起点：取消关税，进口品国内价格从含税价回落到世界价格 (Pw) 附近。","低成本的外国供给替代高成本的国内生产 → 贸易创造 (trade creation)。","各国按比较优势专业化，资源流向相对最有效率的用途。","世界产出上升；消费者获得更便宜的进口品，消费者剩余 (consumer surplus) 上升。","结论：自由化是贸易扩大的放大器——但它不是自动的：多哈回合失败、非关税壁垒 (NTB) 仍在，说明自由化并不完整。"],
+  check:{q:"只凭「关税取消」能不能断言全球化会不断加深？",opts:[
+   {t:"能，关税取消就够了",ok:false,why:"不对。自由化既不连续也不完整：多哈回合失败、WTO 对非关税壁垒乏力，单靠关税下降推不出「不断加深」。"},
+   {t:"不能：2008 年后金融危机、贸易战、脱欧与疫情都使一体化部分逆转",ok:true,why:"对。这正是 202201-8 评价段的「慢全球化 (slowbalisation)」限定：运输成本是 50 年尺度的首要因素，但 2008 年后政策因素转为拖累。"},
+   {t:"不能，因为运输成本没有下降",ok:false,why:"不对。运输成本下降确实是首要因素，但本题问的是自由化是否充分——反证在政策面（多哈失败、逆转），不在运输面。"}]}}
+];
+/* ---------- 逻辑挑战：6 题，全部取材已核实内容 ---------- */
+const LOGIC_EX=[
+ {id:"lc1",title:"挑战 1：这条链错在哪？",claim:"「货币贬值 → 贸易条件改善 → 经常账户必然改善」",src:"取材：202310-8 范文评价段；官方 MCQ off-2506-3（罗马尼亚生产率题）",go:["essays","202310-8","打开范文 202310-8 看评价段"],
+  opts:[
+   {t:"两处都错：方向反了，且「必然」不成立",ok:true,why:"对。(1) 方向错——贬值使外币计价出口价↓、本币计价进口价↑，贸易条件是恶化不是改善；(2) 「必然」错——经常账户是否改善取决于数量效应，即马歇尔-勒纳条件（PEDx + PEDm > 1）是否成立，且短期还有 J 曲线式的先恶化。"},
+   {t:"第一步对、第二步错",ok:false,why:"不对。第一步方向就是反的：贬值恶化贸易条件，不是改善。"},
+   {t:"两步都对",ok:false,why:"不对。两步都有问题：方向反了，而且从贸易条件推经常账户时漏掉了数量效应与弹性条件。"}],
+  explain:""},
+ {id:"lc2",title:"挑战 2：生产率上升，贸易条件一定改善？",claim:"「生产率上升 → 国家更有效率 → 贸易条件一定改善」",src:"取材：202310-8 范文第二条 KAA 链",go:["essays","202310-8","打开范文 202310-8 看评价段"],
+  opts:[
+   {t:"方向反了：生产率↑ → 单位成本↓ → 出口价格↓ → 贸易条件恶化",ok:true,why:"对。这条链是反直觉的，但方向确定：竞争迫使企业把成本下降传进出口价格，Px 相对 Pm 下降。但福利未必受损——出口数量与实际收入同时上升。"},
+   {t:"生产率与贸易条件无关",ok:false,why:"不对。相对生产率是 202310-8 官方清单里的恶化因素之一（相对生产率较高、相对劳动成本较低），通过出口价格起作用。"},
+   {t:"生产率上升一定使出口价格上升",ok:false,why:"不对。生产率上升压低单位成本，竞争下出口价格下降而不是上升；价格上升的是相对通胀较高、相对生产率较低的情形。"}],
+  explain:""},
+ {id:"lc3",title:"挑战 3：相关，还是因果？（HDI 表）",claim:"「泰国出生时预期寿命 79.7 岁，高于马来西亚 76.3 岁 → 所以泰国比马来西亚更发达」",src:"取材：Jun 2025 01A Q6 官方原题（off-2506a-6），泰国 / 马来西亚 2022 年数据",go:["mcq","off-2506a-6","打开官方原题 off-2506a-6"],
+  opts:[
+   {t:"推断越界：预期寿命只能支撑「医疗供给更好」，经济发展水平要看 HDI",ok:true,why:"对。官方答案正是 C（医疗供给更好）。而 A 项不成立：马来西亚 HDI 0.807 高于泰国 0.803，经济发展水平更高——一个指标不能越界去推断另一个指标。"},
+   {t:"数据错了，泰国预期寿命不可能更高",ok:false,why:"不对。表中数据就是泰国 79.7 岁、马来西亚 76.3 岁；错的是推断，不是数据。读表先核对数字，再判断能推出什么。"},
+   {t:"预期寿命与发展水平完全无关",ok:false,why:"不对。预期寿命是 HDI 的三个构成部分之一，与发展水平有关；错的是用单一分项直接断言整体排名，而不是指标本身无关。"}],
+  explain:"方法点：逐项核对表中数据——B 项也不成立（马来西亚平均受教育年限 10.7 年长于泰国 8.8 年），D 项也不成立（泰国人均 GNI $16 887 低于马来西亚 $27 295）。注：官方 MS 对 B 项的排除理由原文国名疑似印反，本站已按表中数据纠正，正确答案 C 不受影响。"},
+ {id:"lc4",title:"挑战 4：名义与实际混淆",claim:"「某国出口额上升了 20%，所以它的贸易条件改善了」",src:"取材：Jun 2025 01A Q4 官方原题（off-2506a-4），澳大利亚出口价 −6.8%、进口价 −1.1%",go:["mcq","off-2506a-4","打开官方原题 off-2506a-4"],
+  opts:[
+   {t:"混淆了名义与实际：出口额 = 价格 × 数量，数量上升也能推高出口额",ok:true,why:"对。贸易条件只看价格之比 ToT = Px ÷ Pm × 100。例：澳大利亚出口价 −6.8%、进口价 −1.1% 时，ToT = 93.2 ÷ 98.9 × 100 = 94.24（恶化），与出口额是多少无关。"},
+   {t:"出口额上升必然意味着出口价格上升",ok:false,why:"不对。出口额 = 价格 × 数量；数量上升 20%、价格下降 5%，出口额仍可上升——这正是名义值与价格指数的区别。"},
+   {t:"贸易条件只看出口额，不看进口",ok:false,why:"不对。贸易条件是出口价格与进口价格之比，进口价格同样在分母里；只看出口一侧算不出 ToT。"}],
+  explain:""},
+ {id:"lc5",title:"挑战 5：「必然」式论断",claim:"「全球化收益大于成本，因此对所有国家都成立」",src:"取材：202210-9 范文判断段",go:["essays","202210-9","打开范文 202210-9 看判断段"],
+  opts:[
+   {t:"「必然」错：判断是有条件的，取决于国家、国内谁得益谁受损与配套政策",ok:true,why:"对。202210-9 的判断段明确写了条件：对一个无法征税、无法规制或无法再培训的国家，或一个面临贸易条件恶化的初级产品出口国，同样的力量完全可能产生超过收益的成本。"},
+   {t:"收益大于成本对所有国家都成立",ok:false,why:"不对。范文的结论只针对中国、且附带条件；把它推广到「所有国家」就是把有条件判断偷换成无条件论断。"},
+   {t:"成本大于收益对所有国家都成立",ok:false,why:"不对。这同样是无条件论断，只是方向反过来；范文的立场是「对中国收益大于成本，但有条件」，不是反向的绝对论断。"}],
+  explain:""},
+ {id:"lc6",title:"挑战 6：局部与一般均衡",claim:"「对进口钢铁征关税保护了本国钢铁业，所以全国福利上升了」",src:"取材：关税图；Jun 2024 Q3 官方原题（英国维持钢铁关税防倾销）",go:["mcq","off-2406-3","打开官方原题 off-2406-3"],
+  opts:[
+   {t:"局部均衡谬误：只看受保护行业，漏掉了消费者与无谓损失",ok:true,why:"对。关税图：生产者剩余↑、政府收入↑，但消费者剩余的损失更大，另有两块无谓损失 (deadweight loss)——生产扭曲与消费扭曲；净福利下降。只算钢铁业的账，是局部均衡；全社会算总账，是一般均衡。"},
+   {t:"关税没有任何成本",ok:false,why:"不对。关税的成本就在图里：消费者多付的价格、减少的消费量、两块无谓损失——保护收益从来不是免费的。"},
+   {t:"保护钢铁业必然提高全国福利",ok:false,why:"不对。保护的收益（生产者剩余与政府收入）小于消费者的损失；除非有特定的市场失灵理由，否则净福利为负。"}],
+  explain:""}
+];
+/* ---------- 反方论证：取材 5 篇范文的评价段 ---------- */
+const COUNTER_EX=[
+ {id:"ca1",essay:"202201-8",title:"反方 1：运输成本是最重要的全球化因素？",claim:"论断：「运输成本下降是过去 50 年全球化最重要的因素。」",q:"什么条件下，这个结论会反转（或必须加上限定）？",src:"取材：202201-8 范文评价段",
+  opts:[
+   {t:"2008 年后政策驱动由正转负：金融危机、贸易战、脱欧、疫情使一体化部分逆转",ok:true,why:"对。范文评价段的限定正在于此：运输成本是 50 年尺度的首要因素，但 2008 年后政策因素转为拖累，全球化是强大但可逆的过程，不是自动的。"},
+   {t:"集装箱量 1980–2020 年增长约 20 倍",ok:false,why:"不对。这是支持「运输居首」的证据（物理能力的变化），不是反转条件——它让结论更强，不是更弱。"},
+   {t:"中国 2001 年加入 WTO",ok:false,why:"不对。中国开放是自由化因素的放大器，同样支持原结论；反转条件要找的是让结论失效的证据，不是更多支持证据。"}],
+  explain:"范文评价有效的原因：排序有证据（20 倍是物理能力变化）、有反证（多哈回合失败、WTO 对非关税壁垒乏力）、有时间维度（2008 年拐点）、有边界（通讯红利把发展中国家贫困与文盲人口排除在外）。",
+  chain:"深链：政策逆转 → 跨境成本 / 风险↑ → 供应链回流 / 近岸化 → 一体化放缓（慢全球化 slowbalisation）→ 「全球化不可逆」的假设不成立。"},
+ {id:"ca2",essay:"202210-9",title:"反方 2：对中国，全球化收益大于成本？",claim:"论断：「对中国来说，全球化收益大于成本。」",q:"什么条件下结论会反转？",src:"取材：202210-9 范文判断段",
+  opts:[
+   {t:"一个无法征税、规制或再培训的国家——成本无法被收益产生的税收缓解",ok:true,why:"对。范文判断段的原话：收益是全经济、累积的，成本落在可识别群体、可用税收缓解；反过来，一个不能征税、规制或再培训的国家，成本就会超过收益。"},
+   {t:"中国出口规模继续扩大",ok:false,why:"不对。出口扩大加强的是收益一侧（规模经济、就业、税收），不会反转结论。"},
+   {t:"消费者剩余上升",ok:false,why:"不对。消费者剩余上升同样是收益一侧的证据；反转条件必须来自成本一侧或治理能力一侧。"}],
+  explain:"范文评价有效的原因：分主体结算（消费者、企业、劳工、政府、环境各自算账）、用官方证据批判涓滴理论（几乎没有证据表明它在实践中有效）、区分成本性质（治理成本 vs 贸易本身的成本）。",
+  chain:"深链：贸易条件恶化（初级产品出口国）→ 出口收入↓ → 贫困与不平等↑ → 无再分配能力 → 成本超过收益。"},
+ {id:"ca3",essay:"202310-8",title:"反方 3：贸易条件恶化就是国家受害？",claim:"论断：「贸易条件恶化，就是国家受害。」",q:"以下哪一个是「恶化 ≠ 受害」最干净的反例？",src:"取材：202310-8 范文评价段第二点",
+  opts:[
+   {t:"德国式生产率增长：出口价↓、贸易条件恶化，但产量与实际收入↑",ok:true,why:"对。生产率驱动的恶化伴随产出与实际收入上升：国家在价格上让出一部分效率收益，但以数量形式保留其余部分——恶化可以是经济强健的标志。"},
+   {t:"直布罗陀贸易条件恶化 44.6%",ok:false,why:"不对。幅度大不等于受害程度大：44.6% 只说明指数变化，没有给出数量、收入与福利的信息，不能直接推出「受害」。"},
+   {t:"希腊贸易条件恶化 14.3%",ok:false,why:"不对。同理：14.3% 只是指数变化；要判断福利，还要看恶化由哪条渠道造成、数量与收入如何变化。"}],
+  explain:"范文评价段第二点还给出另一条反转渠道：贬值型恶化在马歇尔-勒纳条件成立时，出口收入与经常账户可能改善——即使贸易条件恶化。判断福利要看渠道与数量效应，不能只看指数方向。",
+  chain:"深链：生产率↑ → 单位成本↓ → 出口价↓（贸易条件恶化）→ 出口量↑ + 实际收入↑ → 福利↑。"}
+];
+/* ---------- 多因素分析：因素相互作用而非罗列 ---------- */
+const MULTI_EX=[
+ {id:"mf1",essay:"202401-9",title:"多因素 1：贸易格局为什么会部分逆转？",claim:"情景（2020 年代）：中国工资与运输成本上升，同时美国对华加征关税。",q:"以下哪一组互动最能解释贸易格局的部分逆转？",src:"取材：202401-9 范文评价段（回流、汇率波动、报复）",
+  opts:[
+   {t:"工资↑ → 成本优势收窄 → 回流 / 近岸化；关税 → 贸易转移与报复 → 流向改道",ok:true,why:"对。这正是范文评价段的「自我制动机制」：成功本身推高工资、侵蚀优势；保护主义双向作用，关税与报复改变流向；汇率波动再加一层不稳定。三个因素互相放大，不是简单相加。"},
+   {t:"比较优势是固定的，格局不会变",ok:false,why:"不对。比较优势随工资、技术与禀赋变化而移动；范文第一段就点明「比较优势不是固定的」，格局必然随之移动。"},
+   {t:"FDI 只会流入发展中国家",ok:false,why:"不对。FDI 流向跟着成本与制度走：成本优势收窄时，产能可以回流发达国家或移向其他发展中国家（回流与近岸化）。"}],
+  explain:"范文判断的分层结构：方向（比较优势）、速度（开放、FDI、贸易集团等制度因素）、例外（政策冲击）。评价的高分形态是给因素分工，而不是把因素再罗列一遍。",
+  chain:"互动链：成本↑ × 政策冲击 → 企业重新选址 → 出口构成与流向同时改道 → 发展中经济体份额增速放缓甚至回落。"},
+ {id:"mf2",essay:"202310-8",title:"多因素 2：升值——改善与削弱同时发生",claim:"情景：一国货币升值 (appreciation)。",q:"升值对贸易条件与国际竞争力的影响是？",src:"取材：202305-7e 改善因素清单第 4 项；202310-8 恶化因素清单第 4 项（互为镜像）",
+  opts:[
+   {t:"贸易条件改善（出口变贵、进口变便宜），但出口竞争力下降——同一冲击、两个方向相反的效应",ok:true,why:"对。升值使 Px↑、Pm↓，ToT 改善；但出口外币价↑使出口量承压，经常账户方向取决于弹性。评价时要把两个效应分开结算，不能只说一半。"},
+   {t:"贸易条件与竞争力同时改善",ok:false,why:"不对。升值改善 ToT 的代价正是出口变贵；两个效应方向相反，不可能同时改善。"},
+   {t:"贸易条件与竞争力同时恶化",ok:false,why:"不对。这是贬值的组合（ToT 恶化、竞争力上升），不是升值；方向弄反了。"}],
+  explain:"202305-7e（改善）与 202310-8（恶化）的因素清单互为镜像：相对通胀、相对生产率、相对劳动成本、汇率——同一组变量，方向相反，结论相反。记住清单要成对记。",
+  chain:"互动链：升值 → Px↑、Pm↓ → ToT↑；同时出口外币价↑ → 出口量↓ → 经常账户承压（取决于弹性）。"}
+];
+/* ---------- 评价挑战：短期 vs 长期、利益相关者、有依据的判断 ---------- */
+const EVAL_EX=[
+ {id:"ev1",essay:"202310-8",title:"评价 1：短期 vs 长期",claim:"议题：货币贬值对经常账户的影响。",q:"以下哪一个评价最站得住脚？",src:"取材：J 曲线图；202310-8 范文评价段",
+  opts:[
+   {t:"短期先恶化（J 曲线）、长期若满足马歇尔-勒纳条件则改善——评价必须分短长期",ok:true,why:"对。短期合同已签、数量刚性，价格效应占上风；长期数量调整后，弹性之和大于 1 才改善。不分短长期，评价就是错的。"},
+   {t:"贬值必然立即改善经常账户",ok:false,why:"不对。「必然」与「立即」都错：短期先恶化，长期还要看弹性条件是否成立。"},
+   {t:"贬值对经常账户没有影响",ok:false,why:"不对。贬值同时改变价格与数量，两个渠道都有真实效应；说「没有影响」等于否认整条传导链。"}],
+  explain:"评价的维度：时间（短长期）、幅度（贬值幅度）、条件（弹性之和）、可逆性（货币回升可逆转）。四个维度逐项比较两个因素，是 202310-8 范文评价段的写法。",
+  chain:"评价链：贬值 → 短期进口账单↑（数量未动）→ 经常账户恶化 → 长期数量调整 → 若 PEDx + PEDm > 1 则改善。"},
+ {id:"ev2",essay:"202210-9",title:"评价 2：利益相关者拆分",claim:"议题：全球化对中国——收益大于成本。",q:"下一个有依据的判断之前，必须先完成哪一步？",src:"取材：202210-9 范文评价段（whyEval 第 1 点）",
+  opts:[
+   {t:"分主体结算：消费者、出口工人、内陆非技能工人、环境各自得失",ok:true,why:"对。范文评价有效的原因第一条就是分主体：收益与成本落在不同人身上，不拆分主体就无法判断「谁的收益大于谁的成本」。"},
+   {t:"只看 GDP 总量",ok:false,why:"不对。GDP 总量上升时，不平等可能同时加剧、环境可能同时恶化；总量一个数字藏住了分配。"},
+   {t:"只看出口额",ok:false,why:"不对。出口额是总量指标，同样不拆分主体；而且出口额上升时，劳工剥削与外部成本也可能在上升。"}],
+  explain:"范文还用了官方证据批判涓滴理论（几乎没有证据表明它在实践中有效），并区分成本的性质：治理成本（弱标准、缺再分配）vs 贸易本身的成本——这决定了判断的方向。",
+  chain:"评价链：分主体 → 识别成本集中落在谁身上 → 判断成本是否可治理（税收、规制、再培训）→ 再下净判断。"},
+ {id:"ev3",essay:"202401-9",title:"评价 3：有依据的判断",claim:"议题：1995–2022 年贸易格局变化。",q:"以下哪个判断是有依据的判断 (informed judgement)？",src:"取材：202401-9 范文判断段（whyJudge）",
+  opts:[
+   {t:"成本驱动的比较优势定方向、制度定速度、政策冲击定例外",ok:true,why:"对。这是范文判断段的分层判断：给每个因素分工，既解释了 1995–2022 年的数据，也能解释为什么同一时期不同国家轨迹不同。"},
+   {t:"全球化有利有弊",ok:false,why:"不对。这是空泛判断：没有排序、没有条件、没有证据，Evaluation 停在 Level 1–2。"},
+   {t:"发展中国家份额上升是因为它们更努力",ok:false,why:"不对。没有机制（成本如何移动、FDI 如何建产能）、没有证据（WTO 份额数据），只是一句印象。"}],
+  explain:"有依据的判断长这样：明确第一因素与放大机制，同时用证据给判断加上条件——读者能清楚知道什么证据会推翻这个判断。",
+  chain:"判断链：WTO 份额数据 → 机会成本移动（方向）→ 开放与 FDI（速度）→ 工资收敛与政策冲击（例外）。"}
+];
+/* ---------- 未见场景：换国家重写 ---------- */
+const COUNTRIES=[
+ {zh:"希腊",en:"Greece",poss:"Greece's",dev:true},
+ {zh:"阿根廷",en:"Argentina",poss:"Argentina's",dev:false},
+ {zh:"印度",en:"India",poss:"India's",dev:false},
+ {zh:"土耳其",en:"Turkey",poss:"Turkey's",dev:false},
+ {zh:"罗马尼亚",en:"Romania",poss:"Romania's",dev:false},
+ {zh:"德国",en:"Germany",poss:"Germany's",dev:true},
+ {zh:"英国",en:"the UK",poss:"the UK's",dev:true},
+ {zh:"中国",en:"China",poss:"China's",dev:false},
+ {zh:"美国",en:"the USA",poss:"the USA's",dev:true},
+ {zh:"直布罗陀",en:"Gibraltar",poss:"Gibraltar's",dev:true},
+ {zh:"智利",en:"Chile",poss:"Chile's",dev:false},
+ {zh:"乌拉圭",en:"Uruguay",poss:"Uruguay's",dev:false},
+ {zh:"泰国",en:"Thailand",poss:"Thailand's",dev:false},
+ {zh:"马来西亚",en:"Malaysia",poss:"Malaysia's",dev:false},
+ {zh:"瑞典",en:"Sweden",poss:"Sweden's",dev:true},
+ {zh:"南苏丹",en:"South Sudan",poss:"South Sudan's",dev:false}
+];
+const REWRITE_BASES=[
+ {code:"202201-8",zh:"全球化驱动因素",mode:"append",appendZh:"请以 {C} 为主要例子展开。",
+  en:"Between 1980 and 2020 it was estimated that total global shipping container volumes increased from 100 million tonnes to 2 billion tonnes. Evaluate factors that have contributed to increased globalisation in the last 50 years. Refer to examples of countries in your answer.",
+  check:["该国在全球供应链中的位置：它是生产环节、组装环节还是消费市场？","运输 / 通讯成本下降对该国意味着什么（海运依赖度、数字基础设施）？","该国加入了哪些贸易集团、自由化程度如何？","2008 年后该国是否经历逆全球化冲击（贸易战、脱欧、疫情断链）？"]},
+ {code:"202210-9",zh:"全球化利弊",mode:"replace",from:"a country of your choice",
+  en:"Between 1970 and 2020 growth in international trade, a key measure of globalisation, increased significantly. Evaluate whether the benefits of globalisation outweigh the costs. Refer to a country of your choice in your answer.",
+  check:["该国的出口结构与比较优势是什么？","收益与成本在该国内部如何分布（地区 / 技能 / 行业）？","该国征税、规制与再培训的能力如何？","该国是不是初级产品出口国、贸易条件走势如何？"]},
+ {code:"202110-9",zh:"专业化与贸易好处",mode:"replace",from:"a developed country of your choice",developedOnly:true,
+  en:"The share of GDP accounted for by the service sector is much higher in the UK and the USA than in Italy and Canada. Evaluate the possible benefits of specialisation and trade to a developed country of your choice.",
+  check:["该国的服务业 / 制造业比重与比较优势是什么？","该国劳动力流动性如何，结构性失业风险有多大？","该国贸易条件的历史位置在哪里？","该国专业化的集中度与脆弱性（是否过度依赖单一行业）？"]},
+ {code:"202401-9",zh:"贸易格局因素",mode:"append",appendZh:"请结合 {C} 的经历展开。",
+  en:"According to the World Trade Organization (WTO), between 1995 and 2022, the share of developing economies' exports in world trade increased and the share of developed economies' exports decreased. Evaluate factors influencing patterns of trade between countries.",
+  check:["该国在 1995–2022 年贸易格局变化中处于什么位置？","工资 / 技术变化如何移动该国的机会成本？","FDI 流入 / 流出如何改变该国的产能与出口构成？","该国加入的贸易集团与汇率制度是什么？"]},
+ {code:"202310-8",zh:"贸易条件恶化因素",mode:"custom",
+  en:"Evaluate factors that might cause a country's terms of trade to worsen.",
+  check:["该国的贸易构成：净进口国还是净出口国？是否依赖大宗商品？","该国的汇率制度：能否贬值？是不是欧元区成员？","该国相对生产率与劳动成本的趋势如何？","该国贸易条件变化的幅度与时期（短期冲击还是长期趋势）？"]}
+];
+function rewriteQuestion(code,country){
+ const b=REWRITE_BASES.find(function(x){return x.code===code;});if(!b||!country)return null;
+ let qEn=b.en, warn="";
+ if(b.mode==="replace"){qEn=b.en.split(b.from).join(country.en);}
+ if(b.mode==="custom"){qEn="Evaluate factors that might cause "+country.poss+" terms of trade to worsen.";warn="原题干的两国数据（直布罗陀恶化 44.6%、希腊恶化 14.3%）已去掉：改写后你需要自己找该国的贸易条件数据，或改用定性分析——这正是迁移训练的一部分。";}
+ if(b.mode==="append"){warn="原题不变，附加一句："+b.appendZh.split("{C}").join(country.zh)+"（英文原题未改，中文附加句是练习要求）。";}
+ if(b.developedOnly&&!country.dev){warn="注意：原题要求 a developed country（发达国家），而"+country.zh+"不是发达国家——这道改写题的题干与国家不匹配。建议换一个发达国家（希腊、德国、英国、美国、瑞典），或把本题当作「审题陷阱」来练：先指出不匹配，再作答。";}
+ return {qEn:qEn,check:b.check,warn:warn,code:code};
+}
+const UNSEEN_SCEN=[
+ {id:"us1",title:"未见场景 1：锂矿国（AI 生成练习，非官方）",body:"某发展中国家发现大型锂矿，成为锂净出口国；同时为抑制通胀加息，本币升值。",scaffold:["锂价上涨对出口价格 Px 与贸易条件 ToT 的方向是什么？","升值对 ToT 与出口量的方向各是什么？","两股力量对经常账户的净效应取决于什么（提示：弹性）？","福利判断还要看什么（提示：资源收入如何分配、是否产生对单一资源的依赖）？"],note:"「荷兰病 (Dutch disease)」是一般理论概念、非官方考点，此处只作思考方向，不展开、不考。"},
+ {id:"us2",title:"未见场景 2：新集团与新关税（AI 生成练习，非官方）",body:"某国加入区域贸易集团，同时对集团外国家的钢铁加征关税。",scaffold:["集团内贸易增加属于贸易创造还是贸易转移？","集团外低成本供给被集团内高成本供给替代，属于哪一种？","净福利取决于两者相对大小，还取决于什么条件？","报复的可能性如何改变结论？"],note:"取材方向：贸易创造 / 贸易转移（知识卡主题 2），不编造任何国家数据。",go:["kb","kp26c","打开知识卡 · 贸易创造与贸易转移"]},
+ {id:"us3",title:"未见场景 3：服务业主导国的冲击（AI 生成练习，非官方）",body:"某发达国家服务业占 GDP 的 80%，制造业高度依赖进口；全球需求骤降。",scaffold:["专业化过窄如何把外部冲击直接传导到国内就业？","长供应链与准时制 (just-in-time) 在冲击下会怎样？","贸易条件是否落在机会成本区间内，这时还重要吗？","哪些政策可以降低脆弱性（提示：供应商多元化、战略储备、再培训）？"],note:"取材方向：202110-9 范文评价段（脆弱性与贸易条件区间），不编造任何国家数据。",go:["essays","202110-9","打开范文 202110-9 看评价段"]}
+];
+/* ---------- Research Lab：读报告检查清单 ---------- */
+const LAB_CHECKLIST=[
+ ["来源是谁？","官方统计 / 央行 / 智库 / 企业报告——来源不同，利益与口径不同。"],
+ ["数据是哪一年、哪个国家、什么口径？","例：HDI 表是 2022 年数据；人均 GNI 用 2017 年购买力平价 (PPP)。年份与口径不对，比较就无效。"],
+ ["定义是否与官方考纲一致？","例：HDI 由预期寿命、教育、GNI 三部分构成；只看其中一项不能代替整体。"],
+ ["给的是水平值、变化值还是比率？","名义值 vs 实际值；百分比 (%) vs 百分点 (percentage points)；先分清，再比较。"],
+ ["相关，还是因果？","两国数据同时变化，不等于一国导致另一国；先问有没有遗漏变量。"],
+ ["表里没有的数据，能不能推断？","没有识字率数据，就不能推断识字率；没有的数据，答案只能是「无法推断」。"],
+ ["图表的纵轴是否从 0 开始、有没有截断？","基尼系数图只看趋势方向，不读精确数值；截断的纵轴会夸大变化。"],
+ ["结论有没有条件？","「在马歇尔-勒纳条件成立时」「对能征税的国家」——条件是判断的一部分，不是装饰。"],
+ ["样本有没有选择性？","只挑两个国家、只挑某几年——结论可能只对样本成立。"],
+ ["结论能不能被证伪？","说出什么证据会推翻它——这正是 Level 3 评价的写法。"]
+];
+/* ---------- 选项类练习的通用判定（纯函数，可单测） ---------- */
+function eliteAnswer(kind,id,oi){
+ const map={logic:LOGIC_EX,counter:COUNTER_EX,multi:MULTI_EX,eval:EVAL_EX};
+ const list=map[kind]||[];let ex=null;
+ list.forEach(function(x){if(x.id===id)ex=x;});if(!ex)return null;
+ const o=ex.opts[oi];if(!o)return null;
+ logElite(kind,id,!!o.ok);
+ return {ok:!!o.ok,why:o.why,explain:ex.explain||"",chain:ex.chain||"",essay:ex.essay||""};
+}
+function eliteFpAnswer(id,oi){
+ const ex=FP_EX.find(function(x){return x.id===id;});if(!ex)return null;
+ const o=ex.check.opts[oi];if(!o)return null;
+ logElite("fp",id,!!o.ok);
+ return {ok:!!o.ok,why:o.why};
+}
+function eliteOptCard(kind,ex){
+ let h='<div class="card" data-excard="'+kind+'-'+ex.id+'"><b>'+esc(ex.title)+'</b><p class="sm">'+esc(ex.claim)+'</p>';
+ h+='<p class="sm"><b>'+esc(ex.q||"错在哪？")+'</b></p>';
+ h+='<div class="btnrow">'+ex.opts.map(function(o,i){return '<button class="btn sm ghost" data-opt="'+kind+'|'+ex.id+'|'+i+'">'+esc(o.t)+'</button>';}).join("")+'</div>';
+ h+='<div id="fb-'+kind+'-'+ex.id+'"></div>';
+ h+='<p class="sm mut">来源：'+esc(ex.src)+'</p>';
+ if(ex.go)h+='<div class="btnrow"><button class="btn sm ghost" data-go="'+ex.go[0]+'" data-param="'+ex.go[1]+'">'+esc(ex.go[2])+'</button></div>';
+ else if(ex.essay)h+='<div class="btnrow"><button class="btn sm ghost" data-go="essays" data-param="'+ex.essay+'">打开范文 '+ex.essay+' 看评价段原文</button></div>';
+ return h+'</div>';
+}
+function eliteFpCard(ex){
+ let h='<div class="card" data-fpcard="'+ex.id+'"><b>'+esc(ex.title)+'</b><p class="sm mut">来源：'+esc(ex.src)+' · 一步步揭示，最后自己判断对错——站内不做 AI 评分。</p>';
+ if(ex.go)h+='<div class="btnrow"><button class="btn sm ghost" data-go="'+ex.go[0]+'" data-param="'+ex.go[1]+'">'+esc(ex.go[2])+'</button></div>';
+ h+=ex.steps.map(function(s,i){return '<p class="sm" data-fpstep="'+ex.id+'-'+i+'"'+(i===0?"":' style="display:none"')+'>'+(i+1)+'. '+arrows(s)+'</p>';}).join("");
+ h+='<div class="btnrow"><button class="btn sm" data-fpnext="'+ex.id+'">下一步</button><span class="sm mut" data-fpleft="'+ex.id+'">还剩 '+(ex.steps.length-1)+' 步</span></div>';
+ h+='<div data-fpcheckwrap="'+ex.id+'" style="display:none"><p class="sm"><b>自判：</b>'+esc(ex.check.q)+'</p><div class="btnrow">'+ex.check.opts.map(function(o,i){return '<button class="btn sm ghost" data-fpcheck="'+ex.id+'|'+i+'">'+esc(o.t)+'</button>';}).join("")+'</div><div id="fb-fp-'+ex.id+'"></div></div>';
+ return h+'</div>';
+}
+function eliteAbilityHTML(){
+ const c={};ELITE_SKILLS.forEach(function(s){c[s[0]]=eliteCount(s[0]);});
+ const evC=eliteCount("eval"), unC=eliteCount("unseen");
+ const labN=eliteLogRoot().filter(function(x){return x.kind==="lab";}).length;
+ const drN=drAnsweredCount(), bhN=bhFilledCount(), mockN=(U.mockHistory||[]).length;
+ const mcqN=(U.mcqLog||[]).length, essN=(U.essayLog||[]).length, unres=(U.mistakes||[]).filter(function(m){return !m.resolved;}).length;
+ const critN=c.logic.n+evC.n, critC=c.logic.c+evC.c;
+ const evN=evC.n+labN, judgeN=bhN+mockN;
+ function row(name,rule,n,cc,okText,need){
+  if(n<need)return '<div class="card" style="padding:10px 16px"><b>'+esc(name)+'</b><p class="sm mut" style="margin:.3rem 0">计数规则：'+esc(rule)+'</p><p class="sm" style="margin:.3rem 0">记录不足（目前 '+n+' 次），暂不呈现——先积累练习，满 '+need+' 次后再看计数。</p></div>';
+  return '<div class="card" style="padding:10px 16px"><b>'+esc(name)+'</b><p class="sm mut" style="margin:.3rem 0">计数规则：'+esc(rule)+'</p><p class="sm" style="margin:.3rem 0"><b>'+esc(okText)+'</b></p></div>';
+ }
+ let h='<p class="sm mut">只呈现真实记录的计数，不做评级、不排名、不预测分数。每一项都写清计数规则；记录不足时显示空状态，不编造。</p>';
+ h+=row("First Principles · 第一性原理","第一性原理练习自判正确的次数 / 总尝试（本页练习记录 eliteLog）。",c.fp.n,c.fp.c,"已记录 "+c.fp.n+" 次 · 自判正确 "+c.fp.c+" 次",3);
+ h+=row("Causal Reasoning · 因果推理","逻辑挑战答对次数 / 总尝试。",c.logic.n,c.logic.c,"已记录 "+c.logic.n+" 次 · 答对 "+c.logic.c+" 次",3);
+ h+=row("Critical Thinking · 批判性思维","逻辑挑战 + 评价挑战答对次数 / 总尝试。",critN,critC,"已记录 "+critN+" 次 · 答对 "+critC+" 次",3);
+ h+=row("Counterargument · 反方论证","反方论证练习答对次数 / 总尝试。",c.counter.n,c.counter.c,"已记录 "+c.counter.n+" 次 · 答对 "+c.counter.c+" 次",3);
+ h+=row("Multi-factor Analysis · 多因素分析","多因素分析练习答对次数 / 总尝试。",c.multi.n,c.multi.c,"已记录 "+c.multi.n+" 次 · 答对 "+c.multi.c+" 次",3);
+ h+=row("Transfer Learning · 迁移学习","「换国家重写」生成次数（生成即计 1 次，不设对错；3 个手写未见场景不计入数字）。",unC.n,0,"已生成 "+unC.n+" 道改写练习题",1);
+ h+=row("Evidence Evaluation · 证据评价","评价挑战尝试 + Research Lab worked example 完成次数；另列材料题已答小问数（Data Response 进度 drProg）。",evN,0,"评价挑战 "+evC.n+" 次 + Research Lab 完成 "+labN+" 次；材料题已答小问 "+drN+" 道",3);
+ h+=row("Independent Judgement · 独立判断","Essay Log 已填 Brutal Honesty 三问的记录数 + 整卷模拟归档数（mockHistory）。",judgeN,0,"三问复盘 "+bhN+" 条 + 整卷模拟归档 "+mockN+" 次",3);
+ h+='<p class="sm mut">支撑记录（全站真实计数）：MCQ 记录 '+mcqN+' 条 · Essay Log '+essN+' 条 · 未解决错题 '+unres+' 条 · 材料题已答小问 '+drN+' 道 · 整卷模拟归档 '+mockN+' 次。</p>';
+ return h;
+}
+let lastRewrite="";
+
 /* ---------- Elite Economist Training ---------- */
 VIEWS.elite=function(){
- let h='<h1>Elite Economist Training · 思维卓越（Track B）</h1><p class="mut">Depth without Obscurity：顶尖来自掌握、清晰、迁移与判断，不是偏门与堆量。Level 1 官方考纲掌握 · Level 2 高阶应用与评价（最重要）· Level 3 少量与 U4 紧密相关的本科入门理论。</p>';
- h+='<div class="grid">'+[["First Principles 第一性原理","从基本原理独立推导结论，而不是背诵结论。本轮先用下方逻辑挑战练起，题库待补充。"],["Logic Challenge 逻辑挑战","检查因果链：逻辑跳跃、遗漏环节、因果倒置、隐含假设。下方有 2 个可立即做的挑战。"],["Counterargument 反方论证","解释原观点为什么可能不成立、什么条件下结论反转。范文库每篇范文的评价段就是范例。"],["Multi-factor Analysis 多因素分析","解释因素之间的相互作用，而不是罗列因素。见 Ch.24 范文的组合判断。"],["Evaluation Challenge 评价挑战","条件评价、短长期、利益相关者、政策局限与有依据的判断。见工具箱的等级描述。"],["Unseen Scenarios 陌生情境","用已学理论分析没见过的情境——把范文题目换一个国家重写，就是最低成本的迁移训练。"]].map(c=>'<div class="card"><b>'+esc(c[0])+'</b><p class="sm mut">'+esc(c[1])+'</p></div>').join("")+'</div>';
- h+='<div class="card"><h3 style="margin-top:0">Logic Challenge · 找断点（点开看答案）</h3>'
- +'<details><summary>挑战 1：这条链错在哪？「货币贬值 → 贸易条件改善 → 经常账户必然改善」</summary><div><p>两处错误：(1) 方向错——贬值使出口价格（外币计）下降、进口价格上升，贸易条件是<b>恶化</b>不是改善；(2) 「必然」错——经常账户是否改善取决于数量效应，即马歇尔-勒纳条件（PEDx + PEDm > 1）是否成立，且短期还有 J 曲线式的先恶化。</p></div></details>'
- +'<details><summary>挑战 2：从第一性原理推导——为什么「生产率上升」反而会让贸易条件恶化？</summary><div><p>生产率↑ → 单位劳动成本↓ → 企业在竞争中把成本下降转化为更低的出口价格 → 出口价格相对进口价格下降 → ToT = Px/Pm 下降 → 恶化。但福利未必受损：出口数量与实际收入同时上升。这正是 Ch.25 范文（202310-8）的第二条链。</p></div></details></div>';
+ let h='<h1>Elite Economist Training · 思维卓越（Track B）</h1><p class="mut">Depth without Obscurity：顶尖来自掌握、清晰、迁移与判断，不是偏门与堆量。Level 1 官方考纲掌握 · Level 2 高阶应用与评价（最重要）· Level 3 少量与 U4 紧密相关的本科入门理论。本页所有练习只取材已核实内容（5 篇范文、18 道已核对 Essay、36 道官方 MCQ、24 张知识卡）；自判对错，不做 AI 评分；每次尝试都记入你的练习记录。</p>';
+ h+='<div class="grid">'+[["First Principles 第一性原理","从基本原理独立推导结论，而不是背诵结论。下方 4 个分步推导练习，一步步揭示、最后自判。"],["Logic Challenge 逻辑挑战","检查因果链：逻辑跳跃、遗漏环节、因果倒置、隐含假设。下方 6 个挑战，选出「错在哪」。"],["Counterargument 反方论证","解释原观点为什么可能不成立、什么条件下结论反转。下方 3 个练习，取材范文评价段。"],["Multi-factor Analysis 多因素分析","解释因素之间的相互作用，而不是罗列因素。下方 2 个练习，取材 Ch.24 / Ch.25 范文。"],["Evaluation Challenge 评价挑战","条件评价、短长期、利益相关者、政策局限与有依据的判断。下方 3 个练习。"],["Unseen Scenarios 陌生情境","用已学理论分析没见过的情境——把范文题目换一个国家重写，就是最低成本的迁移训练。"]].map(function(c){return '<div class="card"><b>'+esc(c[0])+'</b><p class="sm mut">'+esc(c[1])+'</p></div>';}).join("")+'</div>';
+ h+='<h2>第一性原理 · 分步推导（4 个）</h2>'+FP_EX.map(eliteFpCard).join("");
+ h+='<h2>逻辑挑战 · 找断点（6 个）</h2>'+LOGIC_EX.map(function(ex){return eliteOptCard("logic",ex);}).join("");
+ const q6=MCQ_OFF.find(function(q){return q.id==="off-2506a-6";});
+ if(q6&&q6.tbl)h+='<div class="card"><h3 style="margin-top:0">挑战 3 的原表（Jun 2025 01A Q6 官方数据）</h3>'+tblHTML(q6.tbl)+'<p class="sm mut">泰国 / 马来西亚 2022 年数据。官方答案 C：泰国出生时预期寿命（79.7 岁）高于马来西亚（76.3 岁），可推断泰国的医疗供给 (healthcare provision) 更好。注：MS 对 B 项的排除理由原文国名疑似印反，本站已按表中数据纠正，正确答案 C 不受影响。</p></div>';
+ h+='<h2>反方论证 · 什么条件下结论反转（3 个）</h2>'+COUNTER_EX.map(function(ex){return eliteOptCard("counter",ex);}).join("");
+ h+='<h2>多因素分析 · 因素如何相互作用（2 个）</h2>'+MULTI_EX.map(function(ex){return eliteOptCard("multi",ex);}).join("");
+ h+='<h2>评价挑战（3 个）</h2>'+EVAL_EX.map(function(ex){return eliteOptCard("eval",ex);}).join("");
+ h+='<h2>未见场景 · 换国家重写</h2><div class="card" id="rwgen-card"><h3 style="margin-top:0">换国家重写 · Unseen Scenario Generator</h3><p class="sm mut">选一道已核实范文题，换一个题库里已有核实记录的国家，生成一道练习题 + 一份「要重新推导什么」清单。不给范文答案——答案要你自己写，写完复制去聊天找 Viaana 批改。生成即记 1 次迁移练习。</p>'
+ +'<div class="btnrow"><select id="rwbase">'+REWRITE_BASES.map(function(b){return '<option value="'+b.code+'">'+b.code+' · '+esc(b.zh)+'</option>';}).join("")+'</select><select id="rwcountry">'+COUNTRIES.map(function(c){return '<option value="'+esc(c.zh)+'">'+esc(c.zh)+' '+esc(c.en)+'</option>';}).join("")+'</select><button class="btn" id="rwgen">生成练习题</button></div><div id="rwout"></div></div>';
+ h+='<div class="card"><h3 style="margin-top:0">手写未见场景（3 个 · AI 生成练习，非官方）</h3><p class="sm mut">只给推理脚手架，不给满分答案；不编造任何国家数据。做完后把答案复制去聊天找 Viaana 批改。</p>'
+ +UNSEEN_SCEN.map(function(s){return '<details id="'+s.id+'"><summary>'+esc(s.title)+'</summary><div><p class="sm">'+esc(s.body)+'</p><p class="sm"><b>推理脚手架：</b></p><ol class="tight sm">'+s.scaffold.map(function(x){return '<li>'+esc(x)+'</li>';}).join("")+'</ol><p class="sm mut">'+esc(s.note)+'</p>'+(s.go?'<div class="btnrow"><button class="btn sm ghost" data-go="'+s.go[0]+'" data-param="'+s.go[1]+'">'+esc(s.go[2])+'</button></div>':"")+'<div class="btnrow"><button class="btn sm ghost" data-usscopy="'+s.id+'">复制场景去聊天批改</button></div></div></details>';}).join("")+'</div>';
+ h+='<div class="card"><h3 style="margin-top:0">Research Lab · 读报告方法</h3><p class="sm mut">新视图：如何读一份经济报告的检查清单 + 用站内核实数据做的 worked example（HDI 表与澳大利亚贸易条件计算），不编造任何数据。</p><div class="btnrow"><button class="btn sm" data-go="researchlab">打开 Research Lab</button></div></div>';
  h+='<div class="card pink"><h3 style="margin-top:0">Brutal Honesty · 无情纠错模式</h3><p class="sm">在聊天批改时始终生效，规则如下：</p><ul class="tight"><li>不因学生努力就提高评分。</li><li>不把语言高级等同于经济学分析深入。</li><li>不把篇幅长等同于答案质量高。</li><li>不把背诵的逻辑链等同于独立推理。</li><li>不接受没有实际分析价值的评价。</li><li>不因学生给出正确结论就忽略推理过程中的错误。</li></ul><p class="sm"><b>每次训练结束必须回答三问：</b>1. 你真正掌握了什么？2. 你以为自己掌握、实际上还没有掌握什么？3. 如果明天参加考试，你最可能在哪里失分？</p><div class="btnrow"><button class="btn" id="bhcopy">复制三问去聊天复盘</button></div></div>';
  h+=bhReviewHTML();
- h+='<div class="card"><h3 style="margin-top:0">能力追踪</h3><p class="sm mut">First Principles / Causal Reasoning / Critical Thinking / Counterargument / Multi-factor Analysis / Transfer Learning / Evidence Evaluation / Independent Judgement 八项能力，必须基于长期、多次、可追溯的练习记录评估——目前记录不足，显示空状态，不做一次性排名或虚构评级。等你在练习室与错题本积累记录后，这里按真实数据生成。</p></div>';
+ h+='<div class="card"><h3 style="margin-top:0">能力追踪 · 八项能力（真实记录）</h3><div id="eliteAbility">'+eliteAbilityHTML()+'</div></div>';
  return h;
 };
-BINDS.elite=function(){bindUserCtl($("#view"));const b=$("#bhcopy");if(b)b.addEventListener("click",()=>copyText("请按 Brutal Honesty 模式复盘我最近的学习，并回答三问：1. 我真正掌握了什么？2. 我以为自己掌握、实际上还没有掌握什么？3. 如果明天参加考试，我最可能在哪里失分？（不要安慰分，不要把努力当成绩。）"));};
+
+/* ---------- Round 5 第三阶段：精英视图单条深链（搜索与 Dashboard 建议的落点；渲染后滚动定位，卡片本身不改结构） ---------- */
+function eliteScrollTo(param){
+ if(!param)return;
+ var el=null;
+ if(param.indexOf("fp:")===0)el=document.querySelector('[data-fpcard="'+param.slice(3)+'"]');
+ else if(param.indexOf("rewrite")===0){el=document.getElementById("rwgen-card");var b=document.getElementById("rwbase");if(b&&param.indexOf(":")>0){var code=param.split(":")[1];if(REWRITE_BASES.some(function(x){return x.code===code;}))b.value=code;}}
+ else if(param.indexOf("unseen:")===0){el=document.getElementById(param.slice(7));if(el)el.open=true;}
+ else if(param.indexOf(":")>0){var pp=param.split(":");el=document.querySelector('[data-excard="'+pp[0]+'-'+pp[1]+'"]');}
+ if(el)el.scrollIntoView();
+}
+BINDS.elite=function(param){
+ bindUserCtl($("#view"));
+ const b=$("#bhcopy");if(b)b.addEventListener("click",function(){copyText("请按 Brutal Honesty 模式复盘我最近的学习，并回答三问：1. 我真正掌握了什么？2. 我以为自己掌握、实际上还没有掌握什么？3. 如果明天参加考试，我最可能在哪里失分？（不要安慰分，不要把努力当成绩。）");});
+ function repaintAbility(){const ab=$("#eliteAbility");if(ab)ab.innerHTML=eliteAbilityHTML();}
+ function fbHTML(r){
+  let h='<p class="sm" style="'+(r.ok?"color:var(--mint-deep)":"color:var(--red)")+'"><b>'+(r.ok?"✓ 正确":"✗ 再想想")+'</b> '+esc(r.why)+'</p>';
+  if(r.explain)h+='<p class="sm">'+esc(r.explain)+'</p>';
+  if(r.chain)h+='<p class="sm"><b>深链：</b>'+arrows(r.chain)+'</p>';
+  h+='<p class="sm mut">已记入练习记录（自判，不是 AI 评分）。</p>';
+  return h;
+ }
+ $$("#view [data-fpnext]").forEach(function(btn){btn.addEventListener("click",function(){
+  const id=btn.dataset.fpnext;const card=btn.closest("[data-fpcard]");if(!card)return;
+  const steps=Array.from(card.querySelectorAll('[data-fpstep^="'+id+'-"]'));
+  const hid=steps.filter(function(s){return s.style.display==="none";});
+  if(hid.length){hid[0].style.display="";const left=card.querySelector('[data-fpleft="'+id+'"]');if(left)left.textContent="还剩 "+(hid.length-1)+" 步";}
+  if(hid.length<=1){btn.style.display="none";const left2=card.querySelector('[data-fpleft="'+id+'"]');if(left2)left2.style.display="none";const w=card.querySelector('[data-fpcheckwrap="'+id+'"]');if(w)w.style.display="";}
+ });});
+ $$("#view [data-fpcheck]").forEach(function(btn){btn.addEventListener("click",function(){
+  const parts=btn.dataset.fpcheck.split("|");const id=parts[0],oi=+parts[1];
+  const fb=$("#fb-fp-"+id);if(!fb||fb.innerHTML)return;
+  const r=eliteFpAnswer(id,oi);if(!r)return;
+  fb.innerHTML=fbHTML(r);
+  const card=btn.closest("[data-fpcard]");if(card)card.querySelectorAll("[data-fpcheck]").forEach(function(x){x.disabled=true;});
+  repaintAbility();
+ });});
+ $$("#view [data-opt]").forEach(function(btn){btn.addEventListener("click",function(){
+  const parts=btn.dataset.opt.split("|");const kind=parts[0],id=parts[1],oi=+parts[2];
+  const fb=$("#fb-"+kind+"-"+id);if(!fb||fb.innerHTML)return;
+  const r=eliteAnswer(kind,id,oi);if(!r)return;
+  fb.innerHTML=fbHTML(r);
+  const card=btn.closest("[data-excard]");if(card)card.querySelectorAll("[data-opt]").forEach(function(x){x.disabled=true;});
+  repaintAbility();
+ });});
+ $$("#view [data-usscopy]").forEach(function(btn){btn.addEventListener("click",function(){
+  const s=UNSEEN_SCEN.find(function(x){return x.id===btn.dataset.usscopy;});if(!s)return;
+  copyText("未见场景练习（AI 生成练习，非官方）："+s.title+"\n"+s.body+"\n推理脚手架：\n"+s.scaffold.map(function(x,i){return (i+1)+". "+x;}).join("\n")+"\n我的答案：");
+ });});
+ const rg=$("#rwgen");
+ if(rg)rg.addEventListener("click",function(){
+  const base=$("#rwbase"),ctry=$("#rwcountry"),out=$("#rwout");
+  if(!base||!ctry||!out)return;
+  const country=COUNTRIES.find(function(c){return c.zh===ctry.value;});
+  const r=rewriteQuestion(base.value,country);if(!r)return;
+  lastRewrite=r.qEn;
+  logElite("unseen",r.code+"→"+country.zh,null);
+  out.innerHTML='<hr class="hr"><p class="sm"><b>练习题（改写，非官方原题）：</b></p><p class="sm en">'+esc(r.qEn)+'</p>'
+  +(r.warn?'<p class="sm" style="color:var(--gold)"><b>注意：</b>'+esc(r.warn)+'</p>':"")
+  +'<p class="sm"><b>要重新推导什么（换国家后必须重做的功课，不给答案）：</b></p><ol class="tight sm">'+r.check.map(function(x){return '<li>'+esc(x)+'</li>';}).join("")+'</ol>'
+  +'<p class="sm mut">20 分 Essay：只写 2 个因素 / 收益与成本各写深，点名国家，评价须排序并给出有依据的判断（评分结构见 <button class="btn sm ghost" data-go="essays" data-param="'+r.code+'">范文库原题 '+r.code+'</button>）。写完后复制去聊天找 Viaana 批改。</p><div class="btnrow"><button class="btn sm" id="rwcopy">复制这道题去聊天</button></div>';
+  bindUserCtl(out);
+  const cp=$("#rwcopy");if(cp)cp.addEventListener("click",function(){copyText(lastRewrite,"已复制改写练习题");});
+  repaintAbility();
+  toast("已生成 1 道改写练习题，记入迁移练习");
+ });
+ if(param)setTimeout(function(){eliteScrollTo(param);},60);
+};
+
 /* ---------- Advanced Extension ---------- */
-const EXT_ITEMS=[["Intermediate Microeconomics 入门","价格机制与市场结构的深化理解","帮 Essay 把竞争与效率论证说透","否"],["Intermediate Macroeconomics 入门","增长模型与政策传导的本科框架","深化主题三、五、六的机制理解","否"],["Game Theory 基础","策略互动：贸易战、报复与纳什均衡","解释保护主义为何会螺旋升级","否"],["Behavioural Economics 基础","有限理性与决策偏差","给政策评价加一个现实维度","否"],["Development Economics 基础","贫困陷阱、制度与发展","主题六的评价纵深","否"],["International Economics 基础","汇率与贸易模型的本科版本","主题二、三的机制加固","否"],["Econometrics 基础概念","相关 vs 因果、证据质量","批判材料数据、支撑 Level 3 评价","否"],["Research Methods 入门","如何读一份经济报告","Research Lab 的方法论基础","否"]];
+/* EXT_ITEMS 字段（7 个正文字段 + 深链）：[0]名称 [1]核心思想 [2]简单解释 [3]真实应用 [4]与 U4 的关联 [5]考试收益 [6]是否官方考点 [7]是否值得花时间 [8]站内深链 [视图, param, 按钮文案] 或 null（无合适单卡目标不硬链）。内容只取标准本科教科书常识，不编造与 U4 考纲有关的论断，不写成必考内容。 */
+const EXT_ITEMS=[["Intermediate Microeconomics 入门","价格机制与市场结构的深化理解","本科中级微观 (intermediate microeconomics) 在 A-level 供求与市场失灵的基础上，把价格如何协调成千上万个分散决策讲得更细：消费者怎么在预算内选最优组合，企业怎么在不同市场结构里定价。它把“为什么市场有效、什么时候失灵”说得更完整；本条只取结论与直觉，不做本科的数学推导。","外卖平台高峰期加价：需求突然上升时价格上涨，一部分人改时间或改吃别的，骑手供给增加——没有中央指挥，价格就把供需重新配平了。","深化 Ch.23 专业化与贸易收益、Ch.27 关税与福利分析里的效率论证。","Essay 写竞争、效率与市场失灵时，论证可以多走一两步（从价格信号讲到资源配置），而不是只贴结论；但 A-level 评分只看考纲内的点，超纲推导不直接加分。","否","值得粗读——对效率类论证帮助直接，但只读结论与图示即可，不必做本科习题。",null],["Intermediate Macroeconomics 入门","增长模型与政策传导的本科框架","本科中级宏观 (intermediate macroeconomics) 把 A-level 的总需求/总供给 (AD/AS) 与政策分析放进更完整的增长框架：长期增长靠资本积累、技术进步与劳动力，短期波动靠需求与政策传导。它帮你分清两个不同的问题——长期能长多快，和短期为什么波动。","2020 年代多国央行加息抗通胀：利率上升先压住借贷与消费（短期需求），却不改变一国的长期潜在增长率——政策能平滑周期，改不了长期趋势。","深化主题三（国际收支与汇率）、主题五（宏观政策）与主题六（增长与发展）的机制理解。","写政策评价时能分清短期效果与长期效果、区分需求侧与供给侧，避免把“加息”写成万能答案。","否","有余力可读——对 U4 的直接帮助不如博弈论与行为经济学，考前冲刺不优先。",null],["Game Theory 基础","策略互动：贸易战、报复与纳什均衡 (Nash equilibrium)","博弈论 (game theory) 研究“你的最优选择取决于对手怎么做”：每个人都先猜对方会怎么选，再决定自己的策略。纳什均衡 (Nash equilibrium) 是这样一种状态：给定别人不动，谁单方面改主意都不会更好，于是谁都不想动。","贸易战报复升级：A 国加关税，B 国报复，B 国报复后 A 国再加码——双方都清楚合作更好，却因为怕对方先违约而一步步走向互相伤害，这正是“囚徒困境 (prisoner's dilemma)”的现实版。","直接对应 Ch.27 保护主义：报复机制、贸易战螺旋升级与世界贸易组织 (WTO) 的作用。","保护主义评价段的现成框架：用“合作更好、单方面违约有诱惑、报复导致双输”三步写评价，比只列利弊更有说服力。","否","值得——8 条里对考试最直接的一条，保护主义题几乎年年可套用。",["kb","kp27e","打开 Ch.27 · 保护主义的理由"]],["Behavioural Economics 基础","有限理性与决策偏差","行为经济学 (behavioural economics) 指出人并不总是完全理性的：我们会拖延、怕损失、跟从默认选项、被眼前的小利吸引。政策不一定要靠强制，改一下选择的设计，就能让人在不剥夺自由的情况下做出更好的决定。","默认选项与政策助推 (nudge)：把养老金计划默认设为“自动加入、可退出”，参与率远高于“自愿加入”——选项本身没变，只是默认状态换了方向。","给政策评价加一个现实维度：解释为什么同样的补贴或税收在不同国家效果不同（执行、习惯与预期在起作用）。","评价段可用“理性人假设不成立”作限定句：政策效果取决于人是否真的按模型反应，这是一句有分量的 Level 3 评价。","否","值得粗读——一句话的评价限定就能用上，不必系统学习。",null],["Development Economics 基础","贫困陷阱、制度与发展","发展经济学 (development economics) 问的是：为什么有些国家长期穷？一个常见答案是贫困陷阱 (poverty trap)：收入太低 → 存不下钱投资教育与健康 → 生产率上不去 → 收入继续低，穷本身成了穷的原因。制度、债务与初级产品依赖会把这个循环锁得更紧。","贫困陷阱：一个家庭收入仅够糊口，孩子很早就要打工而不是上学，下一代仍只能做低收入工作——没有外力（教育投入、基建或援助）打破循环，低收入会代代传下去。","主题六的评价纵深：增长与发展的衡量、制约因素与发展策略的讨论都需要这条逻辑。","主题六评价题的纵深素材：能讲清“为什么市场化策略在有些国家行不通”（陷阱与制度约束），而不是只罗列策略名称。","否","值得粗读——主题六是 U4 的大头，这条直接加深它的评价；但主题六知识卡本身尚未填充，先以考纲条目为准。",["kb","kp6x","打开主题六占位卡（内容待补充）"]],["International Economics 基础","汇率与贸易模型的本科版本","本科国际经济学 (international economics) 把 A-level 的贸易格局与汇率分析讲得更系统：贸易模型解释“谁出口什么、为什么”，汇率模型解释“货币为什么升值或贬值”。核心仍是比较优势与供求，只是把短期波动与长期均衡分得更清楚。","一国利率上升吸引外资流入，对本币需求增加、本币升值，出口随之变贵——利率、汇率与贸易差额是连在一起的，不能只看其中一环。","主题二（贸易格局、贸易条件）与主题三（汇率、国际收支）的机制加固。","写汇率与贸易条件题时，能把“利率→资本流动→汇率→出口竞争力”写成完整链条，而不是孤立的因果句。","否","有余力可读——与 U4 重叠度高，巩固理解有用，但考前直接复习 Ch.24–25 知识卡性价比更高。",null],["Econometrics 基础概念","相关 vs 因果、证据质量","计量经济学 (econometrics) 是用数据检验经济想法的工具，但它最重要的一课是反直觉的：两个变量一起动，不等于一个导致另一个。相关 (correlation) 只是“一起出现”，因果 (causation) 需要排除其他解释——比如遗漏了第三个真正起作用的变量。","相关 vs 因果误读：某国出口增长快、同时贫困率下降，就断言“出口增长减少了贫困”——可能真正的原因是同期教育投入增加或全球大宗商品涨价，出口只是碰巧一起变好。","批判材料数据、支撑 Level 3 评价：读 Q7 材料与图表时先问“这张图能证明什么、不能证明什么”。","材料题 (e) 问与评价段的利器：一句“材料只显示相关、未控制其他因素，因此不能断言因果”就是合格的 Level 3 评价点。","否","考前冲刺不建议系统学——只记“相关≠因果”这一条就够用；有余力、想读研究报告时再深入。",["dataresponse","","打开材料题库 · 提取训练"]],["Research Methods 入门","如何读一份经济报告","研究方法 (research methods) 教的是怎么判断一份报告可不可信：数据从哪来、样本是谁、结论有没有超出数据的范围。它不教你做研究，只教你别被数字骗——先看方法，再看结论。","一份报告说“某政策让就业上升 20%”：先问对照组是谁——如果没有比较对象，上升可能只是经济整体向好，与政策无关。","Research Lab 的方法论基础：读 Q7 材料与 HDI 这类发展指标表之前，先过一遍检查清单。","材料题读题不出错：先确认表里有什么、表里没有的数据就不推断，少丢“越界推断”的冤枉分。","否","值得——Research Lab 已有现成清单与 worked example，10 分钟就能用上，不必另学。",["researchlab","","打开 Research Lab"]]];
 VIEWS.extension=function(){
  const items=EXT_ITEMS;
- return '<h1>Advanced Extension · 本科拓展</h1><p class="mut">只加少量与 U4 紧密相关的本科入门内容（Level 3），不加冷门理论与复杂数学。以下条目结构已建，<b>内容待补充</b>；拓展不占主要学习时间（建议占比约 10%）。</p>'
- +items.map(i=>'<div class="card" style="padding:12px 16px"><b>'+esc(i[0])+'</b> <span class="tag grey">官方考点：'+i[3]+'</span> <span class="tag gold">内容待补充</span><p class="sm mut" style="margin:.3rem 0">核心思想：'+esc(i[1])+'<br>与 U4 的联系 / 对考试的帮助：'+esc(i[2])+'</p></div>').join("");
+ return '<h1>Advanced Extension · 本科拓展</h1><p class="mut">只加少量与 U4 紧密相关的本科入门内容（Level 3），不加冷门理论与复杂数学。以下 8 条内容已补全 <span class="tag gold">本科拓展 · 非官方考点</span>；拓展不占主要学习时间（建议占比约 10%）。</p>'
+ +items.map(i=>{const lk=i[8];return '<div class="card" style="padding:12px 16px"><b>'+esc(i[0])+'</b> <span class="tag gold">本科拓展 · 非官方考点</span> <span class="tag grey">官方考点：'+i[6]+'</span><p class="sm" style="margin:.3rem 0">核心思想：'+esc(i[1])+'<br>简单解释：'+esc(i[2])+'<br>真实应用：'+esc(i[3])+'<br>与 U4 的关联：'+esc(i[4])+'<br>考试收益：'+esc(i[5])+'<br>是否值得花时间：'+esc(i[7])+'</p>'+(lk?'<div class="btnrow"><button class="btn sm" data-go="'+lk[0]+'"'+(lk[1]?' data-param="'+lk[1]+'"':"")+'>'+esc(lk[2])+'</button></div>':"")+'</div>';}).join("");
 };
+/* 拓展视图内的深链按钮须经 bindUserCtl 绑定，否则点按无效（render() 只调 BINDS[curView]）。 */
+BINDS.extension=function(){bindUserCtl($("#view"));};
+/* ---------- Research Lab ---------- */
+VIEWS.researchlab=function(){
+ const q6=MCQ_OFF.find(function(q){return q.id==="off-2506a-6";});
+ const q4=MCQ_OFF.find(function(q){return q.id==="off-2506a-4";});
+ let h='<h1>Research Lab · 如何读一份经济报告</h1><p class="mut">方法论基础（本科拓展「Research Methods 入门」的最小可用版本）。本页所有数据取自站内已核实的官方 MCQ，未编造任何数字；worked example 的结论以官方 Mark Scheme 为准。</p>';
+ h+='<div class="card" id="lab-checklist"><h3 style="margin-top:0">检查清单 · 读报告前先过一遍</h3><ol class="tight">'+LAB_CHECKLIST.map(function(c,i){return '<li id="lab-c'+(i+1)+'" style="margin-bottom:6px"><b>'+esc(c[0])+'</b><br><span class="sm mut">'+esc(c[1])+'</span></li>';}).join("")+'</ol></div>';
+ h+='<div class="card" id="lab-we1"><h3 style="margin-top:0">Worked Example 1 · 读一张 HDI 表（Jun 2025 01A Q6）</h3><p class="sm mut">来源：Pearson 官方原题 off-2506a-6（泰国 / 马来西亚 2022 年数据）。题目问：下列哪一项可由表中数据推出？</p>';
+ if(q6&&q6.tbl)h+=tblHTML(q6.tbl);
+ h+='<p class="sm"><b>第 1 步 · 表里有什么：</b>两国、四列——HDI、平均受教育年限、出生时预期寿命、人均 GNI（2017 PPP）。没有识字率、没有失业率、没有基尼系数。</p>'
+ +'<p class="sm"><b>第 2 步 · 可推断的（官方答案 C）：</b>泰国出生时预期寿命 79.7 岁高于马来西亚 76.3 岁 → 可推断泰国的医疗供给 (healthcare provision) 更好。注意措辞是「可推断」，不是「已证明」。</p>'
+ +'<p class="sm"><b>第 3 步 · 不可推断的：</b>A 项「泰国比马来西亚更发达」不成立——马来西亚 HDI 0.807 高于泰国 0.803；B 项「泰国学生受教育更久」不成立——马来西亚平均受教育年限 10.7 年长于泰国 8.8 年，方向相反；D 项「泰国平均收入更高」不成立——泰国人均 GNI $16 887 低于马来西亚 $27 295。</p>'
+ +'<p class="sm"><b>第 4 步 · 方法点：</b>逐项核对表中数据，不凭印象；一个分项指标不能越界去推断整体排名；表里没有的数据，答案只能是「无法推断」。注：官方 MS 对 B 项的排除理由原文国名疑似印反，本站已按表中数据纠正，正确答案 C 不受影响。</p>'
+ +'<div class="btnrow"><button class="btn sm" data-labdone="hdi">我已按清单核对完这个例子</button><button class="btn sm ghost" data-go="mcq" data-param="off-2506a-6">打开官方原题 off-2506a-6</button><span class="sm mut" id="labdone-hdi"></span></div></div>';
+ h+='<div class="card" id="lab-we2"><h3 style="margin-top:0">Worked Example 2 · 读两个百分比（Jun 2025 01A Q4）</h3><p class="sm mut">来源：Pearson 官方原题 off-2506a-4。2023 年 9 月至 2024 年 9 月，澳大利亚平均出口价格下降 6.8%、平均进口价格下降 1.1%。若 2023 年 9 月 = 100，2024 年 9 月澳大利亚的贸易条件是多少？</p>'
+ +'<p class="sm"><b>第 1 步 · 先算指数，再相除：</b>出口价格指数 = 100 − 6.8 = 93.2；进口价格指数 = 100 − 1.1 = 98.9。</p>'
+ +'<p class="sm"><b>第 2 步 · 套公式：</b>ToT = 93.2 ÷ 98.9 × 100 = 94.24（官方答案 C）。相对基年 100 为恶化。</p>'
+ +'<p class="sm"><b>第 3 步 · 方法点：</b>不要直接拿 6.8 − 1.1 或 6.8 ÷ 1.1 去算——百分比变化不能直接相减或相除；不要把分子分母倒置（倒数是 106.12，方向全错）。名义出口额上升也不等于贸易条件改善：出口额 = 价格 × 数量。</p>'
+ +'<div class="btnrow"><button class="btn sm" data-labdone="tot">我已按清单核对完这个例子</button><button class="btn sm ghost" data-go="mcq" data-param="off-2506a-4">打开官方原题 off-2506a-4</button><span class="sm mut" id="labdone-tot"></span></div></div>';
+ h+='<div class="card"><h3 style="margin-top:0">下一步</h3><p class="sm">把这份清单用在材料题库的 Q7 材料上：每份 Source Booklet 先过一遍清单，再做 (a)–(e) 小问。清单本身不评分；两个 worked example 的完成会记入能力追踪的「证据评价」计数。</p><div class="btnrow"><button class="btn sm" data-go="dataresponse">打开材料题库</button><button class="btn sm ghost" data-go="elite">回到精英训练</button></div></div>';
+ return h;
+};
+BINDS.researchlab=function(param){
+ bindUserCtl($("#view"));
+ $$("#view [data-labdone]").forEach(function(btn){btn.addEventListener("click",function(){
+  const id=btn.dataset.labdone;const mark=$("#labdone-"+id);
+  const done=eliteLogRoot().some(function(x){return x.kind==="lab"&&x.item===id;});
+  if(done){if(mark)mark.textContent="已记入（重复点击不重复计数）。";return;}
+  logElite("lab",id,null);
+  if(mark)mark.textContent="已记入证据评价。";
+  btn.disabled=true;toast("已记入 Research Lab 完成记录");
+ });});
+ if(param)setTimeout(function(){var id=param==="checklist"?"lab-checklist":param==="hdi"?"lab-we1":param==="tot"?"lab-we2":(/^c\d+$/.test(param)?"lab-"+param:null);var el=id?document.getElementById(id):null;if(el)el.scrollIntoView();},60);
+};
+
 /* ---------- My Collection ---------- */
 function contentTitle(id){
  if(id.indexOf("essay:")===0){const e=essayByCode(id.slice(6));return e?("Essay "+e.code+" · "+e.zh):id;}
@@ -2215,7 +2727,7 @@ VIEWS.planner=function(){
  const weakEssays=(U.essayLog||[]).filter(r=>(r.total||0)>0).sort((a,b)=>(logDispTotal(a)/(a.mock?80:20))-(logDispTotal(b)/(b.mock?80:20))).slice(0,3);
  let h='<h1>Revision Planner · 复习计划</h1><p class="mut">间隔重复规则（参考 SM-2 思路的简化实现）：每个知识点的复习间隔由<b>真实练习表现</b>决定——掌握度越高间隔越长（1→2→4→7→14 天），未解决错题与 MCQ 错题越多间隔越短；到期与逾期项优先，薄弱知识点（错误多）排在最前。依据是你标记掌握度的时间、错题复习时间与 MCQ 答题记录；<b>只是打开页面不会被算作掌握或复习</b>。Essay 练习记录（练习室的 Essay Log）中得分最低的题目也会进入重练建议。另：某知识卡的最低维度（6 个维度之一）≤ 1 级时，即使总掌握度较高，也会优先排入今日到期并注明是哪个维度。</p>';
  h+='<div class="card"><h3 style="margin-top:0">今日到期 / 已逾期（'+due.length+'）</h3>';
- if(!due.length)h+='<p class="sm mut">暂无到期项。先去知识库学习并标记掌握度，或做一组 MCQ，计划会自动生成。</p>';
+ if(!due.length)h+='<p class="sm mut">暂无到期项。先去<button class="btn sm ghost" data-go="kb">知识库</button>学习并标记掌握度，或做一组 <button class="btn sm ghost" data-go="mcq">MCQ</button>，计划会自动生成。</p>';
  else h+='<ul class="tight">'+due.map(x=>'<li>'+esc(x.k.ch+" · "+x.k.zh)+' <span class="tag '+(x.s.overdueDays>0?"red":"gold")+'">'+(x.s.overdueDays>0?"已逾期 "+x.s.overdueDays+" 天":"今天到期")+'</span>'+(x.dimReason?' <span class="tag red">'+esc(x.dimReason)+' · 最低维度优先排入</span>':"")+(x.s.errLoad?' <span class="tag grey">相关未解决错误 '+x.s.errLoad+' 条</span>':"")+' <button class="btn sm ghost" data-go="kb" data-param="'+x.k.id+'">去复习</button></li>').join("")+'</ul>';
  if(un.length)h+='<p style="margin-top:10px"><b>错题优先（'+un.length+' 条未解决）</b></p><ul class="tight">'+un.slice(0,5).map(m=>'<li>'+esc((m.q||"").slice(0,60))+' <button class="btn sm ghost" data-go="mistakes">去复习</button></li>').join("")+'</ul>';
  h+='</div>';
@@ -2240,7 +2752,7 @@ VIEWS.toolkit=function(){
  +'<p class="kv"><b class="t">Section B · Q7(e)（14 分）：</b>KAA 8 分（L3 7–8）+ Evaluation 6 分（L3 5–6），结构与 Essay 不同，不要混用。</p>'
  +'<p class="sm mut">阅卷共识：两个点写深胜过罗列多点；Q7(e) 必须用材料数据（照抄材料 = L1）；分析与评价要分清；结尾给有优先级的判断。</p></div>';
  h+='<div class="card"><h3 style="margin-top:0">公式卡</h3><ul class="tight"><li>贸易条件指数 =（出口价格指数 ÷ 进口价格指数）× 100</li><li>百分比变化 =（新 − 旧）÷ 旧 × 100</li><li>马歇尔-勒纳条件：PEDx + PEDm > 1 时，货币贬值才改善贸易差额（该条件讨论的是贬值对差额的影响，不是所有贸易条件变化的通用判断；贸易条件还可因进口价格上涨、相对生产率变化等恶化，须按成因分析）</li><li>基尼系数 = 平等线与洛伦兹曲线间面积 ÷ 平等线以下总面积</li><li>经常账户 = 货物贸易差额 + 服务贸易差额 + 初次收入 + 二次收入</li></ul></div>';
- h+='<div class="card"><h3 style="margin-top:0">考前失分点清单</h3><ul class="tight"><li>题干要求点名国家（如 refer to a country of your choice）的 Section C 题不点名 → KAA 封顶 9 分（逐题以官方 MS 为准；题干未要求的题不适用此条）</li><li>因素题写成影响题（202310-8 vs 202101-8 最容易串）</li><li>链条只有两环 → KAA 封顶 Level 2</li><li>评价只罗列不排序、没有判断句</li><li>Q7(e) 不引用材料 / 照抄材料不解释</li><li>计算题不写过程、不标方向</li><li>贸易条件方向与福利判断混为一谈（不看弹性）</li></ul></div>';
+ h+='<div class="card"><h3 style="margin-top:0">考前失分点清单</h3><ul class="tight"><li>题干要求点名国家（如 refer to a country of your choice）的 Section C 题不点名 → KAA 封顶 9 分（逐题以官方 MS 为准；题干未要求的题不适用此条）</li><li>因素题写成影响题（<button class="btn sm ghost" data-go="essays" data-param="202310-8">202310-8</button> vs <button class="btn sm ghost" data-go="essays" data-param="202101-8">202101-8</button> 最容易串）</li><li>链条只有两环 → KAA 封顶 Level 2</li><li>评价只罗列不排序、没有判断句</li><li>Q7(e) 不引用材料 / 照抄材料不解释</li><li>计算题不写过程、不标方向</li><li>贸易条件方向与福利判断混为一谈（不看弹性）</li></ul></div>';
  return h;
 };
 BINDS.toolkit=function(){
@@ -2349,7 +2861,32 @@ VIEWS.settings=function(){
  +'<p class="sm"><b>设计决定（模拟卷计时按真实考试处理）：</b>切换模块不暂停，计时继续走；deadline 在离开/后台期间已过，回来时立即自动交卷且只交卷一次；界面上不把导航离开写成「已暂停」（因为它不是暂停）。练习室计时器的显式暂停功能（第三阶段 F3）与此无关，保持原样。</p>'
  +'<p class="sm"><b>修复（只改计时器，不改知识内容、评分标准与其他功能）：</b>① 每卷状态新增 deadline 字段（绝对截止时间，毫秒时间戳；null 表示未在计时），开始/继续时 deadline=Date.now()+剩余秒×1000 并立即 saveUser()+flushSave() 落盘；老数据无 deadline 字段时按 null 处理（暂停态），不自动启动。② tick 改为 deadline 制：每次按 deadline−现在计算剩余秒并刷新显示，不再依赖回调次数；后台节流后恢复，剩余时间按真实经过时间减少。③ 导航 go() 不再停表：离开前先同步剩余秒并 flushSave() 落盘，再重新计算（deadline 已过则立即自动交卷）；两套模拟卷之间切换标签同样不暂停。④ pagehide / 切到后台前先同步剩余秒再 flushSave()；恢复前台（visibilitychange 可见）与页面初始化时重新计算并刷新显示，deadline 已过则立即自动交卷。⑤ 到期只交卷一次：交卷处理加 st.sub 守卫，到期与手动交卷共用同一去重逻辑，答案与自评保留。⑥ 显式「暂停」按钮仍为唯一暂停入口：暂停时按 deadline 折算剩余秒并清掉 deadline、立即保存；继续时按剩余秒重算新 deadline。⑦ 防御：deadline 非数字时按无 deadline 处理，不抛错。</p>'
  +'<p class="sm"><b>测试证据（node 抽取站内修复后的真实计时函数逐项断言，43/43 通过；全部 10 个 script 块 node --check 通过；改动视图渲染冒烟见本次构建审计）：</b>① 后台节流模拟：60 秒真实时间仅 12 次回调后剩余 7140 秒（与真实经过一致，不再落后 48 秒）。② 导航离开再回来：计时继续走，回来时显示按真实经过减少；离开期间 deadline 已过则回来立即自动交卷一次、答案保留。③ 刷新/关闭重开：按已存 deadline 恢复剩余时间；deadline 已过则打开即自动交卷。④ 显式暂停/继续：暂停后剩余秒冻结，继续后按剩余秒重算 deadline。⑤ 到期只交卷一次：连续多次触发到期检查只产生一次交卷记录。⑥ 练习室计时器暂停功能回归未动。如实说明：真实浏览器后台节流与手机切后台的端到端实测未在本环境执行，以上以站内真实函数的逐项断言 + 代码路径核查 + 构建审计渲染冒烟互证；真实 IndexedDB 落盘以 saveUser/flushSave 既有路径互证。</p></div>'
- +'<div class="card"><h3 style="margin-top:0">成绩与分数线</h3><p class="sm mut">本站记录你的<b>原始分</b>练习数据（见 Dashboard 与错题本）。各考试系列的官方等级分数线 (grade boundaries) 与 UMS 换算以 Pearson 官方发布为准，本轮<b>待补充</b>，不编造数字。80/80 是训练目标，不是本站或任何 AI 能保证的结果。</p></div>';
+ +'<div class="card"><h3 style="margin-top:0">Round 5 精英级优化报告（第一阶段：精英思维训练交互）</h3>'
+ +'<p class="sm">本阶段只做精英思维训练的交互化（任务书第 1–8 项），不动已验收的评分标准与知识内容、不动 main、不做最终整合、不碰 GitHub。技术名词按「中文 +（英文）」书写。</p>'
+ +'<p class="sm"><b>复现（改前已在代码核实）：</b>精英训练视图（VIEWS.elite，约 2090 行）只有 6 张静态卡片、2 个逻辑挑战（点开看答案）、Brutal Honesty 卡片 + 复盘记录、能力追踪空状态卡；没有可交互练习、没有未见场景工具、没有 Research Lab 视图、能力追踪未接真实记录。素材范围以 5 篇已核实范文（MODELS）、18 道已核对 Essay、36 道官方 MCQ（含 HDI 表 off-2506a-6）与 24 张知识卡为准。</p>'
+ +'<p class="sm"><b>改动内容：</b>① 第一性原理：4 个分步揭示 + 自判练习（生产率→贸易条件恶化，取 202310-8 第二条链；马歇尔-勒纳条件与贬值；比较优势→专业化收益；关税取消→贸易创造），每练 5 步、末尾 3 选 1 自判。② 逻辑挑战：2 个扩到 6 个（贬值方向与「必然」、生产率方向、HDI 相关 vs 因果、名义/实际混淆、「必然」式论断、局部与一般均衡），每题给「错在哪」选项 + 讲解。③ 反方论证：3 个练习（202201-8 运输居首的反转条件、202210-9 收益大于成本的反转条件、202310-8「恶化≠受害」），讲解引用范文评价段并给深链、data-go 直达范文。④ 多因素分析：2 个练习（202401-9 贸易格局因素互动：工资↑×关税报复→回流；202310-8/202305-7e 升值对贸易条件与竞争力的反向效应）。⑤ 评价挑战：3 个练习（J 曲线短长期、202210-9 利益相关者拆分、202401-9 有依据的判断）。⑥ 未见场景：「换国家重写」工具（5 道范文题 × 16 个已核实国家，生成练习题 +「要重新推导什么」清单，不给范文答案；202310-8 改写去掉原题干两国数据并明示，202110-9 选非发达国家时提示题干与国家不匹配）+ 3 个手写未见场景（明确标注 AI 生成练习、非官方，只给推理脚手架，不给满分答案）。⑦ Research Lab：新建视图（左侧导航 TRACK B 新增入口）：「如何读一份经济报告」10 项检查清单 + 2 个 worked example（HDI 表 off-2506a-6：可推断 C、不可推断 A/B/D，含 MS 疑似印误说明；澳大利亚贸易条件计算 off-2506a-4：93.2 ÷ 98.9 × 100 = 94.24），未编造任何数据。⑧ 能力追踪：8 项能力全部接真实记录（本阶段练习记录 eliteLog、练习室 Essay Log 三问复盘、错题本、模拟历史 mockHistory、材料题已答小问 drProg、MCQ 记录），每项写清计数规则；记录不足（一般少于 3 次，迁移学习少于 1 次）时显示空状态；只呈现计数，不做评级、不排名、不预测分数。⑨ 数据：新增字段 eliteLog（数组，练习尝试记录 {id, kind, item, ok, ts}），已接入 defaultU / sanitizeUser（坏类型回落 []、老数据缺字段补 []）/ mergeImportBackup（去重追加）/ 导入类型校验（eliteLog 字段类型错误应为数组）；只追加、不改写旧记录。</p>'
+ +'<p class="sm"><b>测试证据（node 抽取站内真实函数与视图逐项断言，79/79 通过；全部 10 个 script 块 node --check 通过）：</b>① 数据兼容 11 项：defaultU 含 eliteLog []（顶层字段 19 个）、老数据缺字段与坏类型回落、未知字段保留、合并导入去重追加且不改动入参、旧备份无 eliteLog 时保留当前记录、双方都缺字段时不凭空造字段。② 内容清单 9 项：FP 4、逻辑挑战 6、反方 3、多因素 2、评价 3、手写场景 3、改写底题 5、国家 16、每练 5 步 + 3 选项。③ 判定逻辑 21 项：6 道逻辑挑战、3 道反方、2 道多因素、3 道评价、4 道第一性原理自判的正确/错误选项逐项验证，含未知题号与越界选项返回 null。④ 改写工具 9 项：202310-8 希腊所有格、去题干数据警告、202210-9 替换、202110-9 非发达国家警告与发达国家无警告、202201-8 附加句、未知题号与空国家返回 null。⑤ 渲染冒烟 13 项：精英视图含 4 张 FP 卡 + 14 张选项卡 + 改写工具 + 3 个手写场景 + 能力容器 + Research Lab 入口，声明「不做 AI 评分」，保留 Brutal Honesty；Research Lab 含 10 项清单、两个 worked example（79.7、94.24）与「未编造任何数字」；BINDS.elite 与 BINDS.researchlab 在 DOM 桩上执行无报错；导航 TRACK B 含 researchlab；设置页正常渲染。⑥ 能力追踪 11 项：无记录时空状态、有计数规则、无评级与全球排名宣称、FP 满 3 次后显示计数、迁移生成 1 次后显示、材料题已答小问计数、三问复盘计数、judge 合并计数、Research Lab 完成去重。另：本阶段修复了自查发现的一处 bug——eliteAbilityHTML 曾用不存在的键 c.eval / c.unseen（应为 eval / unseen 两类练习计数），测试捕获后已修正并重跑全过。</p>'
+ +'<p class="sm"><b>如实说明的局限：</b>① 真实浏览器端到端点击（真实 IndexedDB 落盘、手机端点按、真实文件导入）未在本环境执行，以上以站内真实函数的逐项断言 + 渲染冒烟（DOM 桩）互证；落盘走既有 saveUser / flushSave 路径（第 6 项已实测）。② artifact.edit / artifact.export 在本执行环境不可用（artifact 命名空间仅含 restore / share / unshare），故直接改本地导出文件 ~/workspace/your_files/elite-economist-system/elite-economist-system.html；线上 artifact（slug elite-economist-system）需由有 artifact 编辑权限的 agent 同步本次改动后才一致。③ 能力追踪的计数只在用户实际做练习后才有数字；新用户首次打开仍为空状态，这是设计如此。</p>'
+ +'<hr class="hr"><p class="sm"><b>—— Round 5 第二阶段：本科拓展 8 条补全（7 字段）——</b></p>'
++'<p class="sm"><b>复现（改前已在代码核实）：</b>本科拓展视图（VIEWS.extension，约 2426 行）的 EXT_ITEMS 常量只有 8 条 × 4 字段 [名称，核心思想，与 U4 的联系/对考试的帮助，是否官方="否"]，每条挂“内容待补充”标签，视图顶部说明“内容待补充”；搜索（约 3083 行）只按前 3 个字段过滤；拓展视图没有 BINDS.extension，视图内新增按钮须补绑定才有点按效果。</p>'
++'<p class="sm"><b>改动内容：</b>① 8 条全部补全为 7 个正文字段（数组第 9 位为站内深链 [视图, param, 按钮文案] 或 null）：核心思想保留原意（Game Theory 一条按惯例补英文术语 (Nash equilibrium)）；原“与 U4 的联系 / 对考试的帮助”拆为“与 U4 的关联”与“考试收益”两行；“是否官方”保持“否”，每条与视图顶部均显著标注“本科拓展 · 非官方考点”，去掉每条的“内容待补充”标签，顶部说明改为“以下 8 条内容已补全”（保留“建议占比约 10%”）。② 每条新增“简单解释”（2–3 句 plain-language 解释，不堆术语）与“真实应用”（1 个具体真实世界例子：博弈论用贸易战报复升级与囚徒困境、行为经济学用默认选项与政策助推、发展经济学用贫困陷阱、计量用相关 vs 因果误读）。③ 每条新增“是否值得花时间”诚实判断（非一律肯定）：Game Theory 值得（8 条里对考试最直接）、Research Methods 值得（Research Lab 现成可用，10 分钟就能用上）、Intermediate Micro / Behavioural / Development 值得粗读、Intermediate Macro / International 有余力可读、Econometrics 考前冲刺不建议系统学（只记“相关≠因果”）。④ 站内深链只给真正相关的 4 条：Game Theory → Ch.27 保护主义的理由（kb:kp27e，已填充知识卡）；Development → 主题六占位卡（kb:kp6x，内容待补充，按钮文案如实标注）；Econometrics → 材料题库（dataresponse，提取训练在该页内）；Research Methods → Research Lab（researchlab）；其余 4 条无合适单卡目标，不硬链。⑤ 搜索同步更新：按新字段过滤（名称、核心思想、简单解释、真实应用、U4 关联、考试收益、是否值得花时间），结果卡显示核心思想 + U4 关联并保留“本科拓展 · 非官方考点”标注。⑥ 新增 BINDS.extension（bindUserCtl），否则拓展视图内的深链按钮无人绑定、点按无效。内容只取标准本科教科书常识，未编造与 U4 考纲有关的论断，未把拓展写成必考内容；未改动已验收的评分标准与知识内容，未动 main，未碰 GitHub。</p>'
++'<p class="sm"><b>测试证据（node 抽取站内真实数组与视图逐项断言，44/44 通过；全部 10 个 script 块 node --check 通过）：</b>① 8 条 × 7 字段逐项核对无缺失（每条 7 个正文字段均非空、是否官方均为“否”、深链位为 null 或 [视图, param, 文案]）。② 搜索命中新字段内容 10/10：“囚徒困境”→ Game Theory、“助推”/“养老金”→ Behavioural、“贫困陷阱”→ Development、“相关”→ Econometrics、“纳什均衡”/“贸易战”/“Game Theory”→ Game Theory、“10 分钟”（是否值得花时间字段）→ Research Methods、“对照组”→ Research Methods。③ 渲染冒烟：拓展视图 8 条完整显示、7 个字段标签齐全、“本科拓展 · 非官方考点”共 9 处（顶部 + 每条）、顶部为已补全说明；“内容待补充”标签已清零，唯一残留是 Development 深链按钮文案里如实标注的占位卡状态。④ 深链目标存在：kp27e 为已填充知识卡、kp6x 为主题六占位卡、dataresponse 页内含提取训练区（id="drtrain"）、researchlab 视图存在；VIEWS.kb 接受 param，render() 会调 BINDS[curView]。如实说明：真实浏览器端到端点击（真实 IndexedDB 落盘、手机端点按）未在本环境执行，以上以站内真实函数的逐项断言 + 代码路径核查 + 渲染冒烟互证；线上 artifact（slug elite-economist-system）需由有 artifact 编辑权限的 agent 同步本次改动后才一致。</p>'
++'<p class="sm"><b>仍待处理（不在本阶段范围）：</b>Round 5 其余两个阶段；202605A-7 仍待核实；主题 3–6 知识卡待补充；新 Q7 的 (b)–(e) 逐点评分要点待补充；各考试系列官方等级分数线待补充。</p>'
++'<hr class="hr"><p class="sm"><b>—— Round 5 第三阶段：交叉链接与学习路径连贯 ——</b></p>'
++'<p class="sm">本阶段只做交叉链接与学习路径连贯（任务书第 1–4 项），不动已验收的评分标准与知识内容、不动 main、不做最终整合、不碰 GitHub、不改第一、二阶段新增的代码（附带修复两处除外，见改动内容⑤）。技术名词按「中文 +（英文）」书写。</p>'
++'<p class="sm"><b>复现（改前已在代码核实）：</b>① 全站「见 X / 参考 X / 在 X 里」逐条核查：知识卡数据有 10 处文字指向（14 个目标）全部是裸文字；视图层 20 余处（Dashboard 双轨架构卡与今日建议、练习室、工具箱、考试频率、材料题库、模拟卷、范文详情页、复习计划、复盘记录、设置页成绩卡）同样未链接。② 第一阶段新增内容（精英练习 18 道、未见场景 3 个 + 改写工具、Research Lab 清单 10 项 + 2 个 worked example）未进搜索；搜索共 11 组。③ Dashboard「今日建议」是静态文案，未按真实记录生成；无 Track A/B 进度一览。④ 深链机制已核实：搜索与收藏用 data-go + data-param 跳转，render() 调 BINDS[curView]；MCQ、笔记、收藏、知识点、Essay 支持单条深链；Q7、定量技能、指令词、考试频率、本科拓展只到模块级（Round 4 报告原话）；精英视图与 Research Lab 原先不接受 param。</p>'
++'<p class="sm"><b>改动内容：</b>① 「见…」指向审计与深链：新增渲染时转换函数 linkifyRefs（知识卡数据原文一字未改）：「见 kpXX」转知识库单卡深链（9 个按钮，目标 kp21b / kp23a / kp25b / kp25c / kp25d / kp27e 均为已填充卡）；「见范文库」→ 范文库 202310-8、「结构见范文解析」→ 范文解析 202310-8、「见范文库对应 VER 条目」→ 202405-9；「202401-9 与 202110-8 的评价段」→ 两篇范文；其余裸题号按 essayLinkTarget 规则转范文深链（题号存在才链；「-7」类简写自动归一到「-7e」，如 202305-7 → 202305-7e；不存在的题号不链）；24 张完整知识卡共产生 94 个范文按钮 + 9 个知识卡按钮，19 个不同范文目标全部存在。视图层：Dashboard 双轨架构卡 8 个模块名全部转按钮、起步引导与考试日期各加深链；练习室十步批改标准 → 工具箱官方等级描述、Brutal Honesty → 精英训练；工具箱失分点 202310-8 / 202101-8 转范文按钮；考试频率「见下方专表」→ 同页锚点 #intfreq、「见范文库各题详情」→ 范文库；材料题库「见上方已核实 Q7 整卷」→ #q7verified（2 处）、202605A-7「详见范文库该题页」→ 范文详情、Q7 小问表里两处「见官方 MS 链接」改为单元格内直链官方 MS、进度汇总「在下方… / 材料提取训练」→ #q7verified / #drtrain；模拟卷来源清单加 id="mocksrc"、「见点开后的来源清单 / 见上方来源清单 / 完整 Source Booklet 见官方 QP 链接」→ 锚点、自评区加 id="mockselfeval"、「自评见下方」→ 锚点；范文详情页加 id="essay-meta" / "ver-detail" / "pending-note"、「见下方说明 / 见下方 / 见上方核实状态」→ 同页锚点；最弱维度空状态 → 知识库、复盘记录空状态 → 练习室、复习计划空状态 → 知识库与 MCQ、设置页成绩卡「见 Dashboard 与错题本」→ 两按钮。精英视图：4 道第一性原理与 6 道逻辑挑战各加取材深链（范文 202310-8 / 202110-9 / 202201-8 / 202210-9 与官方原题 off-2506a-6 / off-2506a-4 / off-2406-3）；未见场景 us2 → 知识卡 kp26c、us3 → 范文 202110-9（us1 荷兰病无站内单卡目标，不硬链）；改写工具输出「评分结构见范文库原题」→ 底题范文按钮并补绑定；Research Lab 两个 worked example 各加官方原题按钮（off-2506a-6 / off-2506a-4），清单 10 项加 id="lab-c1…c10"。深链粒度如实说明：知识库、范文库、MCQ 为单条深链；精英视图与 Research Lab 用本阶段新增的 param 滚动定位（见④）；材料题库、定量技能、指令词、考试频率、本科拓展仍为模块级（目标视图不接受单条 param，与 Round 4 报告一致）；同页「见上方 / 下方」用锚点（#q7verified、#intfreq、#mocksrc、#mockselfeval、#pending-note、#ver-detail、#essay-meta）。② Dashboard「今日建议」做实：新增 nextStep()，按优先级 ①–⑩ 取第一条命中项（① 未解决错题 ≥5 条；② 最弱维度平均 ≤1；③ AO3 / AO4 均值差 >0.5，≥2 条带 AO 记录；④ 已标记掌握度 ≤1 的知识卡；⑤ 未做过精英练习；⑥ 材料题未作答；⑦ 未做过整卷模拟；⑧ 未解决错题 >0；⑨ Essay 得分率最低 <70%；⑩ 按复习计划复习），每条带理由与深链直达（错题本 / 知识卡单卡 / 精英练习单题 / 材料题库 / 整卷模拟 / 练习室 / 复习计划），卡内写明完整优先级；无任何记录时保留起步引导（考纲清单 → kp21a → MCQ，均带按钮），不编造；原静态文案里的「按考纲顺序推进」与「问 Viaana」两句保留。③ 学习路径条：新增 trackProgressHTML（Dashboard「今日建议」下方）：Track A（知识库已标记 / ≥3 级、MCQ 题次与正确率、Essay Log 条数、材料题已答 /25、整卷模拟归档次数、错题未解决 / 总数）与 Track B（第一性原理 / 逻辑挑战 / 反方论证 / 多因素分析 / 评价挑战的记录与答对数、未见场景生成数、Research Lab 完成 /2），每项带深链（精英项直达单题）；无记录的项显示「暂无记录」，全无记录时整卡显示空状态，不做假进度。④ 搜索扩面：新增 3 组（共 14 组）：精英练习（FP_EX 4 道 + 逻辑 / 反方 / 多因素 / 评价 14 道，题干 / 论断 / 选项 / 讲解 / 深链均可搜）→ 精英视图单题深链；未见场景（3 个手写场景 + 5 个改写底题）→ 精英视图单题 / 改写工具深链（改写底题还会预选下拉框）；Research Lab（清单 10 项 + 2 个 worked example）→ Research Lab 单项深链。为此精英视图新增 param 支持（BINDS.elite 接受 fp: / logic: / counter: / multi: / eval: / unseen: / rewrite:，渲染后滚动定位，视图本身结构未改）与 Research Lab param 支持（checklist / hdi / tot / c1–c10）；搜索页范围说明已同步。⑤ 附带修复（自查发现，非本阶段原定范围，但为保持本次改动正常工作所必需）：设置页「成绩与分数线」卡缺一个「+」（旧 bug，改前备份里就有）：ASI 终结了 VIEWS.settings 的 return，整张卡成了被丢弃的孤立字符串、从不渲染；补一个「+」后该卡正常显示，本阶段加在该卡的 Dashboard / 错题本链接才可达。规则 ④ 初版把「未标记」等同于「掌握度最低」，测试发现只要有未学卡就永远只推它，已改为只认已标记掌握度 ≤1 的卡（测试 C9–C14 捕获）。</p>'
++'<p class="sm"><b>测试证据（node 抽取站内真实函数与视图逐项断言，78/78 通过；全部 10 个 script 块 node --check 通过）：</b>① linkifyRefs 16 项：kp 单链 / 双链 / 带括号标注 / 详见、范文库三处、202401-9 / 202110-8、202305-7 → 202305-7e、202310-10 / 202605A-7 原样、不存在的题号不链、「常见错误」「常见」「见理由」三处不误链。② 知识卡渲染 9 项：kp21a / kp25a / kp25c / kp26b / kp24b / kp27a 逐卡核对、kp6x 占位卡不崩、全站 24 张完整卡无裸「见 kp」残留、全部深链目标存在（知识卡 / MCQ / 范文）。③ 今日建议与路径条 17 项：无记录时返回 null 与起步引导、规则 ①–⑩ 逐条命中验证（含 AO 双向、未做过精英 / 材料题 / 模拟、错题 1–4 条、低分重练、计划兜底）、路径条真实计数（掌握度 2/24、MCQ 50%、材料题 1/25、归档 1 次、FP 1 次、Lab 1/2）与空状态。④ 搜索 10 项：「生产率」→ fp1、「马歇尔」→ fp2、「贬值」→ lc1、「锂矿」→ us1、「202310-8」→ 改写、「HDI」→ hdi、「94.24」→ tot、「因果」→ c5、「囚徒困境」仍命中拓展、搜索页说明含新组。⑤ 视图渲染 12 项：Dashboard / 精英 / Research Lab / 考试频率 / 材料题库 / 范文详情 / 练习室 / 工具箱 / 复习计划 / 设置页 / 模拟卷（含已交卷态自评区）逐项核对锚点 id 与按钮。⑥ 深链扫查：全站 16 个视图 + 24 张知识卡 + 84 篇范文详情 + 5 组搜索输出逐条核对，每处 data-go 视图存在、每处 data-param 目标存在（知识卡 / 范文 / MCQ / 精英单题 / Research Lab 单项）、每处同页锚点目标存在。⑦ 端到端深链（DOM 桩 + go()）：go("elite", "fp:fp1" / "logic:lc3" / "rewrite:202310-8" / "unseen:us2") 与 go("researchlab", "c5" / "hdi") 均滚动到正确卡片，改写底题预选生效，无 param 时不滚动。⑧ 回归：eliteAnswer / eliteFpAnswer / rewriteQuestion 判定逻辑未变，能力追踪空状态保留，off-2406-3 确认为 Jun 2024 Q3。文件：3104 行 → 3250 行（含本报告一节 8 行），含 data-go 的行 43 → 76（其中 2 行为本报告正文提及 data-go 的文字行）。</p>'
++'<p class="sm"><b>如实说明的局限：</b>① 真实浏览器端到端点击（真实 IndexedDB 落盘、手机端点按）未在本环境执行，以上以站内真实函数的逐项断言 + 代码路径核查 + 渲染冒烟（DOM 桩）互证；落盘走既有 saveUser / flushSave 路径。② artifact.edit / artifact.export 在本执行环境不可用，故直接改本地导出文件 ~/workspace/your_files/elite-economist-system/elite-economist-system.html；线上 artifact（slug elite-economist-system）需由有 artifact 编辑权限的 agent 同步本次改动后才一致。③ 全站扫查后仍剩 11 处裸文字指向未转链接，均有记录：8 处为 VER 数据里的「见官方 MS」（外部引用；Section C 官方 MS 链接站内未存，无链接可接，且 VER 为已核对内容、不改原文）；3 处为 Settings 历史报告里的「见第二轮报告」（同页报告区、目标存在，改写已验收报告正文不在本阶段范围）。另 1 处扫查误报（材料题库「完整材料见官方链接」剥离 &lt;a&gt; 标签后看似裸指向，实际已有 QP / MS 链接）。④ 未见场景 us1（锂矿国 / 荷兰病）无站内单卡目标，未硬链；本科拓展 4 条无合适单卡目标的状态承接第二阶段结论。</p>'
++'<p class="sm"><b>仍待处理（不在本阶段范围）：</b>Round 5 第四阶段（本阶段完成后仅剩第四阶段，第二阶段报告里的「其余两个阶段」已过时，以此处为准）；202605A-7 仍待核实；主题 3–6 知识卡待补充；新 Q7 的 (b)–(e) 逐点评分要点待补充；各考试系列官方等级分数线待补充。</p>'
++'<hr class="hr"><p class="sm"><b>—— Round 5 第四阶段：已知缺口诚实处理 ——</b></p>'
++'<p class="sm">本阶段只处理 Round 5 开始前已知的缺口（任务书第 1–7 项），不动已验收的评分标准与知识内容、不动 main、不做最终整合、不碰 GitHub。技术名词按「中文 +（英文）」书写。</p>'
++'<p class="sm"><b>复现（改前已在代码与官方资料核实）：</b>① 官方 MCQ 36 道中 31 道 kp 为空（F8），ch 字段全为「综合」；复习计划 errLoad 已计入官方 MCQ 错题（Round 4 已验证）。② INT_FREQ 为硬编码常量（7 行合计 32），计数依据只写了口径、无逐题推导表。③ Q7P 5 卷没有任何 (b)–(e) 评分点字段，站内说明为待补充；(a) 计算答案 5 卷中 2 卷已有、3 卷为空。④ 知识卡 28 条中主题 3–6 各只有 1 条 st:"pending" 占位卡。⑤ 两道图题标签已在。⑥ T16 页尾交卷按钮真实窄视口点击计时未单独验证。⑦ 模拟卷视图无面向用户的后台冻结 / 设备时间说明。</p>'
++'<p class="sm"><b>改动内容：</b>① F8：36 道官方 MCQ 各加站内字段 topic（按题干 + 官方 MS 排除理由归纳），做题时显示在题干上方并标注「站内按题干与官方 MS 排除理由归纳，非官方分类」；MCQ 库说明与搜索结果卡同步显示主题，搜索可按主题命中；kp 仍空 31 道（无对应知识卡的不硬填），仅原有 5 道保留 kp。② INT_FREQ：新增 INT_FREQ_DERIV 逐题推导表（18 道题 × KAA/评价清单，写明计入规则；6 行 8 处单元格标待核实、不计入总数），考试频率页实时重算并与常量对照，显示「复算一致」（Ch.21=1、Ch.22=2、Ch.23=10、Ch.24=2、Ch.25=4、Ch.26=6、Ch.27=7，合计 32）；表下附注：若 8 处待核实全部计入，各行将变为 Ch.23=12、Ch.24=3、Ch.26=8、Ch.27=10，合计 40。③ Q7：5 卷全部按官方 MS 逐字核对并新增 pts 字段（(b)–(e) 评分要点共 46 条，来源为各卷 ms 编号：jan24 WEC14_01_MS_2401、jun25a WEC14_01A_2506_MS、oct25a WEC14_01A_2510_MS、jan26a WEC14_01A_2601_MS、jun26a WEC14_01A_2606_MS），材料题库逐卷小问表逐条渲染；同时补齐 3 个已核实的 (a) 计算答案（oct25a 15.47 个百分点、jan26a 83% / 15%、jun26a $13.2 billion），(a) 答案现为 5/5。④ 主题 3–6：按官方 Specification（2018, Issue 2）§4.3.3–4.3.6 核对后，4 条占位卡升级为结构化待补充骨架（子目清单共 47 条：主题三 15、主题四 9、主题五 14、主题六 9，每条均标待补充），知识库列表、知识卡详情与搜索均可看到子目清单；未写未经核实的 full 卡正文。⑤ 两道图题：标签核实仍在（Jun 2025 01 Q4 AD/SRAS 图、Oct 2023 Q6 大米缓冲库存图，均有「需对照原卷图示作答」提示），未画任何示意图。⑥ T16：代码路径核实两处交卷按钮均绑定同一 doMockSubmit 处理函数；真实窄视口点击计时仍未单独验证（见局限）。⑦ GPT 第六轮边界：模拟卷视图新增计时说明（后台完全冻结时无法保证截止瞬间交卷，回来/重载时按 deadline 补交卷；计时用设备时间，手动大幅改时间会影响它），计时逻辑本身未改。⑧ 附带修复（测试中发现，为保持本报告卡正常工作所必需）：第一阶段报告卡标题行多一个「+」（`+ +\'<div...\'` 使标题字符串被一元 + 转为 NaN 丢弃，设置页渲染出 stray "NaN"、标题缺失），已删去多余的「+」，标题恢复正常显示。</p>'
++'<p class="sm"><b>测试证据（node 抽取站内真实函数与视图逐项断言，70/70 项全过；全部 10 个 script 块 node --check 通过）：</b>① F8：36/36 有 topic、31 道 kp 仍空、5 道 kp 保留；paintMcq 官方题显示主题行与「非官方分类」说明、自编题不显示；搜索「贸易条件计算」命中 4 道。② INT_FREQ：推导表 18 行、重算 7 行与常量一致、合计 32；6 行待核实、8 处单元格；若全部计入则为 Ch.23=12、Ch.24=3、Ch.26=8、Ch.27=10、合计 40。③ Q7：5/5 卷有 (b)–(e) pts、共 46 条均非空；(a) 答案 5/5；q7PaperHTML 与材料题库渲染含 MS 编号与要点原文。④ 知识卡：4 条占位卡 subs 为 15/9/14/9、24 张 full 卡未动；详情页显示子目清单且无编造正文；搜索「洛伦兹曲线」命中待补充卡。⑤ errLoad 回归：官方 MCQ off-2401-6 答错后 kp25a 的 errLoad=1。⑥ 模拟卷计时说明 4 项与两处按钮均已渲染、wireMock 源码核查两处绑定同一函数。⑦ 渲染冒烟：MCQ、考试频率、材料题库、知识库（含 kp3x 详情）、练习室、复习计划、搜索、设置页、模拟卷逐项无报错；console 零错误。⑧ 本报告卡标题修复：node 渲染 VIEWS.settings() 后标题「Round 5 精英级优化报告」正常出现，stray "NaN" 消失。</p>'
++'<p class="sm"><b>如实说明的局限：</b>① 真实浏览器端到端点击（真实 IndexedDB 落盘、手机端点按）未在本环境执行，以上以站内真实函数的逐项断言 + 代码路径核查 + 渲染冒烟（DOM 桩）互证；落盘走既有 saveUser / flushSave 路径。② Q7 的 5 份官方 MS 中，jun25a 为 Pearson 官方 PDF，其余 4 份取自镜像站（jan24 MathsGenie、oct25a DynamicPapers、jan26a 与 jun26a alevelcopilot），内容逐字核对一致但非 Pearson 直链；官方 Specification 为 Pearson 官方 PDF。③ artifact.edit / artifact.export 在本执行环境不可用，故直接改本地导出文件 ~/workspace/your_files/elite-economist-system/elite-economist-system.html；线上 artifact（slug elite-economist-system）需由有 artifact 编辑权限的 agent 同步本次改动后才一致。</p>'
++'<p class="sm"><b>仍待处理（以下为本阶段完成后的清单，第二、三阶段报告里的相关旧行以此处为准）：</b>202605A-7 仍待核实（须目录方确认）；主题 3–6 知识卡 full 正文仍待补充（需逐条按官方资料核实后填充）；T16 页尾交卷按钮真实窄视口点击计时仍待单独验证；各考试系列官方等级分数线待补充；SPEC 与站内考纲清单的差异待后续轮次处理（主题 3 缺经常账户失衡的缩减措施等 7 项、主题 4 缺贫困衡量等 4 项、主题 5 缺 2008 年金融危机需求侧政策等 5 项、主题 6 的 s6-6 与 s6-1 有两处与官方 §4.3.6 不完全对应），站内 SPEC 本轮未改写。</p></div>'
++'<div class="card"><h3 style="margin-top:0">成绩与分数线</h3><p class="sm mut">本站记录你的<b>原始分</b>练习数据（<button class="btn sm ghost" data-go="dashboard">见 Dashboard</button> 与 <button class="btn sm ghost" data-go="mistakes">错题本</button>）。各考试系列的官方等级分数线 (grade boundaries) 与 UMS 换算以 Pearson 官方发布为准，本轮<b>待补充</b>，不编造数字。80/80 是训练目标，不是本站或任何 AI 能保证的结果。</p></div>';
 };
 /* v5 审查复查后补充修复（第 4 项）：合并导入 (Merge Import)。以当前用户数据为底按字段合并备份 d，不整份替换；导入校验仍在读取阶段完成，校验失败不会调用本函数。 */
 function canonStr(x){if(x===null||typeof x!=="object")return JSON.stringify(x);if(Array.isArray(x))return "["+x.map(canonStr).join(",")+"]";return "{"+Object.keys(x).sort().map(k=>JSON.stringify(k)+":"+canonStr(x[k])).join(",")+"}";}
@@ -2396,7 +2933,7 @@ function mergeImportBackup(cur,d){
    }
   });
  }
- ["mistakes","mcqLog","essayLog","examList","mockHistory"].forEach(k=>{
+ ["mistakes","mcqLog","essayLog","examList","mockHistory","eliteLog"].forEach(k=>{
   if(Array.isArray(d[k])){
    if(!Array.isArray(out[k]))out[k]=[];
    const seen={};out[k].forEach(x=>{seen[canonStr(x)]=1;});
@@ -2405,7 +2942,7 @@ function mergeImportBackup(cur,d){
  });
  if(isO(d.settings)){if(!isO(out.settings))out.settings={};Object.keys(d.settings).forEach(key=>{out.settings[key]=d.settings[key];});}
  Object.keys(d).forEach(k=>{
-  if(["favs","notes","mastery","masteryTs","planner","dimMastery","tags","drProg","drafts","mock","selfeval","mistakes","mcqLog","essayLog","examList","mockHistory","settings"].indexOf(k)>=0)return;
+  if(["favs","notes","mastery","masteryTs","planner","dimMastery","tags","drProg","drafts","mock","selfeval","mistakes","mcqLog","essayLog","examList","mockHistory","eliteLog","settings"].indexOf(k)>=0)return;
   const v=d[k];
   if(v===null||typeof v!=="object")out[k]=v;
   else if(!(k in out))out[k]=v;
@@ -2447,6 +2984,7 @@ BINDS.settings=function(){
    if(d.tags!==undefined&&!isObj(d.tags))throw new Error("tags 字段类型错误（应为对象）");
    if(d.examList!==undefined&&!Array.isArray(d.examList))throw new Error("examList 字段类型错误（应为数组）");
    if(d.mockHistory!==undefined&&!Array.isArray(d.mockHistory))throw new Error("mockHistory 字段类型错误（应为数组）");
+   if(d.eliteLog!==undefined&&!Array.isArray(d.eliteLog))throw new Error("eliteLog 字段类型错误（应为数组）");
    if(d.drafts!==undefined&&!isObj(d.drafts))throw new Error("drafts 字段类型错误（应为对象）");
    if(d.mock!==undefined&&!isObj(d.mock))throw new Error("mock 字段类型错误（应为对象）");
    if(d.selfeval!==undefined&&!isObj(d.selfeval))throw new Error("selfeval 字段类型错误（应为对象）");
@@ -2595,7 +3133,7 @@ function strategyR3HTML(){
 function weakestDimHTML(){
  let h='<div class="card"><h3 style="margin-top:0">最弱维度（Weakest Dimensions · 6 个维度平均）</h3>';
  const ids=Object.keys(U.dimMastery||{});
- if(!ids.length)return h+'<div class="empty">还没有维度记录。在任意完整知识卡上标记总掌握度后，6 个维度会按总掌握度默认生成、可逐个调整；这里会汇总各维度平均分并列出最弱的 2 个维度。</div></div>';
+ if(!ids.length)return h+'<div class="empty">还没有维度记录。在<button class="btn sm ghost" data-go="kb">任意完整知识卡</button>上标记总掌握度后，6 个维度会按总掌握度默认生成、可逐个调整；这里会汇总各维度平均分并列出最弱的 2 个维度。</div></div>';
  const sums={};DIMS.forEach(d=>sums[d[0]]=0);
  ids.forEach(id=>{const d=U.dimMastery[id];DIMS.forEach(x=>{sums[x[0]]+=(+d[x[0]]||0);});});
  const avgs=DIMS.map(d=>({label:d[1],avg:sums[d[0]]/ids.length})).sort((a,b)=>a.avg-b.avg);
@@ -2645,7 +3183,7 @@ function bhSectionHTML(r){
 function bhReviewHTML(){
  const L=(U.essayLog||[]).filter(r=>r.bh&&[r.bh.q1,r.bh.q2,r.bh.q3].some(x=>x&&String(x).trim())).slice().sort((a,b)=>b.ts-a.ts);
  let h='<div class="card"><h3 style="margin-top:0">Brutal Honesty · 复盘记录</h3>';
- if(!L.length)return h+'<div class="empty">还没有填过三问的练习记录。在练习室保存一条 Essay Log 后，在该条记录下方填三问，复盘会按时间倒序汇总到这里。</div></div>';
+ if(!L.length)return h+'<div class="empty">还没有填过三问的练习记录。在<button class="btn sm ghost" data-go="practice">练习室</button>保存一条 Essay Log 后，在该条记录下方填三问，复盘会按时间倒序汇总到这里。</div></div>';
  h+=L.map(r=>'<div class="card" style="padding:10px 16px"><div class="secthead"><b>'+esc(r.code)+'</b><span class="tag grey">'+new Date(r.ts).toLocaleString("zh-CN",{hour12:false})+'</span><span class="tag mint">总分 '+r.total+'</span></div><p class="sm">1. 真正掌握了什么：'+esc(r.bh.q1||"（空）")+'<br>2. 以为掌握、实际还没掌握：'+esc(r.bh.q2||"（空）")+'<br>3. 明天考试最可能在哪里失分：'+esc(r.bh.q3||"（空）")+'</p><div class="btnrow"><button class="btn sm ghost" data-go="practice">回到原记录（练习室 Essay Log）</button></div></div>').join("");
  return h+'</div>';
 }
@@ -2673,7 +3211,7 @@ BINDS.mocknav=function(){BINDS.practice();const el=document.getElementById("mock
 /* ---------- Search ---------- */
 let searchQ="";
 VIEWS.search=function(){
- let h='<h1>双语搜索</h1><p class="mut">搜索范围：知识点、Essay、MCQ、术语、逻辑链、收藏、错题、笔记、材料题（已核实 Q7 整卷）、定量技能、指令词、考试频率与本科拓展（中英文均可）。</p><input type="search" id="sq" placeholder="如：贸易条件 / terms of trade / 202310 / 比较优势…" style="width:100%" value="'+esc(searchQ)+'"><div id="sres" style="margin-top:12px"></div>';
+ let h='<h1>双语搜索</h1><p class="mut">搜索范围：知识点、Essay、MCQ、术语、逻辑链、收藏、错题、笔记、材料题（已核实 Q7 整卷）、定量技能、指令词、考试频率与本科拓展、精英练习（第一性原理 / 逻辑挑战 / 反方论证 / 多因素分析 / 评价挑战）、未见场景与 Research Lab 清单（中英文均可）。</p><input type="search" id="sq" placeholder="如：贸易条件 / terms of trade / 202310 / 比较优势…" style="width:100%" value="'+esc(searchQ)+'"><div id="sres" style="margin-top:12px"></div>';
  return h;
 };
 function searchHTML(q){
@@ -2681,16 +3219,18 @@ function searchHTML(q){
  const hit=(...fields)=>fields.some(f=>f&&String(f).toLowerCase().includes(q));
  let h="";
  const ks=KB.filter(k=>k.st==="full"&&hit(k.zh,k.en,k.defZh,k.defEn,k.chain,k.principle));
+ const ksp=KB.filter(k=>k.st==="pending"&&hit(k.zh,k.en,(k.subs||[]).join(" ")));
  if(ks.length)h+='<h3>知识点（'+ks.length+'）</h3>'+ks.map(k=>'<div class="card" style="padding:10px 16px"><b>'+esc(k.ch+" · "+k.zh)+'</b> <span class="sm mut en">'+esc(k.en)+'</span><p class="sm">'+esc(k.defZh)+'</p><button class="btn sm" data-go="kb" data-param="'+k.id+'">打开</button></div>').join("");
+ if(ksp.length)h+='<h3>知识点 · 待补充（仅考纲子目）</h3>'+ksp.map(k=>'<div class="card" style="padding:10px 16px"><b>'+esc(k.ch+" · "+k.zh)+'</b> <span class="sm mut en">'+esc(k.en)+'</span><p class="sm">官方考纲子目 '+(k.subs?k.subs.length:0)+' 条，均待补充。</p><button class="btn sm" data-go="kb" data-param="'+k.id+'">打开子目清单</button></div>').join("");
  const es=ESSAYS.filter(e=>hit(e.code,e.zh,(VER[e.code]||{}).en,(VER[e.code]||{}).chain));
  if(es.length)h+='<h3>Essay（'+es.length+'）</h3>'+es.map(e=>'<div class="card" style="padding:10px 16px"><b>'+e.code+" · "+esc(e.zh)+'</b>'+(VER[e.code]?'<p class="sm en mut">'+esc(VER[e.code].en)+'</p>':"")+'<button class="btn sm" data-go="essays" data-param="'+e.code+'">打开</button></div>').join("");
- const mq=ALLMCQ.filter(x=>hit(x.q,x.qzh));
- if(mq.length)h+='<h3>MCQ（'+mq.length+'）</h3>'+mq.map(x=>'<div class="card" style="padding:10px 16px"><b>'+esc(x.ch)+'</b><p class="sm">'+esc(x.qzh)+'</p><button class="btn sm" data-go="mcq" data-param="'+x.id+'">做这道题</button></div>').join("");
+ const mq=ALLMCQ.filter(x=>hit(x.q,x.qzh,x.topic||""));
+ if(mq.length)h+='<h3>MCQ（'+mq.length+'）</h3>'+mq.map(x=>'<div class="card" style="padding:10px 16px"><b>'+esc(x.ch)+(x.topic?" · "+esc(x.topic):"")+'</b><p class="sm">'+esc(x.qzh)+'</p><button class="btn sm" data-go="mcq" data-param="'+x.id+'">做这道题</button></div>').join("");
  const fv=Object.keys(U.favs).filter(id=>{
   let txt=contentTitle(id);
   const k=kpById(id);if(k)txt+=" "+k.defZh+" "+k.defEn+" "+k.chain;
   if(id.indexOf("essay:")===0){const e=essayByCode(id.slice(6));if(e)txt+=" "+e.zh+" "+e.cat+" "+((VER[e.code]||{}).en||"");}
-  if(id.indexOf("mcq:")===0){const qq=ALLMCQ.find(x=>x.id===id.slice(4));if(qq)txt+=" "+qq.q+" "+qq.qzh;}
+  if(id.indexOf("mcq:")===0){const qq=ALLMCQ.find(x=>x.id===id.slice(4));if(qq)txt+=" "+qq.q+" "+qq.qzh+(qq.topic?" "+qq.topic:"");}
   return hit(txt);
  });
  if(fv.length)h+='<h3>我的收藏（'+fv.length+'）</h3>'+fv.map(id=>{const g=contentGo(id);return '<div class="card" style="padding:10px 16px"><b>♥ '+esc(contentTitle(id))+'</b>'+(U.notes[id]?'<p class="sm mut">笔记：'+esc(U.notes[id])+'</p>':"")+'<div class="btnrow"><button class="btn sm" data-go="'+g[0]+'" data-param="'+(g[1]||"")+'">打开原文</button></div></div>';}).join("");
@@ -2706,8 +3246,21 @@ function searchHTML(q){
  if(cw.length)h+='<h3>指令词 (Command Words)（'+cw.length+'）</h3>'+cw.map(c=>'<div class="card" style="padding:10px 16px"><b>'+esc(c[0])+'</b><p class="sm">'+esc(c[1])+'</p><button class="btn sm" data-go="toolkit">打开考试工具箱</button></div>').join("");
  const fq=INT_FREQ.filter(r=>hit(r[0]));const vp=VERIFIED_PAPERS.filter(x=>hit(x));
  if(fq.length||vp.length)h+='<h3>考试频率</h3>'+fq.map(r=>'<div class="card" style="padding:10px 16px"><b>'+esc(r[0])+'</b> <span class="sm mut">综合考查 '+r[1]+' 题（18 道口径）</span><div class="btnrow"><button class="btn sm" data-go="frequency">打开考试频率</button></div></div>').join("")+vp.map(x=>'<div class="card" style="padding:10px 16px"><b>已核实试卷</b><p class="sm">'+esc(x)+'</p><button class="btn sm" data-go="frequency">打开考试频率</button></div>').join("");
- const ex=EXT_ITEMS.filter(i=>hit(i[0],i[1],i[2]));
- if(ex.length)h+='<h3>本科拓展（'+ex.length+'）</h3>'+ex.map(i=>'<div class="card" style="padding:10px 16px"><b>'+esc(i[0])+'</b><p class="sm">'+esc(i[1])+'<br>'+esc(i[2])+'</p><button class="btn sm" data-go="extension">打开本科拓展</button></div>').join("");
+ const ex=EXT_ITEMS.filter(i=>hit(i[0],i[1],i[2],i[3],i[4],i[5],i[7]));
+ if(ex.length)h+='<h3>本科拓展（'+ex.length+'）</h3>'+ex.map(i=>'<div class="card" style="padding:10px 16px"><b>'+esc(i[0])+'</b> <span class="tag gold">本科拓展 · 非官方考点</span><p class="sm">'+esc(i[1])+'<br>'+esc(i[4])+'</p><button class="btn sm" data-go="extension">打开本科拓展</button></div>').join("");
+ const elp=[];
+ FP_EX.forEach(function(x){if(hit(x.title,x.src,x.steps.join(" "),x.check.q,x.check.opts.map(function(o){return o.t+" "+o.why;}).join(" ")))elp.push({t:x.title,s:x.src,go:"elite",param:"fp:"+x.id});});
+ [["logic",LOGIC_EX],["counter",COUNTER_EX],["multi",MULTI_EX],["eval",EVAL_EX]].forEach(function(pair){var kind=pair[0];pair[1].forEach(function(x){if(hit(x.title,x.claim,x.q||"",x.src,(x.opts||[]).map(function(o){return o.t+" "+o.why;}).join(" "),x.explain||"",x.chain||""))elp.push({t:x.title,s:x.src+" · "+(x.claim||""),go:"elite",param:kind+":"+x.id});});});
+ if(elp.length)h+='<h3>精英练习（'+elp.length+'）</h3>'+elp.map(function(x){return '<div class="card" style="padding:10px 16px"><b>'+esc(x.t)+'</b><p class="sm mut">'+esc(x.s)+'</p><button class="btn sm" data-go="elite" data-param="'+x.param+'">打开这道练习</button></div>';}).join("");
+ const usn=[];
+ UNSEEN_SCEN.forEach(function(x){if(hit(x.title,x.body,x.scaffold.join(" "),x.note))usn.push({t:x.title,s:x.body,go:"elite",param:"unseen:"+x.id});});
+ REWRITE_BASES.forEach(function(b){if(hit(b.code,b.zh,b.en,b.check.join(" ")))usn.push({t:"换国家重写 · "+b.code+" · "+b.zh,s:b.en,go:"elite",param:"rewrite:"+b.code});});
+ if(usn.length)h+='<h3>未见场景（'+usn.length+'）</h3>'+usn.map(function(x){return '<div class="card" style="padding:10px 16px"><b>'+esc(x.t)+'</b><p class="sm en mut">'+esc(x.s)+'</p><button class="btn sm" data-go="elite" data-param="'+x.param+'">打开未见场景</button></div>';}).join("");
+ const lab=[];
+ LAB_CHECKLIST.forEach(function(c,i){if(hit(c[0],c[1]))lab.push({t:"检查清单 "+(i+1)+" · "+c[0],s:c[1],go:"researchlab",param:"c"+(i+1)});});
+ if(hit("HDI 表","off-2506a-6","泰国 马来西亚 79.7 76.3 医疗供给"))lab.push({t:"Worked Example 1 · 读一张 HDI 表",s:"Jun 2025 01A Q6 官方原题 off-2506a-6：可推断 C",go:"researchlab",param:"hdi"});
+ if(hit("贸易条件","澳大利亚","94.24","93.2 98.9","off-2506a-4"))lab.push({t:"Worked Example 2 · 读两个百分比",s:"Jun 2025 01A Q4 官方原题 off-2506a-4：ToT = 94.24",go:"researchlab",param:"tot"});
+ if(lab.length)h+='<h3>Research Lab（'+lab.length+'）</h3>'+lab.map(function(x){return '<div class="card" style="padding:10px 16px"><b>'+esc(x.t)+'</b><p class="sm mut">'+esc(x.s)+'</p><button class="btn sm" data-go="researchlab" data-param="'+x.param+'">打开 Research Lab</button></div>';}).join("");
  return h||'<div class="empty">没有找到相关内容。试试英文术语（如 terms of trade）或题号（如 202310-8）。</div>';
 }
 BINDS.search=function(){bindUserCtl($("#view"));const inp=$("#sq"),res=$("#sres");const paint=()=>{res.innerHTML=searchHTML(inp.value);bindUserCtl(res);};inp.addEventListener("input",paint);paint();inp.focus();};
