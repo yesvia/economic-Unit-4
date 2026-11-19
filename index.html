@@ -207,8 +207,8 @@ function flushSave(){
   clearTimeout(saveTimer);saveTimer=null;
   if(savePending)doWrite();
 }
-window.addEventListener("pagehide",()=>{flushSave();});
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")flushSave();});
+window.addEventListener("pagehide",()=>{mockPersistSync();flushSave();});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){mockPersistSync();flushSave();}else mockRecheck();});
 function applyTheme(){
   const t=U.settings.theme||"dark";
   const dark=t==="dark"||(t==="auto"&&window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches);
@@ -1451,10 +1451,40 @@ function scoreDisp(raw,max){
 }
 function logDispTotal(r){const t=+r.total||0;return r.mock?Math.min(80,t):Math.min(20,t);}
 function logOver(r){if(r.mock)return (+r.total||0)>80;return (+r.total||0)>20||(r.ao||[]).some(function(v){return +v>20||+v<0;});}
-let MOCKCUR="mock-jan24", mockInt=null, mockRunning=false;
+let MOCKCUR="mock-jan24", mockInt=null, mockTickN=0, mockRechecking=false;
 function fmtHMS(s){s=Math.max(0,s);const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return h+":"+String(m).padStart(2,"0")+":"+String(x).padStart(2,"0");}
-function stopMockTimer(){if(mockInt){clearInterval(mockInt);mockInt=null;}mockRunning=false;}
-function mockState(id){U.mock=U.mock||{};if(!U.mock[id]){const d=MOCKDEFS.find(m=>m.id===id);U.mock[id]={a:{},b:{},c1:d.secCDef[0],c2:d.secCDef[1],c:{},left:7200,sub:null,logged:false};}return U.mock[id];}
+function stopMockTimer(){if(mockInt){clearInterval(mockInt);mockInt=null;}}
+function mockDeadline(st){return (st&&typeof st.deadline==="number"&&isFinite(st.deadline))?st.deadline:null;}
+function mockRemain(st){const dl=mockDeadline(st);if(dl==null)return st.left;return Math.max(0,Math.ceil((dl-Date.now())/1000));}
+function mockSyncLeft(st){st.left=mockRemain(st);return st.left;}
+function mockEnsureInt(){const any=Object.keys(U.mock||{}).some(id=>mockDeadline(U.mock[id])!=null);if(any){if(!mockInt){mockTickN=0;mockInt=setInterval(mockTick,1000);}}else stopMockTimer();}
+function mockTick(){
+ mockTickN++;let cur=null;
+ Object.keys(U.mock||{}).forEach(id=>{const st=U.mock[id];if(mockDeadline(st)==null)return;st.left=mockRemain(st);if(st.left<=0)mockExpire(id);else if(id===MOCKCUR)cur=st;});
+ if(cur){const t=$("#mocktimer");if(t)t.textContent=fmtHMS(cur.left);}
+ if(mockTickN%10===0)saveUser();
+}
+function mockStart(id){
+ const st=mockState(id);if(st.sub){toast("已交卷，计时已停止");return;}
+ st.left=mockRemain(st);if(st.left<=0){mockExpire(id);return;}
+ st.deadline=Date.now()+st.left*1000;mockEnsureInt();saveUser();flushSave();
+}
+function mockPause(id){const st=mockState(id);st.left=mockRemain(st);st.deadline=null;saveUser();flushSave();mockEnsureInt();}
+function mockExpire(id){
+ const st=U.mock&&U.mock[id];if(!st||st.sub)return;
+ st.left=0;st.deadline=null;st.sub={b:{}};saveUser();flushSave();mockEnsureInt();
+ toast("时间到，已自动交卷，请完成自评");if(id===MOCKCUR)paintMock();
+}
+function mockRecheck(){
+ if(mockRechecking)return;mockRechecking=true;
+ try{
+  Object.keys(U.mock||{}).forEach(id=>{const st=U.mock[id];if(mockDeadline(st)==null)return;st.left=mockRemain(st);if(st.left<=0)mockExpire(id);});
+  mockEnsureInt();
+  if(curView==="mocknav"){const st=U.mock&&U.mock[MOCKCUR];const t=$("#mocktimer");if(t&&st)t.textContent=fmtHMS(st.deadline?mockRemain(st):st.left);}
+ }finally{mockRechecking=false;}
+}
+function mockPersistSync(){let any=false;Object.keys(U.mock||{}).forEach(id=>{const st=U.mock[id];if(mockDeadline(st)!=null){mockSyncLeft(st);any=true;}});if(any)saveUser();}
+function mockState(id){U.mock=U.mock||{};if(!U.mock[id]){const d=MOCKDEFS.find(m=>m.id===id);U.mock[id]={a:{},b:{},c1:d.secCDef[0],c2:d.secCDef[1],c:{},left:7200,deadline:null,sub:null,logged:false};}return U.mock[id];}
 function mockCardHTML(){
  return '<h3 style="margin-top:0">Full Paper Simulation · 整卷模拟（2 小时 / 80 分）</h3>'
  +'<p style="margin:.2rem 0">'+COMPOSITE_TAG+'</p>'
@@ -1463,9 +1493,9 @@ function mockCardHTML(){
 }
 function mockBodyHTML(){
  const d=MOCKDEFS.find(m=>m.id===MOCKCUR);const st=mockState(d.id);const p=Q7P.find(x=>x.id===d.paper);
- let h='<div class="secthead"><b>'+esc(d.name)+'</b><span class="timer" id="mocktimer">'+fmtHMS(st.left)+'</span></div>'
+ let h='<div class="secthead"><b>'+esc(d.name)+'</b><span class="timer" id="mocktimer">'+fmtHMS(st.deadline?mockRemain(st):st.left)+'</span></div>'
  +'<p style="margin:.4rem 0">'+COMPOSITE_TAG+' <span class="sm mut">本卷为组合练习卷：Section A、Section B 取自该卷官方试卷，Section C 自题库选取，并非该卷原卷。</span></p>'+mockSrcHTML(d,st)
- +'<div class="btnrow"><button class="btn sm" id="mockplay"'+(st.sub?" disabled":"")+'>'+(mockRunning?"暂停":"开始 / 继续")+'</button><button class="btn sm ghost" id="mockreset"'+(st.sub?" disabled":"")+'>重置计时（2:00:00）</button>'+(st.sub?'<span class="tag mint">已交卷 · 自评见下方</span>':"")+'</div>';
+ +'<div class="btnrow"><button class="btn sm" id="mockplay"'+(st.sub?" disabled":"")+'>'+(st.deadline?"暂停":"开始 / 继续")+'</button><button class="btn sm ghost" id="mockreset"'+(st.sub?" disabled":"")+'>重置计时（2:00:00）</button>'+(st.sub?'<span class="tag mint">已交卷 · 自评见下方</span>':"")+'</div>';
  h+='<h3>Section A · 选择题（6 分）</h3>'+d.secA.map((qid,i)=>{const q=mcqById(qid);const sel=st.a[qid];const show=!!st.sub;
   return '<div class="card" style="padding:10px 14px"><p class="sm" style="margin:.2rem 0"><b>Q'+(i+1)+'.</b> <span class="en">'+esc(q.q)+'</span></p>'+(q.tbl?tblHTML(q.tbl):"")+(q.fig?trendSVG(q.fig):"")+(q.figNote?'<p class="sm mut">'+esc(q.figNote)+'</p>':"")+(q.optHead?'<p class="sm mut">'+esc(q.optHead)+'</p>':"")
   +q.opts.map((o,oi)=>'<button class="opt'+(show?(oi===q.ans?" right":(sel===oi?" wrong":"")):(sel===oi?" right":""))+'" data-ma="'+qid+'" data-moi="'+oi+'"'+(show?" disabled":"")+'><b>'+"ABCD"[oi]+'.</b> '+esc(o)+'</button>').join("")
@@ -1533,12 +1563,10 @@ function wireMock(){
  }));
  const play=$("#mockplay");if(play)play.addEventListener("click",()=>{
   if(st.sub){toast("已交卷，计时已停止");return;}
-  if(mockRunning){stopMockTimer();play.textContent="开始 / 继续";saveUser();return;}
-  mockRunning=true;play.textContent="暂停";let n=0;
-  mockInt=setInterval(()=>{st.left--;const t=$("#mocktimer");if(t)t.textContent=fmtHMS(st.left);if(++n%10===0)saveUser();
-   if(st.left<=0){stopMockTimer();if(!st.sub)st.sub={b:{}};saveUser();flushSave();paintMock();toast("时间到，已自动交卷，请完成自评");}},1000);});
- const rst=$("#mockreset");if(rst)rst.addEventListener("click",()=>{if(st.sub){toast("已交卷，不能重置计时");return;}stopMockTimer();st.left=7200;saveUser();paintMock();});
- const doMockSubmit=()=>{stopMockTimer();st.sub={b:{}};saveUser();flushSave();paintMock();toast("已交卷：对照答案与官方 MS 完成自评");window.scrollTo(0,document.body.scrollHeight);};
+  if(mockDeadline(st)!=null){mockPause(d.id);play.textContent="开始 / 继续";return;}
+  mockStart(d.id);if(mockDeadline(st)!=null)play.textContent="暂停";});
+ const rst=$("#mockreset");if(rst)rst.addEventListener("click",()=>{if(st.sub){toast("已交卷，不能重置计时");return;}st.deadline=null;st.left=7200;saveUser();mockEnsureInt();paintMock();});
+ const doMockSubmit=()=>{if(st.sub)return;st.left=mockRemain(st);st.deadline=null;st.sub={b:{}};saveUser();flushSave();mockEnsureInt();paintMock();toast("已交卷：对照答案与官方 MS 完成自评");window.scrollTo(0,document.body.scrollHeight);};
  const sub=$("#mocksubmit");if(sub)sub.addEventListener("click",doMockSubmit);
  const sub2=$("#mocksubmit2");if(sub2)sub2.addEventListener("click",doMockSubmit);
  box.querySelectorAll("[data-mss-b]").forEach(inp=>inp.addEventListener("change",()=>{
@@ -1572,8 +1600,8 @@ function wireMock(){
    answers:{a:Object.assign({},st.a),b:Object.assign({},st.b),c:Object.assign({},st.c)},
    self:{b:Object.assign({},st.sub.b),c1k:st.sub.c1k!=null?st.sub.c1k:"",c1e:st.sub.c1e!=null?st.sub.c1e:"",c2k:st.sub.c2k!=null?st.sub.c2k:"",c2e:st.sub.c2e!=null?st.sub.c2e:""},
    secA:aS,total:Math.min(80,aS+bT+cT),needsFix:(aS+bT+cT)>80,mins:Math.round((7200-st.left)/60),left:st.left,logged:!!st.logged});
-  stopMockTimer();
-  U.mock[d.id]={a:{},b:{},c1:d.secCDef[0],c2:d.secCDef[1],c:{},left:7200,sub:null,logged:false};
+  U.mock[d.id]={a:{},b:{},c1:d.secCDef[0],c2:d.secCDef[1],c:{},left:7200,deadline:null,sub:null,logged:false};
+  mockEnsureInt();
   saveUser();flushSave();paintMock();toast("已归档本次记录，本卷已重置为全新状态");
  });
 }
@@ -2003,7 +2031,7 @@ BINDS.practice=function(){
  $("#pcopy").addEventListener("click",()=>{if(!ta.value.trim()){toast("先写答案再复制批改");return;}copyText(pracPrompt(),"已复制：题目 + 你的答案 + 批改规则，去聊天粘贴给 Viaana");});
  $("#pask").addEventListener("click",()=>{const e=essayByCode(sel.value);copyText("请讲解这道 U4 真题的答题思路（不要直接给全文范文，先讲结构与逻辑链）："+sel.value+" "+e.zh);});
  bindSelfEval();
- $$("#view [data-mocktab]").forEach(b=>b.addEventListener("click",()=>{MOCKCUR=b.dataset.mocktab;stopMockTimer();render();}));
+ $$("#view [data-mocktab]").forEach(b=>b.addEventListener("click",()=>{MOCKCUR=b.dataset.mocktab;mockRecheck();render();}));
  paintMock();
 };
 /* ---------- Quantitative Skills ---------- */
@@ -2314,7 +2342,13 @@ VIEWS.settings=function(){
  +'<p class="sm"><b>F9 · 重练建议拿 /20 与 /80 原始总分直接比——修复：</b>排序改为按得分率（显示总分 ÷ 满分，整卷模拟满分 80、单篇 Essay 满分 20）升序取前 3；显示改为「最近总分 X / 80（或 20）」，标题改为「按得分率从低到高」。<b>测试证据（通过）：</b>抽取站内真实排序表达式验证：40/80（得分率 50%）排在 15/20（75%）之前，与旧原始分排序结论相反，符合「更弱者优先重练」。</p>'
  +'<p class="sm"><b>F10 · 设置页报告卡三处过期表述——已修正（源码核查各 1 处、旧文案 0 处）：</b>① 第一轮报告⑯句末加「（第一轮时点；第二轮已接入两套整卷模拟，见第二轮报告③）」；② 未修复段改为「Pearson 官方 MCQ 原题为 0 道（已解决：第二轮已录入 36 道）；完整 80 分整卷模拟未接入（已解决：第二轮已接入两套整卷模拟）。」；③ v5 审查修复报告改为「Round 4（技术功能）进行中；新增字段：mockHistory（第 3 项）与 drProg（第 4 项）。」其余与现状一致的报告内容未动。</p>'
  +'<p class="sm"><b>搜索扩面（双语模糊搜索覆盖全部模块与收藏）：</b>在原 6 组（知识点、Essay、MCQ、收藏、错题、笔记）之外新增 5 组，沿用同一中英文子串匹配 (hit) 与 data-go 深链方式，数据全部取自站内已有数组：① 材料题 · 已核实 Q7 整卷（数据源 Q7P，按试卷代码、考季、国家/主题与小问题干可搜）→ 材料题库 (dataresponse)；② 定量技能（数据源 QS，按名称、公式、步骤、常见错误可搜）→ 定量技能 (quant)；③ 指令词 (Command Words)（数据源 COMMAND_WORDS）→ 考试工具箱 (toolkit)；④ 考试频率（数据源 INT_FREQ 与 VERIFIED_PAPERS）→ 考试频率 (frequency)；⑤ 本科拓展（数据源 EXT_ITEMS；该组条目原内联在拓展视图内，本阶段抽为共用常量，条目内容一字未改，视图改读同一常量）→ 本科拓展 (extension)。深链粒度如实说明：以上 5 组的目标视图不接受单条 param，深链到对应模块视图（与原错题组「打开错题本」的方式一致）；MCQ、笔记、收藏、知识点、Essay 为单条深链。搜索页顶部范围说明已同步更新。<b>测试证据（7/7 通过）：</b>「希腊」「WEC14/01A」命中材料题组、「百分比变化」命中定量技能组、「Evaluate」命中指令词组、「贸易条件」命中考试频率组、「Jan 2024」命中已核实试卷、「Game Theory」命中本科拓展组，且每行按钮的 data-go 均指向正确视图。</p>'
- +'<p class="sm"><b>本阶段整体验证：</b>node 抽取站内真实函数与表达式逐项断言共 47 项全过（F1 11 · F2 3 · F3 6 · F4/F6 8 · F5 与收藏搜索 4 · F7 5 · F8 2 · F9 1 · 搜索扩面 7，含渲染函数 mockBodyHTML / searchHTML / errStatsHTML / aoTrackHTML 的实际执行）；F2 处理守卫与 F10 文案经源码核查；全部 10 个 script 块通过 node --check；改动视图渲染冒烟见本次构建审计。15 个模块、深色默认主题（保留浅色切换）与既有用户数据兼容性未动，未新增或改动任何保存字段。如实说明：浏览器端到端点击（真实 IndexedDB 落盘、真实文件导入）未在本环境逐项手动执行，以上以站内真实函数的逐项断言 + 源码核查 + 构建审计渲染冒烟互证。</p></div>'
+ +'<p class="sm"><b>本阶段整体验证：</b>node 抽取站内真实函数与表达式逐项断言共 47 项全过（F1 11 · F2 3 · F3 6 · F4/F6 8 · F5 与收藏搜索 4 · F7 5 · F8 2 · F9 1 · 搜索扩面 7，含渲染函数 mockBodyHTML / searchHTML / errStatsHTML / aoTrackHTML 的实际执行）；F2 处理守卫与 F10 文案经源码核查；全部 10 个 script 块通过 node --check；改动视图渲染冒烟见本次构建审计。15 个模块、深色默认主题（保留浅色切换）与既有用户数据兼容性未动，未新增或改动任何保存字段。如实说明：浏览器端到端点击（真实 IndexedDB 落盘、真实文件导入）未在本环境逐项手动执行，以上以站内真实函数的逐项断言 + 源码核查 + 构建审计渲染冒烟互证。</p>'
+ +'<hr class="hr"><p class="sm"><b>—— GPT 第五轮复查补修（模拟卷计时器 · 截止时间 Deadline 制）——</b></p>'
+ +'<p class="sm"><b>问题（GPT 第五轮复查，代码已复现属实）：</b>模拟卷计时用 setInterval 每秒 st.left--、每 10 次才 saveUser() 一次；全局导航 go() 每次直接 stopMockTimer() 且事先不保存。风险：① 切换模块时计时器被静默停止，用户没按「暂停」但整卷计时实际暂停；导航前最后一次保存之后最多约 9 秒的倒计时变化可能未落盘。② 切到后台时定时器可能被节流，倒计时按回调次数扣秒、落后于真实考试时间，无法保证到点自动交卷。</p>'
+ +'<p class="sm"><b>复现（node 按站内原逻辑逐项模拟）：</b>① 后台 60 秒真实时间、仅 12 次回调（约每 5 秒一次）→ st.left=7188，应为 7140，倒计时比真实时间落后 48 秒。② 开始后 9 次回调再导航离开：st.left=6991 但已保存值仍为 7000，9 秒倒计时未落盘；go() 后计时器已停（mockRunning=false），用户未按暂停。</p>'
+ +'<p class="sm"><b>设计决定（模拟卷计时按真实考试处理）：</b>切换模块不暂停，计时继续走；deadline 在离开/后台期间已过，回来时立即自动交卷且只交卷一次；界面上不把导航离开写成「已暂停」（因为它不是暂停）。练习室计时器的显式暂停功能（第三阶段 F3）与此无关，保持原样。</p>'
+ +'<p class="sm"><b>修复（只改计时器，不改知识内容、评分标准与其他功能）：</b>① 每卷状态新增 deadline 字段（绝对截止时间，毫秒时间戳；null 表示未在计时），开始/继续时 deadline=Date.now()+剩余秒×1000 并立即 saveUser()+flushSave() 落盘；老数据无 deadline 字段时按 null 处理（暂停态），不自动启动。② tick 改为 deadline 制：每次按 deadline−现在计算剩余秒并刷新显示，不再依赖回调次数；后台节流后恢复，剩余时间按真实经过时间减少。③ 导航 go() 不再停表：离开前先同步剩余秒并 flushSave() 落盘，再重新计算（deadline 已过则立即自动交卷）；两套模拟卷之间切换标签同样不暂停。④ pagehide / 切到后台前先同步剩余秒再 flushSave()；恢复前台（visibilitychange 可见）与页面初始化时重新计算并刷新显示，deadline 已过则立即自动交卷。⑤ 到期只交卷一次：交卷处理加 st.sub 守卫，到期与手动交卷共用同一去重逻辑，答案与自评保留。⑥ 显式「暂停」按钮仍为唯一暂停入口：暂停时按 deadline 折算剩余秒并清掉 deadline、立即保存；继续时按剩余秒重算新 deadline。⑦ 防御：deadline 非数字时按无 deadline 处理，不抛错。</p>'
+ +'<p class="sm"><b>测试证据（node 抽取站内修复后的真实计时函数逐项断言，43/43 通过；全部 10 个 script 块 node --check 通过；改动视图渲染冒烟见本次构建审计）：</b>① 后台节流模拟：60 秒真实时间仅 12 次回调后剩余 7140 秒（与真实经过一致，不再落后 48 秒）。② 导航离开再回来：计时继续走，回来时显示按真实经过减少；离开期间 deadline 已过则回来立即自动交卷一次、答案保留。③ 刷新/关闭重开：按已存 deadline 恢复剩余时间；deadline 已过则打开即自动交卷。④ 显式暂停/继续：暂停后剩余秒冻结，继续后按剩余秒重算 deadline。⑤ 到期只交卷一次：连续多次触发到期检查只产生一次交卷记录。⑥ 练习室计时器暂停功能回归未动。如实说明：真实浏览器后台节流与手机切后台的端到端实测未在本环境执行，以上以站内真实函数的逐项断言 + 代码路径核查 + 构建审计渲染冒烟互证；真实 IndexedDB 落盘以 saveUser/flushSave 既有路径互证。</p></div>'
  +'<div class="card"><h3 style="margin-top:0">成绩与分数线</h3><p class="sm mut">本站记录你的<b>原始分</b>练习数据（见 Dashboard 与错题本）。各考试系列的官方等级分数线 (grade boundaries) 与 UMS 换算以 Pearson 官方发布为准，本轮<b>待补充</b>，不编造数字。80/80 是训练目标，不是本站或任何 AI 能保证的结果。</p></div>';
 };
 /* v5 审查复查后补充修复（第 4 项）：合并导入 (Merge Import)。以当前用户数据为底按字段合并备份 d，不整份替换；导入校验仍在读取阶段完成，校验失败不会调用本函数。 */
@@ -2678,12 +2712,12 @@ function searchHTML(q){
 }
 BINDS.search=function(){bindUserCtl($("#view"));const inp=$("#sq"),res=$("#sres");const paint=()=>{res.innerHTML=searchHTML(inp.value);bindUserCtl(res);};inp.addEventListener("input",paint);paint();inp.focus();};
 /* ================= 初始化 ================= */
-const _go=go;go=function(v,p){stopMcqTimer();stopMockTimer();if(tkInt){clearInterval(tkInt);tkInt=null;}if(typeof pracTimerInt!=="undefined"&&pracTimerInt){clearInterval(pracTimerInt);} _go(v,p);};
+const _go=go;go=function(v,p){stopMcqTimer();if(tkInt){clearInterval(tkInt);tkInt=null;}if(typeof pracTimerInt!=="undefined"&&pracTimerInt){clearInterval(pracTimerInt);}mockPersistSync();flushSave();mockRecheck(); _go(v,p);};
 $("#menubtn").addEventListener("click",()=>{$("#sidebar").classList.add("open");$("#scrim").classList.add("on");});
 $("#scrim").addEventListener("click",()=>{$("#sidebar").classList.remove("open");$("#scrim").classList.remove("on");});
 buildNav();
 if(window.matchMedia)window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{if(U.settings.theme==="auto")applyTheme();});
-loadUser().then(()=>{render();});
+loadUser().then(()=>{render();mockRecheck();});
 </script>
 </body>
 </html>

@@ -3,8 +3,8 @@
 ## 当前阶段
 
 - **版本**：v5（Round 2 考试内容与评分 + Round 3 学习系统已完成；commit `f4744c71`，在 main）
-- **已完成**：ChatGPT 第一轮审查的 6 项问题修复 + 3 轮补充修复（DR 导入合并、IndexedDB 保存竞争、合并导入补 drafts/mock/selfeval），六项全部验收通过；Round 4（技术功能）三阶段已完成，待 GPT 分阶段检查
-- **待修复/复查**：Round 4 模拟卷计时器后台节流与导航停止问题；Round 5（精英级优化）暂不开始，最终整合暂缓
+- **已完成**：ChatGPT 第一轮审查的 6 项问题修复 + 3 轮补充修复（DR 导入合并、IndexedDB 保存竞争、合并导入补 drafts/mock/selfeval），六项全部验收通过；Round 4（技术功能）三阶段已完成，GPT 第五轮复查暂不整体验收（唯一阻塞：模拟卷计时器真实计时缺口），已按 GPT 建议改为 Deadline 制，待 GPT 再检查
+- **未开始**：Round 5（精英级优化）、最终整合
 - **流程**：修复 → GPT 逐项复查验收 → Round 4 → Round 5 → 整合成一个连贯系统，完整网页版存 Muse 网站 + GitHub 仓库
 
 ## 六项问题状态（优先级以 GPT 原始审查意见为准，2026-11-19 补充确认）
@@ -27,6 +27,7 @@
 - `e16de9e5` — 6 项修复代码 + 审查文件状态更新 + PROJECT_STATUS.md（review/chatgpt-v5 分支）
 - `aaae3cb6` — GPT 复查后 2 个后续问题修复（DR 导入合并、IndexedDB 保存竞争）+ 审查文件与 PROJECT_STATUS.md 更新（review/chatgpt-v5 分支）
 - `0c69a04e` — 第 4 项第二次补充修复（合并导入补 drafts/mock/selfeval）+ 审查文件与 PROJECT_STATUS.md 更新（review/chatgpt-v5 分支）
+- `1b2e12c7` — Round 4（技术功能）三阶段代码 + 审查文件与 PROJECT_STATUS.md 更新（review/chatgpt-v5 分支；GPT 审批 commit 05eacddc 在其上）
 
 ## GPT 验收状态
 
@@ -36,4 +37,5 @@
 - 2026-11-19：GPT 已复查 commit e16de9e5，六项整体完成度较高，提出 2 个后续问题（DR 导入合并、IndexedDB 保存竞争），已修复完成，待 GPT 最终验收；GPT 未明确验收通过前，不得进入 Round 4，也不得合并 main。
 - 2026-11-19：GPT 已复查 commit aaae3cb6，第 6 项通过，第 4 项部分通过（合并导入漏 drafts/mock/selfeval 三字段），已按要求补齐，待 GPT 再次复查；Round 4 暂不放行。
 - 2026-11-19：GPT 已复查 commit 0c69a04e，第 4 项通过，第 6 项沿用通过结论，六项全部验收通过，允许开始 Round 4；条件：只在 review/chatgpt-v5 分支开发，不动 main、不删模块、不重置数据；Round 4 每阶段完成后由 GPT 针对性检查。
-- 2026-11-19：Round 4（技术功能）三阶段已推送；GPT 第五轮复查发现模拟卷计时器仍依赖 setInterval 回调次数，后台节流时可能计时落后，导航时会静默停止且未即时保存；Round 4 暂不整体验收通过，Round 5 暂缓，待 Muse 修复后复查。
+- 2026-11-19：Round 4（技术功能）三阶段已完成并推送至 review/chatgpt-v5 分支，待 GPT 分阶段检查；Round 5 未开始。
+- 2026-11-19：GPT 第五轮复查 commit 1b2e12c7，Round 4 阶段一至三暂不整体验收通过，唯一阻塞问题为模拟卷计时器真实计时缺口（setInterval 扣秒、导航静默停表、后台节流落后）；其他已检查代码路径无新阻塞问题；Round 5 暂不放行，main 不合并。计时器已按 GPT 最小修复建议改为 Deadline 制（切换模块/后台不暂停，到点只交卷一次），待 GPT 再检查。
