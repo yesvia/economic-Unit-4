@@ -3,7 +3,7 @@
 ## 当前阶段
 
 - **版本**：v5（Round 2 考试内容与评分 + Round 3 学习系统已完成；commit `f4744c71`，在 main）
-- **已完成**：ChatGPT 第一轮审查的 6 项问题修复 + 3 轮补充修复（DR 导入合并、IndexedDB 保存竞争、合并导入补 drafts/mock/selfeval），六项全部验收通过；Round 4（技术功能）三阶段已完成，GPT 第五轮复查暂不整体验收（唯一阻塞：模拟卷计时器），已按 GPT 建议改为 Deadline 制并通过第六轮复查，Round 4 代码审查层面放行；Round 5（精英级优化）四阶段已完成；GPT 第七轮复查唯一待修项（Dashboard nextStep() AO3/AO4 建议逻辑：阈值统一为严格 > 0.5、有效记录筛选）已修复，7/7 边界测试通过；GPT 第八轮复查相邻项（Dashboard AO3/AO4 对比卡：共享 aoFilled 筛选、≤ 0.5 差异不明显）已修复，卡片 11 项 + nextStep() 回归 7 项 + 逐字核对 9 项全部通过，导出 3278 行 / 667,029 字节；GPT 第九轮复查代码通过，Round 5 代码修复可放行，主代理核实线上 Artifact 已同步（重新导出 SHA-256 与 GitHub 一致）；最终整合主体已完成；GPT 第十轮复查发现 Settings 最终报告中的导入校验数量仍写 17（代码实际 18），待修正文案后最终验收
+- **已完成**：ChatGPT 第一轮审查的 6 项问题修复 + 3 轮补充修复（DR 导入合并、IndexedDB 保存竞争、合并导入补 drafts/mock/selfeval），六项全部验收通过；Round 4（技术功能）三阶段已完成，GPT 第五轮复查暂不整体验收（唯一阻塞：模拟卷计时器），已按 GPT 建议改为 Deadline 制并通过第六轮复查，Round 4 代码审查层面放行；Round 5（精英级优化）四阶段已完成；GPT 第七轮复查唯一待修项（Dashboard nextStep() AO3/AO4 建议逻辑：阈值统一为严格 > 0.5、有效记录筛选）已修复，7/7 边界测试通过；GPT 第八轮复查相邻项（Dashboard AO3/AO4 对比卡：共享 aoFilled 筛选、≤ 0.5 差异不明显）已修复，卡片 11 项 + nextStep() 回归 7 项 + 逐字核对 9 项全部通过，导出 3278 行 / 667,029 字节；GPT 第九轮复查代码通过，Round 5 代码修复可放行，主代理核实线上 Artifact 已同步（重新导出 SHA-256 与 GitHub 一致）；最终整合已完成，待 GPT 检查
 - **进行中**：最终整合的 GPT 检查；main 合并须用户明确批准
 - **流程**：修复 → GPT 逐项复查验收 → Round 4 → Round 5 → 整合成一个连贯系统，完整网页版存 Muse 网站 + GitHub 仓库
 
@@ -32,6 +32,7 @@
 - `f6a3defd` — Round 5（精英级优化）四阶段代码 + 审查文件与 PROJECT_STATUS.md 更新（review/chatgpt-v5 分支）
 - `ea2ab33c` — GPT 第七轮复查 P2 修复（nextStep() AO3/AO4 阈值统一为严格 > 0.5、有效记录筛选）+ 审查文件与 PROJECT_STATUS.md 更新（review/chatgpt-v5 分支）
 - `f44959fe` — GPT 第八轮复查相邻项修复（Dashboard AO3/AO4 对比卡统一为 > 0.5 口径、共享 aoFilled 校验）+ 审查文件与 PROJECT_STATUS.md 更新（review/chatgpt-v5 分支）
+- `199bc3bd` — 最终整合（单一共享数据模型、交叉链接端到端、导航一致性、报告卡、最终诚实核算、各轮修复回归）+ 审查文件与 PROJECT_STATUS.md 更新（review/chatgpt-v5 分支）
 
 ## GPT 验收状态
 
@@ -51,5 +52,4 @@
 - 2026-11-19：第八轮相邻项 Dashboard AO3/AO4 对比卡已修复（aoFilled 提升为 nextStep() 与对比卡共用的顶层共享函数；对比卡只纳入 AO3/AO4 两项均已填写的有限数值记录，0 合法；均值差 ≤ 0.5 显示「差异不明显，两项一起练」，严格 > 0.5 才标较低项「明显更弱」并给优先练习建议），卡片边界 11/11、nextStep() 回归 7/7、逐字核对 9 项全部通过，全部 10 个 script 块通过 node --check，导出 3278 行 / 667,029 字节（SHA-256 `db8969a4e8b87e6fb2c44103da02d3ca621eeb5176a6a089c4ef3835bebb3dfe`），`review/index.html` 已同步；线上站点由协调员用 artifact.edit 同步，主代理重新导出核实哈希与 GitHub 一致（修复记录中“未同步”一句是同步前写的，已过时）。
 - 2026-11-19：GPT 第九轮复查 commit f44959fe，对比卡修复代码审查通过，Round 5 代码修复可放行；线上 Artifact 同步已由主代理核实；最终整合开始。
 - 2026-11-19：最终整合已完成并推送至 review/chatgpt-v5 分支，待 GPT 检查；main 合并须用户明确批准。
-
-- 2026-11-19：GPT 第十轮复查最终整合提交 `199bc3bd`：18 个导航项与 18 个视图一一对应，静态交叉链接目标有效，单一数据模型、合并导入、清空时停止计时器及 Dashboard 空状态逻辑通过代码复核；发现 Settings 最终整合卡片仍写“17 条导入校验”，而代码实际 18 条且同卡片已更正为 18，属于 P2 文档不一致。待 Muse 将该处改为 18 并复查；不改功能代码、不合并 main。GPT 未独立重跑 Muse 192/192 测试或 node --check，也未执行真实浏览器 E2E；线上 Artifact 哈希一致为 Muse 主代理记录，GPT 未独立导出验证。
+- 2026-11-19：GPT 第十轮复查 commit 199bc3bd，最终整合的主要代码结构与模块连接通过；唯一待修项为 Settings 报告数字（最终整合卡片中「17 条导入校验」应为「18 条导入校验」），已修复，待推送后由 GPT 复查该点；main 不合并。
