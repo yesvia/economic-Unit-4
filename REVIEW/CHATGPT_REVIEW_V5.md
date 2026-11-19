@@ -361,3 +361,23 @@
 - 未做真实浏览器端到端测试（手机窄视口点按、IndexedDB 实际落盘、卡片真实渲染未执行）；本轮证据为真实函数断言 + 逐字代码核对 + 全 script 块语法检查。
 - 直播站点同步存在缺口：本次子代理会话未获得 `artifact.edit` 工具（仅加载到 `restore` / `share` / `unshare`），因此未能直接对线上站点执行 `artifact.edit`；线上 `ts-spaces/elite-economist-system/index.html` 仍为修复前版本（MD5 `589652512a3d1e8ca6324960c9e3e0fd`）。修复已完整落地于导出文件与 `review/index.html` 并通过全部测试；需主代理用 `artifact.edit` 按本记录的精确改动同步线上站点后重新导出并做哈希比对，再推送。未擅自手改线上站点内部文件。
 - 不宣称 GPT 验收通过；修复推送后由 GPT 复查该点。
+
+
+## 第九轮复查 — AO3/AO4 对比卡修复验收（2026-11-19）
+
+**审查对象**：`review/chatgpt-v5` 最新提交 `f44959fee9a9828851b1415925cb0b15c971681d`；`index.html` blob `a8f03488c8dfb88663245c169f99a4c079bb5382`。
+
+**代码复查结论：通过。**
+- `aoFilled()` 已提升为顶层共享函数，且只定义一次；`nextStep()` 与 Dashboard AO3/AO4 对比卡共用。
+- 两处均只纳入 AO3、AO4 同时明确填写且为有限数值的记录；0 合法，空字符串/null/undefined/非有限数值不纳入。
+- `nextStep()` 两方向仍使用严格差值 > 0.5。
+- 对比卡使用 `Math.abs(a3-a4)<=0.5` 显示「差异不明显，两项一起练」；只有 > 0.5 才进入较弱项优先建议分支。
+- 逐行核对线上 GitHub 文件代码与第八轮要求一致。Muse 报告对比卡边界 11/11、nextStep 回归 7/7、逐字核对 9 项及全部 10 个 script 块 `node --check` 通过。GPT 本轮独立核对了最新代码，但没有独立执行这套测试，也没有真实浏览器端到端测试。
+
+**验收边界 / 仍需处理：**
+- GitHub 分支中的 `index.html` 已包含修复。
+- Muse 明确报告线上 Artifact（`elite-economist-system`）尚未同步：本次会话没有 `artifact.edit` 权限，线上版本仍是修复前版本。GPT 当前可用工具中也没有 Artifact 编辑动作，因此不能声称线上网站已更新。
+- 需由有 Artifact 编辑权限的 agent 将此版本同步到线上站点，重新导出并核对哈希与 GitHub 文件一致；完成后才可确认线上版本也通过。
+- 未执行真实浏览器手机窄视口、IndexedDB 落盘等 E2E 测试。
+
+**当前结论**：第八轮相邻 AO3/AO4 代码问题已通过 GitHub 代码审查；Round 5 的该项代码修复可放行。线上 Artifact 同步仍是独立待办。继续不合并 `main`，除非用户明确批准。
