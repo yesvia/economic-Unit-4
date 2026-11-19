@@ -65,3 +65,9 @@
 - **DeepSeek 的初始化批评不准确**：主脚本位于 `</body>` 前，现有 `buildNav()`、主题监听及 `loadUser().then(render...)` 已在 DOM 解析后运行；不为形式增加多余 DOMContentLoaded/init 包装。
 - Muse 执行工单已提交至 `review/chatgpt-v5`：commit `17a0cd73b879b8c59e08c889ea081c0d07da3470`。当前状态：**待 Muse 按 P0-A（Essay/MCQ 与显式元数据）、P0-B（移动导航键盘/焦点）、P0-C（IndexedDB 降级警告）、P1-A/B（SPEC-KB 与完整性诊断）修改；完成后待 GPT 独立复查。**
 - 本轮仅新增审计与执行文档，没有改动 `index.html`，没有修改或合并 `main`。静态审计不等于真实浏览器验收。
+
+
+### 2026-11-19 补充：输入副本完整性与分支保护
+- 已复核当前 `index.html`（3,297 行 / 436,232 字符），末尾含完整事件绑定、初始化调用及 `</script></body></html>` 闭合；DeepSeek收到的文本副本不完整，不代表仓库文件本身截断。Muse不得据此重写或删除源码。
+- 待执行事项仍以 `REVIEW/DEEPSEEK_AUDIT_2026-11-19.md` 的 P0-A、P0-B、P0-C、P1-A、P1-B 为准。
+- 本次 compare 显示 `review/chatgpt-v5` 与 `main` diverged（ahead 2 / behind 1）；暂停任何合并、rebase 或覆盖操作，未经用户批准不改 `main`。
