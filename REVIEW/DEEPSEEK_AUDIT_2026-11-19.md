@@ -75,17 +75,17 @@ Muse 完成后必须：
 5. 明确区分 Node/静态断言与真实浏览器验收。未实测手机、键盘、IndexedDB 时，不得写“浏览器通过”。
 6. 完成后在本文件写“待 GPT 复查”，不要自行写“最终验收通过”。GPT 会重新读取最新 GitHub 源码独立复查。
 
-## 四、GPT 独立复核记录（待补）
-- Muse 执行 commit：
-- GPT 复核 commit / index.html blob：
-- P0-A：
-- P0-B：
-- P0-C：
-- P1-A：
-- P1-B：
-- 静态测试：
-- 真实浏览器测试：
-- 最终结论：
+## 四、GPT 独立复核记录（Muse 已执行，待 GPT 复查）
+- Muse 执行 commit：待推送（review/chatgpt-v5，未推送；推送由主代理负责）。Live artifact：elite-economist-system；导出：workspace/your_files/elite-economist-system/elite-economist-system.html（3,500 行，SHA-256 f28b8f43f01780cd323e07b854966e4b6940f2becb99a03a3518c66196808aed，MD5 a5663c446ee6dab11d52d28fe75726d4）。
+- GPT 复核 commit / index.html blob：待 GPT 复查。
+- P0-A（Essay/MCQ 分离与显式元数据）：已完成。202506A-1 已移出 ESSAYS（MCQ 记录 off-2506a-1 保留 Lewis 双部门模型题意与来源）；新增 ESSAY_META 83 条（已核对 23、待核实 4、已列 56），section / marks / qLabel / sourceStatus / verified 显式存储；202605A-7/8/9/10 全部 sourceStatus=pending，不计入已核实统计，不显示为已确认 Section C 20 分；SRC_PENDING 由 ESSAY_META 派生；Essay 筛选/详情/Mock Section C 选题/Dashboard/Settings 统计均改用显式元数据；VER 的 code 可映射到正确题目记录。Node 断言与真实浏览器 probe 验证（Dashboard“83 道 Essay · 48 道 MCQ / 来源待核实 4 道 · 已核对 23 道”）。
+- P0-B（移动导航键盘与焦点）：已完成。侧栏改用 visibility / opacity / transform（不再 display:none 切换）；menubtn 维护 aria-expanded / aria-controls；打开后焦点移入侧栏，Escape 关闭，关闭后焦点返回菜单按钮并带粉色 :focus-visible 环；390px 真实浏览器 probe 验证通过。另 VIEWS.mocknav / BINDS.mocknav 增加安全存在性检查，不再无保护调用 practice。
+- P0-C（IndexedDB 失败降级提示）：已完成。IDB 不可用/打开/读取/事务失败时显示持久红色横幅“本机数据库不可用；数据仅本次有效——仅保存在本次打开期间，关闭/刷新可能丢失。请立即导出 JSON 备份。”，指向现有 Settings 导出/导入入口，未另建备份逻辑；只有事务 oncomplete 后显示保存成功；IDB 恢复后清除警告。IDB 失败路径未在 probe 中触发（数据库可用），仅源码核查。
+- P1-A（SPEC/KB 映射与主题 3–6 状态）：已完成。SPEC 逐条呈现 full/listed/pending（Dashboard“11 / 31”及 breakdown）；listed 明确显示“考纲条目已列，知识卡待补充”；已有 kp 映射显示关联知识卡数与掌握度；无映射显示“尚无知识卡”，不渲染空卡；kp21b 补上 MNC/FDI 明确解释（MNC 为跨国化生产与 FDI 的重要推动者/载体，政治开放为另一类制度背景），与 SPEC s1-2 官方清单一致。
+- P1-B（启动时数据完整性诊断）：本轮不做（超出使用范围）。按合并工单 §0A，dataDiag 为用户未使用的新增模块，不在本轮合并工单的 P0/P1/P2 清单内；一致性检查由 P0-B 断言测试覆盖（ESSAYS 无 Section A、marks 与 qLabel 一致、pending 不计 verified、VER code 可映射）。渲染函数已对缺失字段容错（essayDetail / essayListHTML / modelHTML 空值守卫）。
+- 静态测试：node --check 10/10（Edit 10 合入后）；术语复扫剩余恰 18 项（7 UNDECIDED + 11 SKIP，0 APPLY）；受保护英文 264 项哈希前后一致（942cb24403a823faa310ff7401ad2406）；回归抽查：mock 计时器 deadline 逻辑完整（mockDeadline / mockRemain / mockExpire，最终文件 L1597–1613）；导入校验 18 条字段类型检查完整（L3180–3197）。Worker 断言套件（P0-D 47/47、P1 34 处替换、P2 审计内容复核）因 /tmp 清空无法重跑，证据为各 worker 记录的运行结果 + 各次构建的 builder 验证。
+- 真实浏览器测试：390px probe 通过（侧栏开合/Escape/焦点返回、Dashboard 统计、KB、Mock、搜索、essayDetail 四级状态、页脚）；未验证：IDB 失败路径真实触发、#simport 80ms 后程序化点击、P1-A/P1-B 视觉检查、术语真实浏览器测试、Settings <details> 逐个展开点击。审计提示移动端关闭态 18 个导航按钮被判 invisible、1 个被底部状态条遮挡——为既有抽屉关闭态设计，probe 实测打开后全部可见可点；未改 CSS（工单要求结果文件与术语预期 md5 逐字节一致），样式调整需另立工单。
+- 最终结论：待 GPT 复查（未写“最终验收通过”）。公开链接仍服务此前已批准的合并版本，需用户重新批准 artifact.share 后才更新。
 
 ---
 **审计口径说明**：本文件基于当前 GitHub 源码静态审计。没有在本轮运行真实浏览器，也没有独立验证手机设备、IndexedDB 实际落盘或屏幕阅读器。现有代码已经实现的功能不会仅因 DeepSeek 工单重复出现而再次开发。
