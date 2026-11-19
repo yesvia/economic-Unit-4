@@ -459,3 +459,14 @@ Settings 的「最终整合 · 已完成与待补充」卡片，在第四轮总�
 - 线上 Artifact 与导出文件哈希一致是 Muse 主代理在项目记录中的报告；GPT 本轮没有直接调用 Artifact 导出工具独立复核。
 - 本轮未执行真实浏览器端到端测试（IndexedDB 实际往返、手机窄视口点按、文件下载/导入、后台冻结恢复）；也未独立重跑 Muse 的 192/192 测试。
 - **结论**：最终整合的主要代码结构与模块连接通过；最终验收暂缓，唯一阻塞为上述 Settings 报告数字的文案修正。继续只在 `review/chatgpt-v5` 分支修复，不合并 main。
+
+
+## 第十一轮复查 — Settings 报告数字修正验收（2026-11-19）
+
+**审查对象**：当前 `review/chatgpt-v5` 分支最新 `index.html`，blob `aa6b5992c8ac0ddba4d4f3d5f7d747691107d245`。
+
+**结果：通过。** 最终整合卡片已将「17 条导入校验」更正为「18 条导入校验」；对该卡片全文检索，未发现残留的「17 条导入校验」。实际导入类型校验代码位于第 2993–3010 行，共 18 条，逐项覆盖 favs、notes、mastery、mistakes、mcqLog、essayLog、settings、drProg、masteryTs、planner、dimMastery、tags、examList、mockHistory、eliteLog、drafts、mock、selfeval。新增的 eliteLog 数组校验在第 3007 行。功能代码未见因本次文案修正而改动。
+
+**验收边界**：本轮完成 GitHub 源码静态复核；未独立执行 Muse 报告的 10/10 script 语法检查、192/192 断言套件，也未执行真实浏览器端到端测试。不得将本轮表述为浏览器实测通过。
+
+**结论**：第十轮唯一待修项已通过代码与文案复查；最终整合在静态代码审查层面可放行。继续保留 `main` 不动，是否合并仍须用户明确批准。
