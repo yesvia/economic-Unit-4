@@ -55,3 +55,13 @@
 - 2026-11-19：GPT 第十轮复查 commit 199bc3bd，最终整合的主要代码结构与模块连接通过；唯一待修项为 Settings 报告数字（最终整合卡片中「17 条导入校验」应为「18 条导入校验」），已修复并推送（commit c5139688）；GPT 第十一轮复查通过；main 不合并。
 
 - 2026-11-19：GPT 第十一轮复查最新 `index.html`（blob `aa6b5992c8ac0ddba4d4f3d5f7d747691107d245`），确认最终整合卡片「17 条导入校验」已更正为「18 条导入校验」，卡片内无该旧表述残留；并逐项核对第 2993–3010 行共 18 条导入字段类型校验，包含 eliteLog。唯一待修项验收通过，最终整合静态代码审查层面放行。未独立重跑 Muse 的语法检查/断言套件，未执行真实浏览器端到端测试；main 未修改，合并须用户明确批准。
+
+
+## DeepSeek 工单独立审计与下一轮修改（2026-11-19）
+
+- GPT 已对 DeepSeek 验收工单逐项对照当前 `index.html`（blob `aa6b5992c8ac0ddba4d4f3d5f7d747691107d245`）完成静态审计，详细结论与 Muse 执行任务见 `REVIEW/DEEPSEEK_AUDIT_2026-11-19.md`。
+- **已确认需优先修改**：① `ESSAYS` 仍包含明确标为 Section A 选择题的 `202506A-1`；② Essay section/marks/qLabel 主要依赖 `parseCode()` 按题号后缀推断，缺少显式元数据；③ `202605A-7/8/9/10` 虽已有来源待核实标签，但 -8/-9/-10 仍会被后缀推断成 Section C 20 分；④ 移动侧栏仍以 `display:none` 开合且缺 Escape/焦点管理；⑤ IndexedDB 降级提示已有基础，但缺少醒目的持久警告；⑥ SPEC-KB 映射和启动时数据完整性诊断不足；⑦ kp21b 对 MNC/FDI 的说明需与 SPEC s1-2 对齐。
+- **已存在、不重复开发**：Settings 已有主题/字号/考试日期/JSON 导入导出/清空；`render()` 已有页面级 try/catch；toast 有 `role=status`，SVG 图表有 `role=img` 与 `aria-label`；主题 3–6 已在 SPEC 标为 `listed`，不是空白条目。
+- **DeepSeek 的初始化批评不准确**：主脚本位于 `</body>` 前，现有 `buildNav()`、主题监听及 `loadUser().then(render...)` 已在 DOM 解析后运行；不为形式增加多余 DOMContentLoaded/init 包装。
+- Muse 执行工单已提交至 `review/chatgpt-v5`：commit `17a0cd73b879b8c59e08c889ea081c0d07da3470`。当前状态：**待 Muse 按 P0-A（Essay/MCQ 与显式元数据）、P0-B（移动导航键盘/焦点）、P0-C（IndexedDB 降级警告）、P1-A/B（SPEC-KB 与完整性诊断）修改；完成后待 GPT 独立复查。**
+- 本轮仅新增审计与执行文档，没有改动 `index.html`，没有修改或合并 `main`。静态审计不等于真实浏览器验收。
