@@ -1589,8 +1589,8 @@ function scoreDisp(raw,max){
  if(c.blank)return "—（未评分）";
  return c.val+" 分"+(c.over?' <span class="tag red">待订正</span>':"");
 }
-function logDispTotal(r){const t=+r.total||0;return r.mock?Math.min(80,t):Math.min(20,t);}
-function logOver(r){if(r.mock)return (+r.total||0)>80;return (+r.total||0)>20||(r.ao||[]).some(function(v){return +v>20||+v<0;});}
+function logDispTotal(r){const t=+r.total||0;const m=essayTypeInfo(r).max;return m>0?Math.min(m,t):t;}
+function logOver(r){const m=essayTypeInfo(r).max;const t=+r.total||0;if(m>0&&t>m)return true;return (r.ao||[]).some(function(v){return +v>20||+v<0;});}
 let MOCKCUR="mock-jan24", mockInt=null, mockTickN=0, mockRechecking=false;
 function fmtHMS(s){s=Math.max(0,s);const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return h+":"+String(m).padStart(2,"0")+":"+String(x).padStart(2,"0");}
 function stopMockTimer(){if(mockInt){clearInterval(mockInt);mockInt=null;}}
@@ -2285,7 +2285,7 @@ BINDS.practice=function(){
    const cmp=tries.length>1?'<span class="tag grey">本题第 '+tries.length+' 次练习 · 历史最佳总分 '+best+'</span>':'<span class="tag grey">本题首次练习</span>';
    const over=logOver(r);const aoD=[0,1,2,3].map(i=>scoreDisp(r.ao?r.ao[i]:"",20));
    return '<div class="card" style="padding:10px 16px"><div class="secthead"><b>'+esc(r.code)+'</b><span class="tag">'+new Date(r.ts).toLocaleString("zh-CN",{hour12:false})+'</span>'+(r.mins?'<span class="tag grey">用时 '+esc(r.mins)+' 分钟</span>':"")+'<span class="tag mint">总分 '+logDispTotal(r)+'</span>'+(over?'<span class="tag red">待订正</span>':"")+cmp+'</div>'
-   +'<p class="sm">AO1 知识 '+aoD[0]+' · AO2 应用 '+aoD[1]+' · AO3 分析 '+aoD[2]+' · AO4 评价 '+aoD[3]+(over?'<br><span style="color:var(--red)"><b>待订正：</b>原记录含超限分数，已按上限钳制显示（封顶 '+(r.mock?80:20)+' 分），原值未被改写；请删除这条后按批改结果重新录入订正。</span>':"")+(r.loss?'<br><b>主要失分原因：</b>'+esc(r.loss):"")+(r.feed?'<br><b>批改结论：</b>'+esc(r.feed):"")+'</p>'
+   +'<p class="sm">AO1 知识 '+aoD[0]+' · AO2 应用 '+aoD[1]+' · AO3 分析 '+aoD[2]+' · AO4 评价 '+aoD[3]+(over?'<br><span style="color:var(--red)"><b>待订正：</b>原记录含超限分数，已按上限钳制显示（封顶 '+(essayTypeInfo(r).max>0?essayTypeInfo(r).max:20)+' 分），原值未被改写；请删除这条后按批改结果重新录入订正。</span>':"")+(r.loss?'<br><b>主要失分原因：</b>'+esc(r.loss):"")+(r.feed?'<br><b>批改结论：</b>'+esc(r.feed):"")+'</p>'
    +bhSectionHTML(r)
    +'<div class="btnrow"><button class="btn sm ghost" data-go="essays" data-param="'+esc(r.code)+'">打开题目</button><button class="btn sm ghost" data-ldel="'+r.id+'">删除这条</button></div></div>';}).join("");
   box.querySelectorAll("[data-ldel]").forEach(b=>b.addEventListener("click",()=>{U.essayLog=U.essayLog.filter(x=>String(x.id)!==b.dataset.ldel);saveUser();paintLog();}));
@@ -2299,7 +2299,7 @@ BINDS.practice=function(){
   let aoClamped=false;
   const ao=[1,2,3,4].map(i=>{const raw=$("#lao"+i).value;if(raw==null||String(raw).trim()==="")return null;const v=parseFloat(raw);if(isNaN(v))return null;if(v<0){aoClamped=true;return 0;}if(v>20){aoClamped=true;return 20;}return v;});
   if(aoClamped)toast("已按满分 20 分计入");
-  const total=Math.min(20,ao.reduce((a,b)=>a+(b==null?0:b),0));
+  const _ti=essayTypeInfo({code:$("#lq").value});const _mx=_ti.max>0?_ti.max:20;const total=Math.min(_mx,ao.reduce((a,b)=>a+(b==null?0:b),0));
   if(!total){toast("先填批改得分（至少一项大于 0）");return;}
   U.essayLog=U.essayLog||[];
   const newLogId="el"+Date.now();
@@ -2887,7 +2887,7 @@ function plannerDueList(){
 VIEWS.planner=function(){
  const ds=plannerDueList();const due=ds.due,soon=ds.soon,fresh=ds.fresh;
  const un=U.mistakes.filter(m=>!m.resolved);
- const weakEssays=(U.essayLog||[]).filter(r=>(r.total||0)>0).sort((a,b)=>(logDispTotal(a)/(a.mock?80:20))-(logDispTotal(b)/(b.mock?80:20))).slice(0,3);
+ const weakEssays=(U.essayLog||[]).filter(r=>{const ti=essayTypeInfo(r);return (r.total||0)>0&&ti.max>0;}).sort((a,b)=>(logDispTotal(a)/essayTypeInfo(a).max)-(logDispTotal(b)/essayTypeInfo(b).max)).slice(0,3);
  let h='<h1>Revision Planner · 复习计划</h1><p class="mut">间隔重复规则（参考 SM-2 思路的简化实现）：每个知识点的复习间隔由<b>真实练习表现</b>决定——掌握度越高间隔越长（1→2→4→7→14 天），未解决错题与 MCQ 错题越多间隔越短；到期与逾期项优先，薄弱知识点（错误多）排在最前。依据是你标记掌握度的时间、错题复习时间与 MCQ 答题记录；<b>只是打开页面不会被算作掌握或复习</b>。在到期项上点「记住 / 模糊 / 忘记」才会记一次复习并调整下次间隔（记住间隔翻倍、上限 30 天；模糊保持不变；忘记回到 1 天）。Essay 练习记录（练习室的 Essay Log）中得分最低的题目也会进入重练建议。另：某知识卡的最低维度（6 个维度之一）≤ 1 级时，即使总掌握度较高，也会优先排入今日到期并注明是哪个维度。</p>';
  h+='<div class="card"><h3 style="margin-top:0">今日到期 / 已逾期（'+due.length+'）</h3>';
  if(!due.length)h+='<p class="sm mut">暂无到期项。先去<button class="btn sm ghost" data-go="kb">知识库</button>学习并标记掌握度，或做一组 <button class="btn sm ghost" data-go="mcq">MCQ</button>，计划会自动生成。</p>';
@@ -2895,7 +2895,7 @@ VIEWS.planner=function(){
  if(un.length)h+='<p style="margin-top:10px"><b>错题优先（'+un.length+' 条未解决）</b></p><ul class="tight">'+un.slice(0,5).map(m=>'<li>'+esc((m.q||"").slice(0,60))+' <button class="btn sm ghost" data-go="mistakes">去复习</button></li>').join("")+'</ul>';
  h+='</div>';
  if(soon.length)h+='<div class="card"><h3 style="margin-top:0">未来 7 天到期</h3><ul class="tight">'+soon.map(x=>'<li>'+esc(x.k.ch+" · "+x.k.zh)+' <span class="sm mut">'+new Date(x.s.due).toLocaleDateString("zh-CN")+' 到期（间隔 '+x.s.interval+' 天）</span></li>').join("")+'</ul></div>';
- if(weakEssays.length)h+='<div class="card"><h3 style="margin-top:0">Essay 重练建议（按得分率从低到高）</h3><ul class="tight">'+weakEssays.map(r=>'<li>'+esc(r.code)+' · 最近总分 '+logDispTotal(r)+' / '+(r.mock?80:20)+' <button class="btn sm ghost" data-go="practice">去重练</button></li>').join("")+'</ul><p class="sm mut">重练方法：合上范文、限时完成，再把新答案发到聊天批改，并把新分数记回 Essay Log 对比进步。</p></div>';
+ if(weakEssays.length)h+='<div class="card"><h3 style="margin-top:0">Essay 重练建议（按得分率从低到高）</h3><ul class="tight">'+weakEssays.map(r=>'<li>'+esc(r.code)+' · 最近总分 '+logDispTotal(r)+' / '+essayTypeInfo(r).max+' <button class="btn sm ghost" data-go="practice">去重练</button></li>').join("")+'</ul><p class="sm mut">重练方法：合上范文、限时完成，再把新答案发到聊天批改，并把新分数记回 Essay Log 对比进步。</p></div>';
  h+='<div class="card"><h3 style="margin-top:0">接下来学（按考纲顺序，未开始）</h3>'+(fresh.length?'<ul class="tight">'+fresh.slice(0,6).map(x=>'<li>'+esc(x.k.ch+" · "+x.k.zh)+'</li>').join("")+'</ul>':'<p class="sm mut">已填充知识点已全部开始。</p>')+'</div>';
  return h;
 };
