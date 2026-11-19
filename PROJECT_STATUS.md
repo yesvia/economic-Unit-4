@@ -3,7 +3,7 @@
 ## 当前阶段
 
 - **版本**：v5（Round 2 考试内容与评分 + Round 3 学习系统已完成；commit `f4744c71`，在 main）
-- **已完成**：ChatGPT 第一轮审查的 6 项问题修复 + 3 轮补充修复（DR 导入合并、IndexedDB 保存竞争、合并导入补 drafts/mock/selfeval），六项全部验收通过；Round 4（技术功能）三阶段已完成，GPT 第五轮复查暂不整体验收（唯一阻塞：模拟卷计时器），已按 GPT 建议改为 Deadline 制并通过第六轮复查，Round 4 代码审查层面放行；Round 5（精英级优化）四阶段已完成；GPT 第七轮复查唯一待修项（Dashboard nextStep() AO3/AO4 建议逻辑：阈值统一为严格 > 0.5、有效记录筛选）已修复，7/7 边界测试通过，待推送与 GPT 复查
+- **已完成**：ChatGPT 第一轮审查的 6 项问题修复 + 3 轮补充修复（DR 导入合并、IndexedDB 保存竞争、合并导入补 drafts/mock/selfeval），六项全部验收通过；Round 4（技术功能）三阶段已完成，GPT 第五轮复查暂不整体验收（唯一阻塞：模拟卷计时器），已按 GPT 建议改为 Deadline 制并通过第六轮复查，Round 4 代码审查层面放行；Round 5（精英级优化）四阶段已完成；GPT 第七轮复查唯一待修项（Dashboard nextStep() AO3/AO4 建议逻辑：阈值统一为严格 > 0.5、有效记录筛选）已修复，7/7 边界测试通过，待推送与 GPT 复查；GPT 第八轮复查相邻项（Dashboard AO3/AO4 对比卡：共享 aoFilled 筛选、≤ 0.5 差异不明显）已修复，卡片 11 项 + nextStep() 回归 7 项 + 逐字核对 9 项全部通过，导出 3278 行 / 667,029 字节，待线上站点同步、推送与 GPT 复查
 - **未开始**：最终整合
 - **流程**：修复 → GPT 逐项复查验收 → Round 4 → Round 5 → 整合成一个连贯系统，完整网页版存 Muse 网站 + GitHub 仓库
 
@@ -30,6 +30,7 @@
 - `1b2e12c7` — Round 4（技术功能）三阶段代码 + 审查文件与 PROJECT_STATUS.md 更新（review/chatgpt-v5 分支；GPT 审批 commit 05eacddc 在其上）
 - `54c19921` — GPT 第五轮复查计时器修复（Deadline 制）+ 审查文件与 PROJECT_STATUS.md 更新（review/chatgpt-v5 分支）
 - `f6a3defd` — Round 5（精英级优化）四阶段代码 + 审查文件与 PROJECT_STATUS.md 更新（review/chatgpt-v5 分支）
+- `ea2ab33c` — GPT 第七轮复查 P2 修复（nextStep() AO3/AO4 阈值统一为严格 > 0.5、有效记录筛选）+ 审查文件与 PROJECT_STATUS.md 更新（review/chatgpt-v5 分支）
 
 ## GPT 验收状态
 
@@ -44,7 +45,6 @@
 - 2026-11-19：GPT 第六轮复查 commit 54c19921，计时器修复通过，Round 4 代码审查层面放行，允许开始 Round 5；仍只在 review/chatgpt-v5 分支工作，不自动合并 main，合并须用户明确批准。
 - 2026-11-19：Round 5（精英级优化）四阶段已完成并推送至 review/chatgpt-v5 分支，待 GPT 检查；最终整合未开始。
 - 2026-11-19：GPT 第七轮复查 commit f6a3defd，Round 5 四阶段主要代码与数据接入路径整体通过，无结构性问题；暂不最终验收，唯一待修项为 Dashboard nextStep() AO3/AO4 建议逻辑（P2：阈值 0.05 应统一为 0.5、有效记录筛选），修复后由 GPT 复查该点；修复通过后可放行最终整合。
+- 2026-11-19：GPT 第八轮复查 commit ea2ab33c，nextStep() P2 修复验收通过；发现相邻问题：同一 Dashboard 的 AO3/AO4 对比卡（约第 3083 行）仍用旧筛选与 0.05 边界，与刚修复的 > 0.5 口径不一致，需统一后做一次针对性复查；Round 5 最终验收暂缓。
 - 2026-11-19：第七轮唯一待修项 AO3/AO4 建议逻辑已修复（阈值统一为严格 > 0.5、AO3/AO4 两项均已填写的有限数值才计入、0 合法），7/7 边界测试通过，导出 3277 行 / 666,747 字节；待推送至 review/chatgpt-v5 分支后由 GPT 复查该点，不宣称验收通过。
-
-
-- 2026-11-19：GPT 第八轮复查 Muse commit ea2ab33c：原 nextStep() AO3/AO4 P2 修复代码通过（两项均有效、0 合法、至少 2 条记录、差值严格 >0.5）；但发现同一 Dashboard 的 AO3/AO4 对比卡仍保留旧筛选（只要一项 >0 即纳入、全 0 被排除）和 0.05「基本持平」阈值，可能导致均值失真及与今日建议矛盾。已记录最小修复要求；Round 5 最终验收暂缓，待该卡统一筛选和 >0.5 建议门槛后复查。Muse 自报 7/7 测试，GPT 本轮独立核对代码但未独立执行该测试套件或真实浏览器端到端测试。
+- 2026-11-19：第八轮相邻项 Dashboard AO3/AO4 对比卡已修复（aoFilled 提升为 nextStep() 与对比卡共用的顶层共享函数；对比卡只纳入 AO3/AO4 两项均已填写的有限数值记录，0 合法；均值差 ≤ 0.5 显示「差异不明显，两项一起练」，严格 > 0.5 才标较低项「明显更弱」并给优先练习建议），卡片边界 11/11、nextStep() 回归 7/7、逐字核对 9 项全部通过，全部 10 个 script 块通过 node --check，导出 3278 行 / 667,029 字节（SHA-256 `db8969a4e8b87e6fb2c44103da02d3ca621eeb5176a6a089c4ef3835bebb3dfe`），`review/index.html` 已同步；线上站点同步待主代理用 artifact.edit 执行（本次子代理会话无该工具，线上仍为修复前版本），同步后重新导出并哈希比对，再推送至 review/chatgpt-v5 分支由 GPT 复查该点，不宣称验收通过。

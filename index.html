@@ -1715,6 +1715,8 @@ function hasAnyRecord(){
  ||eliteLogRoot().length>0||drAnsweredCount()>0||(U.mockHistory||[]).length>0
  ||Object.keys(U.dimMastery||{}).length>0;
 }
+/* AO3/AO4 有效分数校验（共享）：两项都必须明确填写且为有限数值，0 为合法分数；供 nextStep() 与 Dashboard AO3/AO4 对比卡共用，避免两处口径分叉。 */
+function aoFilled(v){return v!==null&&v!==undefined&&v!==""&&isFinite(+v);}
 function nextStep(){
  if(!hasAnyRecord())return null;
  const unres=(U.mistakes||[]).filter(function(m){return !m.resolved;});
@@ -1722,7 +1724,6 @@ function nextStep(){
  if(unres.length>=5){const t=topMistakeKp();return{text:"先清错题本：还有 <b>"+unres.length+"</b> 条未解决错题"+(t&&t.k?"，其中 "+t.n+" 条对应 "+esc(t.k.ch+" · "+t.k.zh):"")+"。",rule:"命中规则 ①：未解决错题 ≥ 5 条时优先清错题。",go:"mistakes",param:null,btn:"打开错题本",go2:(t&&t.k)?["kb",t.k.id,"先补 "+t.k.zh]:null};}
  const wd=weakestDimOverall();
  if(wd)return{text:"最弱维度是 <b>"+esc(wd.label)+"</b>（平均 "+wd.avg.toFixed(1)+" / 4）：先补 "+esc(wd.kp.ch+" · "+wd.kp.zh)+"，该卡此维度仅 "+wd.val+" 级。",rule:"命中规则 ②：最弱维度平均 ≤ 1 级时优先补该维度最低的知识卡。",go:"kb",param:wd.kp.id,btn:"打开 "+wd.kp.zh};
- function aoFilled(v){return v!==null&&v!==undefined&&v!==""&&isFinite(+v);}
  const AL=(U.essayLog||[]).filter(function(r){return !r.mock&&r.ao&&aoFilled(r.ao[2])&&aoFilled(r.ao[3]);});
  if(AL.length>=2){
   const a3=AL.reduce(function(s,r){return s+(+r.ao[2]||0);},0)/AL.length,a4=AL.reduce(function(s,r){return s+(+r.ao[3]||0);},0)/AL.length;
@@ -3080,7 +3081,7 @@ function strategyR3HTML(){
   +'<p class="sm mut">得分率 = 记录总分 ÷ 该题型满分。'+(sorted.length>2?'其余题型：'+sorted.slice(2).map(g=>esc(g.label)+" "+g.avg.toFixed(0)+"%").join("；")+"。":"")+'</p>';
  }
  h+='</div>';
- const AL=(U.essayLog||[]).filter(r=>!r.mock&&r.ao&&(+r.ao[2]>0||+r.ao[3]>0));
+ const AL=(U.essayLog||[]).filter(r=>!r.mock&&r.ao&&aoFilled(r.ao[2])&&aoFilled(r.ao[3]));
  h+='<div class="card"><h3 style="margin-top:0">分析 (Analysis, AO3) vs 评价 (Evaluation, AO4)</h3>';
  if(!AL.length){
   h+='<p><span class="tag gold">示意数据</span> <small>暂无带 AO 分数的记录，以下为示意示例，不是你的成绩。</small></p>'
@@ -3093,9 +3094,9 @@ function strategyR3HTML(){
   h+='<p class="sm mut">基于 '+AL.length+' 条带 AO 分数的真实记录（原始分平均）。</p>'
   +'<p style="margin:.2rem 0"><b>AO3 分析 (Analysis)</b> 平均 '+a3.toFixed(1)+'</p><div class="bar mint"><i style="width:'+Math.round(a3/mx*100)+'%"></i></div>'
   +'<p style="margin:.2rem 0"><b>AO4 评价 (Evaluation)</b> 平均 '+a4.toFixed(1)+'</p><div class="bar"><i style="width:'+Math.round(a4/mx*100)+'%"></i></div>';
-  if(Math.abs(a3-a4)<0.05)h+='<p class="sm"><b>结论：</b>分析与评价平均分基本持平，两项一起练：保持链条深度，同时给有依据的判断。</p>';
-  else if(a4<a3)h+='<p class="sm"><b>结论：</b>评价平均比分析低 '+(a3-a4).toFixed(1)+' 分，评价更弱——优先练评价的排序 (prioritisation) 与有依据的判断 (informed judgement)。</p>';
-  else h+='<p class="sm"><b>结论：</b>分析平均比评价低 '+(a4-a3).toFixed(1)+' 分，分析更弱——优先练因果链的完整度，每条链至少 3–4 环不断裂。</p>';
+  if(Math.abs(a3-a4)<=0.5)h+='<p class="sm"><b>结论：</b>分析与评价平均分差异不明显（差 '+Math.abs(a3-a4).toFixed(1)+' 分，≤ 0.5 分），两项一起练：保持链条深度，同时给有依据的判断。</p>';
+  else if(a4<a3)h+='<p class="sm"><b>结论：</b>评价平均比分析低 '+(a3-a4).toFixed(1)+' 分，评价明显更弱——优先练评价的排序 (prioritisation) 与有依据的判断 (informed judgement)。</p>';
+  else h+='<p class="sm"><b>结论：</b>分析平均比评价低 '+(a4-a3).toFixed(1)+' 分，分析明显更弱——优先练因果链的完整度，每条链至少 3–4 环不断裂。</p>';
  }
  h+='</div>';
  h+='<div class="card"><h3 style="margin-top:0">用时与失分分析（Time vs Score）</h3>';
