@@ -1537,7 +1537,7 @@ function bindSelfEval(){
  root.querySelectorAll("[data-se-note]").forEach(t=>t.addEventListener("change",()=>{U.selfeval=U.selfeval||{steps:{}};U.selfeval.steps=U.selfeval.steps||{};const i=t.dataset.seNote;U.selfeval.steps[i]=U.selfeval.steps[i]||{};U.selfeval.steps[i].note=t.value;saveUser();toast("自评已保存");}));
 }
 function aoTrackHTML(){
- const L=(U.essayLog||[]).filter(r=>!r.mock&&r.ao&&r.ao.some(v=>+v>0));
+ const L=(U.essayLog||[]).filter(r=>!r.mock&&r.ao&&r.ao.some(v=>+v>0)&&essayTypeInfo(r).max>0);
  let h='<h3 style="margin-top:0">AO1–AO4 追踪（来自 Essay Log 的批改分数）</h3>';
  if(!L.length)return h+'<div class="empty">还没有带 AO 分数的批改记录。在上方 Essay Log 里录入聊天批改给出的 AO 分数后，这里会汇总各 AO 平均分、最弱 AO 与同一道题多次练习的分数趋势；没有记录时显示空状态，不编造。</div>';
  const names=["AO1 知识 (Knowledge)","AO2 应用 (Application)","AO3 分析 (Analysis)","AO4 评价 (Evaluation)"];
@@ -1868,7 +1868,7 @@ function nextStep(){
  if(unres.length>=5){const t=topMistakeKp();return{text:"先清错题本：还有 <b>"+unres.length+"</b> 条未解决错题"+(t&&t.k?"，其中 "+t.n+" 条对应 "+esc(t.k.ch+" · "+t.k.zh):"")+"。",rule:"命中规则 ①：未解决错题 ≥ 5 条时优先清错题。",go:"mistakes",param:null,btn:"打开错题本",go2:(t&&t.k)?["kb",t.k.id,"先补 "+t.k.zh]:null};}
  const wd=weakestDimOverall();
  if(wd)return{text:"最弱维度是 <b>"+esc(wd.label)+"</b>（平均 "+wd.avg.toFixed(1)+" / 4）：先补 "+esc(wd.kp.ch+" · "+wd.kp.zh)+"，该卡此维度仅 "+wd.val+" 级。",rule:"命中规则 ②：最弱维度平均 ≤ 1 级时优先补该维度最低的知识卡。",go:"kb",param:wd.kp.id,btn:"打开 "+wd.kp.zh};
- const AL=(U.essayLog||[]).filter(function(r){return !r.mock&&r.ao&&aoFilled(r.ao[2])&&aoFilled(r.ao[3]);});
+ const AL=(U.essayLog||[]).filter(function(r){return !r.mock&&r.ao&&aoFilled(r.ao[2])&&aoFilled(r.ao[3])&&essayTypeInfo(r).max>0;});
  if(AL.length>=2){
   const a3=AL.reduce(function(s,r){return s+(+r.ao[2]||0);},0)/AL.length,a4=AL.reduce(function(s,r){return s+(+r.ao[3]||0);},0)/AL.length;
   if(a4<a3-0.5)return{text:"AO4 评价平均 "+a4.toFixed(1)+" 分，比 AO3 分析（"+a3.toFixed(1)+" 分）低 "+(a3-a4).toFixed(1)+" 分：优先练评价的排序与有依据的判断（informed judgement）。",rule:"命中规则 ③：带 AO 分数的记录 ≥ 2 条且 AO3/AO4 均值差 > 0.5 时，按更弱一项建议。",go:"elite",param:"eval:ev1",btn:"去练评价挑战"};
@@ -2299,7 +2299,9 @@ BINDS.practice=function(){
   let aoClamped=false;
   const ao=[1,2,3,4].map(i=>{const raw=$("#lao"+i).value;if(raw==null||String(raw).trim()==="")return null;const v=parseFloat(raw);if(isNaN(v))return null;if(v<0){aoClamped=true;return 0;}if(v>20){aoClamped=true;return 20;}return v;});
   if(aoClamped)toast("已按满分 20 分计入");
-  const _ti=essayTypeInfo({code:$("#lq").value});const _mx=_ti.max>0?_ti.max:20;const total=Math.min(_mx,ao.reduce((a,b)=>a+(b==null?0:b),0));
+  const _ti=essayTypeInfo({code:$("#lq").value});
+  if(_ti.max===0){toast("这道题来源待核实（满分未确认），不能保存为计分记录；核实后可再记分");return;}
+  const total=Math.min(_ti.max,ao.reduce((a,b)=>a+(b==null?0:b),0));
   if(!total){toast("先填批改得分（至少一项大于 0）");return;}
   U.essayLog=U.essayLog||[];
   const newLogId="el"+Date.now();
@@ -3273,7 +3275,7 @@ function strategyR3HTML(){
   +'<p class="sm mut">得分率 = 记录总分 ÷ 该题型满分。'+(sorted.length>2?'其余题型：'+sorted.slice(2).map(g=>esc(g.label)+" "+g.avg.toFixed(0)+"%").join("；")+"。":"")+'</p>';
  }
  h+='</div>';
- const AL=(U.essayLog||[]).filter(r=>!r.mock&&r.ao&&aoFilled(r.ao[2])&&aoFilled(r.ao[3]));
+ const AL=(U.essayLog||[]).filter(r=>!r.mock&&r.ao&&aoFilled(r.ao[2])&&aoFilled(r.ao[3])&&essayTypeInfo(r).max>0);
  h+='<div class="card"><h3 style="margin-top:0">分析 (Analysis, AO3) vs 评价 (Evaluation, AO4)</h3>';
  if(!AL.length){
   h+='<p><span class="tag gold">示意数据</span> <small>暂无带 AO 分数的记录，以下为示意示例，不是你的成绩。</small></p>'
