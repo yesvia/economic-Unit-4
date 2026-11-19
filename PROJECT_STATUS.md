@@ -3,7 +3,7 @@
 ## 当前阶段
 
 - **版本**：v5（Round 2 考试内容与评分 + Round 3 学习系统已完成；commit `f4744c71`，在 main）
-- **已完成**：ChatGPT 第一轮审查的 6 项问题修复 + 3 轮补充修复（DR 导入合并、IndexedDB 保存竞争、合并导入补 drafts/mock/selfeval），六项全部验收通过；Round 4（技术功能）三阶段已完成，GPT 第五轮复查暂不整体验收（唯一阻塞：模拟卷计时器），已按 GPT 建议改为 Deadline 制并通过第六轮复查，Round 4 代码审查层面放行；Round 5（精英级优化）四阶段已完成，待 GPT 检查
+- **已完成**：ChatGPT 第一轮审查的 6 项问题修复 + 3 轮补充修复（DR 导入合并、IndexedDB 保存竞争、合并导入补 drafts/mock/selfeval），六项全部验收通过；Round 4（技术功能）三阶段已完成，GPT 第五轮复查暂不整体验收（唯一阻塞：模拟卷计时器），已按 GPT 建议改为 Deadline 制并通过第六轮复查，Round 4 代码审查层面放行；Round 5（精英级优化）四阶段已完成；GPT 第七轮复查唯一待修项（Dashboard nextStep() AO3/AO4 建议逻辑：阈值统一为严格 > 0.5、有效记录筛选）已修复，7/7 边界测试通过，待推送与 GPT 复查
 - **未开始**：最终整合
 - **流程**：修复 → GPT 逐项复查验收 → Round 4 → Round 5 → 整合成一个连贯系统，完整网页版存 Muse 网站 + GitHub 仓库
 
@@ -29,6 +29,7 @@
 - `0c69a04e` — 第 4 项第二次补充修复（合并导入补 drafts/mock/selfeval）+ 审查文件与 PROJECT_STATUS.md 更新（review/chatgpt-v5 分支）
 - `1b2e12c7` — Round 4（技术功能）三阶段代码 + 审查文件与 PROJECT_STATUS.md 更新（review/chatgpt-v5 分支；GPT 审批 commit 05eacddc 在其上）
 - `54c19921` — GPT 第五轮复查计时器修复（Deadline 制）+ 审查文件与 PROJECT_STATUS.md 更新（review/chatgpt-v5 分支）
+- `f6a3defd` — Round 5（精英级优化）四阶段代码 + 审查文件与 PROJECT_STATUS.md 更新（review/chatgpt-v5 分支）
 
 ## GPT 验收状态
 
@@ -42,5 +43,5 @@
 - 2026-11-19：GPT 第五轮复查 commit 1b2e12c7，Round 4 阶段一至三暂不整体验收通过，唯一阻塞问题为模拟卷计时器真实计时缺口（setInterval 扣秒、导航静默停表、后台节流落后）；其他已检查代码路径无新阻塞问题；Round 5 暂不放行，main 不合并。计时器已按 GPT 最小修复建议改为 Deadline 制（切换模块/后台不暂停，到点只交卷一次），待 GPT 再检查。
 - 2026-11-19：GPT 第六轮复查 commit 54c19921，计时器修复通过，Round 4 代码审查层面放行，允许开始 Round 5；仍只在 review/chatgpt-v5 分支工作，不自动合并 main，合并须用户明确批准。
 - 2026-11-19：Round 5（精英级优化）四阶段已完成并推送至 review/chatgpt-v5 分支，待 GPT 检查；最终整合未开始。
-
-- 2026-11-19：GPT 第七轮复查 Round 5 最新提交 f6a3defd。四阶段主要代码与接入路径整体通过；发现 Dashboard 今日建议中 AO3/AO4 逻辑一处 P2 问题（规则写 >0.5，代码按 >0.05 触发；有效 0 分记录筛选也不正确），因此 Round 5 暂不最终验收。Muse 只需修复该点并补充边界测试，推送后由 GPT 复查；其余阶段无需重做。最终整合暂不开始，main 不合并。
+- 2026-11-19：GPT 第七轮复查 commit f6a3defd，Round 5 四阶段主要代码与数据接入路径整体通过，无结构性问题；暂不最终验收，唯一待修项为 Dashboard nextStep() AO3/AO4 建议逻辑（P2：阈值 0.05 应统一为 0.5、有效记录筛选），修复后由 GPT 复查该点；修复通过后可放行最终整合。
+- 2026-11-19：第七轮唯一待修项 AO3/AO4 建议逻辑已修复（阈值统一为严格 > 0.5、AO3/AO4 两项均已填写的有限数值才计入、0 合法），7/7 边界测试通过，导出 3277 行 / 666,747 字节；待推送至 review/chatgpt-v5 分支后由 GPT 复查该点，不宣称验收通过。
